@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import { menu, ui, type MenuItem } from '~/data/menu'
+import { menu, ui, type MenuItem, type MenuLevelId } from '~/data/menu'
 
 const { t } = useLanguage()
 
+const activeLevel = ref<MenuLevelId>('food')
 const search = ref('')
-const activeId = ref(menu[0].id)
 const selected = ref<MenuItem | null>(null)
 
-// Filter categories by the search query (matches name + description).
+// Categories belonging to the active level (chips stay stable while searching).
+const levelCategories = computed(() => menu.filter((c) => c.level === activeLevel.value))
+
+const activeId = ref(levelCategories.value[0]?.id ?? '')
+
+// Filter the active level's categories by the search query (name + description).
 const filteredCategories = computed(() => {
   const q = search.value.trim().toLowerCase()
-  if (!q) return menu
-  return menu
+  if (!q) return levelCategories.value
+  return levelCategories.value
     .map((cat) => ({
       ...cat,
       items: cat.items.filter((item) => {
@@ -33,16 +38,27 @@ const filteredCategories = computed(() => {
 
 const hasResults = computed(() => filteredCategories.value.length > 0)
 
+// Switch Level 1 (Food / Drinks / Alcohol).
+const selectLevel = (id: MenuLevelId) => {
+  if (id === activeLevel.value) return
+  activeLevel.value = id
+  search.value = ''
+  activeId.value = levelCategories.value[0]?.id ?? ''
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 // Smooth-scroll to a category section.
 const scrollToCategory = (id: string) => {
   activeId.value = id
-  const el = document.getElementById(id)
-  el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-// Scrollspy — highlight the category currently in view.
+// Scrollspy — highlight the category currently in view. Re-runs whenever the
+// visible set of sections changes (level switch or search).
 let observer: IntersectionObserver | null = null
-onMounted(() => {
+const setupObserver = async () => {
+  await nextTick()
+  observer?.disconnect()
   observer = new IntersectionObserver(
     (entries) => {
       const visible = entries
@@ -50,14 +66,16 @@ onMounted(() => {
         .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
       if (visible[0]) activeId.value = visible[0].target.id
     },
-    { rootMargin: '-140px 0px -55% 0px', threshold: [0.1, 0.25, 0.5] },
+    { rootMargin: '-180px 0px -55% 0px', threshold: [0.1, 0.25, 0.5] },
   )
-  menu.forEach((cat) => {
+  filteredCategories.value.forEach((cat) => {
     const el = document.getElementById(cat.id)
     if (el) observer?.observe(el)
   })
-})
+}
 
+onMounted(setupObserver)
+watch(filteredCategories, setupObserver, { flush: 'post' })
 onBeforeUnmount(() => observer?.disconnect())
 </script>
 
@@ -66,10 +84,12 @@ onBeforeUnmount(() => observer?.disconnect())
     <TheHeader />
 
     <CategoryNav
-      :categories="menu"
+      :categories="levelCategories"
       :active-id="activeId"
+      :active-level="activeLevel"
       v-model:search="search"
       @select="scrollToCategory"
+      @select-level="selectLevel"
     />
 
     <main class="relative mx-auto max-w-6xl px-5 pb-16 pt-10">

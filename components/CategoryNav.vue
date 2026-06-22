@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ui, type MenuCategory } from '~/data/menu'
+import { ui, type MenuCategory, type MenuLevelId } from '~/data/menu'
 
 const props = defineProps<{
   categories: MenuCategory[]
   activeId: string
+  activeLevel: MenuLevelId
   search: string
 }>()
 const emit = defineEmits<{
   select: [id: string]
+  'select-level': [id: MenuLevelId]
   'update:search': [value: string]
 }>()
 
@@ -26,8 +28,11 @@ watch(
 
 <template>
   <div class="sticky top-0 z-30 border-b border-caramel/20 bg-cream/95 backdrop-blur">
-    <div class="mx-auto max-w-6xl px-4 py-3">
-      <!-- Category chips -->
+    <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3">
+      <!-- Level 1: Food / Drinks / Alcohol -->
+      <LevelTabs :active-level="activeLevel" @select="emit('select-level', $event)" />
+
+      <!-- Level 2: category chips -->
       <nav
         ref="navRef"
         class="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -46,13 +51,13 @@ watch(
           "
           @click="emit('select', cat.id)"
         >
-          <CategoryIcon :id="cat.id" class="h-4 w-4" />
+          <span class="text-base leading-none" aria-hidden="true">{{ cat.icon }}</span>
           {{ t(cat.title) }}
         </button>
       </nav>
 
       <!-- Search -->
-      <div class="relative mt-3">
+      <div class="relative">
         <IconSearch class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-caramel-dark" />
         <input
           :value="search"

@@ -10,7 +10,7 @@ const { t } = useLanguage()
     <!-- Category heading -->
     <div class="flex flex-col items-center text-center">
       <div class="flex items-center gap-3 text-brown">
-        <CategoryIcon :id="category.id" class="h-7 w-7 text-caramel-dark" />
+        <span class="text-2xl leading-none sm:text-3xl" aria-hidden="true">{{ category.icon }}</span>
         <h2 class="font-display text-2xl font-bold uppercase tracking-[0.14em] sm:text-3xl">
           {{ t(category.title) }}
         </h2>
