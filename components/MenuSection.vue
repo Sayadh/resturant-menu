@@ -23,7 +23,7 @@ const { t } = useLanguage()
     </div>
 
     <!-- Cards grid -->
-    <div class="mt-7 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="mt-5 grid grid-cols-1 gap-3 sm:mt-7 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
       <MenuCard
         v-for="item in category.items"
         :key="item.id"

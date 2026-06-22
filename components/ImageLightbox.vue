@@ -8,6 +8,9 @@ const formattedPrice = computed(() =>
   props.item ? props.item.price.toLocaleString('hy-AM') : '',
 )
 
+const imgFailed = ref(false)
+watch(() => props.item?.image, () => (imgFailed.value = false))
+
 const onKey = (e: KeyboardEvent) => {
   if (e.key === 'Escape') emit('close')
 }
@@ -53,10 +56,18 @@ onBeforeUnmount(() => {
           </button>
 
           <img
+            v-if="!imgFailed"
             :src="item.image"
             :alt="t(item.name)"
             class="aspect-[4/3] w-full object-cover"
+            @error="imgFailed = true"
           />
+          <div
+            v-else
+            class="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-caramel-light/40 to-caramel/30"
+          >
+            <span class="font-display text-6xl text-cream/90 drop-shadow-sm">TL</span>
+          </div>
 
           <div class="p-5">
             <div class="flex items-start justify-between gap-3">

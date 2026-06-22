@@ -66,7 +66,7 @@ const setupObserver = async () => {
         .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
       if (visible[0]) activeId.value = visible[0].target.id
     },
-    { rootMargin: '-180px 0px -55% 0px', threshold: [0.1, 0.25, 0.5] },
+    { rootMargin: '-168px 0px -55% 0px', threshold: [0.1, 0.25, 0.5] },
   )
   filteredCategories.value.forEach((cat) => {
     const el = document.getElementById(cat.id)
@@ -92,12 +92,12 @@ onBeforeUnmount(() => observer?.disconnect())
       @select-level="selectLevel"
     />
 
-    <main class="relative mx-auto max-w-6xl px-5 pb-16 pt-10">
+    <main class="relative mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-5 sm:pt-10">
       <!-- Subtle corner decorations -->
       <DecorSprig class="pointer-events-none absolute right-2 top-24 hidden h-28 w-28 rotate-12 text-herb opacity-[0.06] md:block" />
       <DecorSprig class="pointer-events-none absolute -left-2 bottom-24 hidden h-28 w-28 -rotate-12 scale-x-[-1] text-herb opacity-[0.06] md:block" />
 
-      <div v-if="hasResults" class="flex flex-col gap-14">
+      <div v-if="hasResults" class="flex flex-col gap-10 sm:gap-14">
         <MenuSection
           v-for="cat in filteredCategories"
           :key="cat.id"

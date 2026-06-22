@@ -28,7 +28,7 @@ watch(
 
 <template>
   <div class="sticky top-0 z-30 border-b border-caramel/20 bg-cream/95 backdrop-blur">
-    <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3">
+    <div class="mx-auto flex max-w-6xl flex-col gap-2.5 px-4 py-2.5">
       <!-- Level 1: Food / Drinks / Alcohol -->
       <LevelTabs :active-level="activeLevel" @select="emit('select-level', $event)" />
 
@@ -64,7 +64,7 @@ watch(
           type="search"
           inputmode="search"
           :placeholder="t(ui.searchPlaceholder)"
-          class="w-full rounded-full border border-caramel/30 bg-card py-3 pl-11 pr-4 font-serif text-base text-brown placeholder:text-brown-soft/70 shadow-sm outline-none transition focus:border-caramel focus:ring-2 focus:ring-caramel/30"
+          class="w-full rounded-full border border-caramel/30 bg-card py-2.5 pl-11 pr-4 font-serif text-base text-brown placeholder:text-brown-soft/70 shadow-sm outline-none transition focus:border-caramel focus:ring-2 focus:ring-caramel/30"
           @input="emit('update:search', ($event.target as HTMLInputElement).value)"
         />
       </div>

@@ -13,12 +13,12 @@ watch(() => props.item.image, () => (imgFailed.value = false))
 
 <template>
   <article
-    class="group flex flex-col overflow-hidden rounded-card bg-card shadow-card transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-card-hover"
+    class="group flex flex-row overflow-hidden rounded-card bg-card shadow-card transition-all duration-300 ease-out hover:shadow-card-hover sm:flex-col sm:hover:-translate-y-1.5"
   >
-    <!-- Image (4:3) with zoomable lightbox trigger -->
+    <!-- Image: square thumbnail on mobile, 4:3 banner on larger screens -->
     <button
       type="button"
-      class="relative block aspect-[4/3] w-full overflow-hidden rounded-t-card"
+      class="relative block h-28 w-28 shrink-0 overflow-hidden sm:h-auto sm:w-full sm:aspect-[4/3]"
       :aria-label="t(item.name)"
       @click="emit('open', item)"
     >
@@ -35,27 +35,29 @@ watch(() => props.item.image, () => (imgFailed.value = false))
         v-else
         class="flex h-full w-full items-center justify-center bg-gradient-to-br from-caramel-light/40 to-caramel/30"
       >
-        <span class="font-display text-5xl text-cream/90 drop-shadow-sm">TL</span>
+        <span class="font-display text-3xl text-cream/90 drop-shadow-sm sm:text-5xl">TL</span>
       </div>
       <span
         v-if="item.badge"
-        class="absolute left-3 top-3"
+        class="absolute left-2 top-2 sm:left-3 sm:top-3"
       >
         <MenuBadge :badge="item.badge" />
       </span>
     </button>
 
     <!-- Content -->
-    <div class="flex flex-1 flex-col p-4">
-      <h3 class="font-serif text-xl font-semibold leading-snug text-brown">
+    <div class="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
+      <h3 class="font-serif text-base font-semibold leading-snug text-brown sm:text-xl">
         {{ t(item.name) }}
       </h3>
-      <p class="mt-1 font-serif text-[15px] leading-relaxed text-brown-soft">
+      <p
+        class="mt-1 line-clamp-2 font-serif text-sm leading-relaxed text-brown-soft sm:text-[15px] sm:line-clamp-3"
+      >
         {{ t(item.description) }}
       </p>
 
-      <div class="mt-3 flex items-end justify-between gap-2 pt-2">
-        <p class="font-display text-xl font-bold tracking-wide text-brown">
+      <div class="mt-auto flex items-end justify-between gap-2 pt-2">
+        <p class="font-display text-lg font-bold tracking-wide text-brown sm:text-xl">
           {{ formattedPrice }}
           <span class="text-caramel-dark">{{ ui.currency.AM }}</span>
         </p>
