@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ui, type MenuCategory, type MenuLevelId } from '~/data/menu'
+import { ui, type MenuCategory, type DrinkGroup } from '~/data/menu'
 
 const props = defineProps<{
   categories: MenuCategory[]
   activeId: string
-  activeLevel: MenuLevelId
+  activeLevel: string
+  activeGroup: DrinkGroup
   search: string
 }>()
 const emit = defineEmits<{
   select: [id: string]
-  'select-level': [id: MenuLevelId]
+  'select-level': [id: string]
+  'select-group': [id: DrinkGroup]
   'update:search': [value: string]
 }>()
 
@@ -27,12 +29,19 @@ watch(
 </script>
 
 <template>
-  <div class="sticky top-0 z-30 border-b border-caramel/20 bg-cream/95 backdrop-blur">
+  <div data-nav class="sticky top-0 z-30 border-b border-caramel/20 bg-cream/95 backdrop-blur">
     <div class="mx-auto flex max-w-6xl flex-col gap-2.5 px-4 py-2.5">
-      <!-- Level 1: Food / Drinks / Alcohol -->
+      <!-- Level 1: Food / Drinks -->
       <LevelTabs :active-level="activeLevel" @select="emit('select-level', $event)" />
 
-      <!-- Level 2: category chips -->
+      <!-- Level 2 (Drinks only): Non-Alcoholic / Alcoholic -->
+      <GroupTabs
+        v-if="activeLevel === 'drinks'"
+        :active-group="activeGroup"
+        @select="emit('select-group', $event)"
+      />
+
+      <!-- Category chips -->
       <nav
         ref="navRef"
         class="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -43,11 +52,11 @@ watch(
           :key="cat.id"
           :data-cat="cat.id"
           type="button"
-          class="inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors duration-200"
+          class="inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200"
           :class="
             activeId === cat.id
-              ? 'border-caramel bg-caramel text-cream shadow-sm'
-              : 'border-caramel/30 bg-card text-brown hover:border-caramel/60'
+              ? 'border-caramel bg-caramel text-white shadow-gold'
+              : 'border-caramel/30 bg-white/70 text-brown hover:border-caramel/60 hover:bg-white'
           "
           @click="emit('select', cat.id)"
         >
@@ -58,13 +67,18 @@ watch(
 
       <!-- Search -->
       <div class="relative">
-        <IconSearch class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-caramel-dark" />
+        <span
+          class="pointer-events-none absolute left-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-caramel/15"
+          aria-hidden="true"
+        >
+          <IconSearch class="h-[18px] w-[18px] text-caramel-dark" />
+        </span>
         <input
           :value="search"
           type="search"
           inputmode="search"
           :placeholder="t(ui.searchPlaceholder)"
-          class="w-full rounded-full border border-caramel/30 bg-card py-2.5 pl-11 pr-4 font-serif text-base text-brown placeholder:text-brown-soft/70 shadow-sm outline-none transition focus:border-caramel focus:ring-2 focus:ring-caramel/30"
+          class="w-full rounded-full border border-caramel/30 bg-white py-3 pl-12 pr-4 font-serif text-base text-brown placeholder:text-brown-soft/70 shadow-sm outline-none transition focus:border-caramel focus:ring-2 focus:ring-caramel/25"
           @input="emit('update:search', ($event.target as HTMLInputElement).value)"
         />
       </div>

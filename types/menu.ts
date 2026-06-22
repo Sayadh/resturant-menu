@@ -4,8 +4,10 @@ export type {
   Lang,
   BadgeKey,
   MenuLevelId,
+  DrinkGroup,
   LocalizedText,
   MenuItem,
   MenuCategory,
   MenuLevel,
+  DrinkGroupInfo,
 } from '~/data/menu'

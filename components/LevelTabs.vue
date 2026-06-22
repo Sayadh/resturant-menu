@@ -1,29 +1,25 @@
 <script setup lang="ts">
-import { levels, type MenuLevelId } from '~/data/menu'
-
-defineProps<{ activeLevel: MenuLevelId }>()
-const emit = defineEmits<{ select: [id: MenuLevelId] }>()
+defineProps<{ activeLevel: string }>()
+const emit = defineEmits<{ select: [id: string] }>()
 
 const { t } = useLanguage()
+const store = useMenuStore()
+const { levels } = storeToRefs(store)
 </script>
 
 <template>
-  <div
-    class="flex items-center gap-2 rounded-full border border-caramel/25 bg-card p-1"
-    role="tablist"
-    aria-label="Menu sections"
-  >
+  <div class="flex items-center gap-2.5" role="tablist" aria-label="Menu sections">
     <button
       v-for="lvl in levels"
       :key="lvl.id"
       type="button"
       role="tab"
       :aria-selected="activeLevel === lvl.id"
-      class="flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-sm font-semibold uppercase tracking-[0.08em] transition-colors duration-200"
+      class="flex flex-1 items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-bold uppercase tracking-[0.1em] transition-all duration-200"
       :class="
         activeLevel === lvl.id
-          ? 'bg-caramel text-cream shadow-sm'
-          : 'text-brown hover:bg-cream'
+          ? 'border-caramel bg-caramel text-white shadow-gold'
+          : 'border-caramel/30 bg-card text-brown hover:border-caramel/60 hover:bg-white'
       "
       @click="emit('select', lvl.id)"
     >

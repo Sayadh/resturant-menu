@@ -4,30 +4,24 @@
 
 @layer base {
   html {
-    background-color: #f7f2e8;
+    background-color: #f5efe2;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    background-color: #f7f2e8;
-    color: #5a3923;
+    background-color: #f5efe2;
+    color: #3e2723;
     font-family: "Cormorant Garamond", "Noto Serif Armenian", Georgia, serif;
     /* Almost invisible parchment / paper grain for warmth */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
   }
 
-  /* Smooth offset so the sticky nav doesn't cover anchored sections */
+  /* Smooth offset so the sticky nav doesn't cover anchored sections.
+     --nav-h is measured at runtime (the nav grows a row inside Drinks). */
   :target,
   section[id] {
-    scroll-margin-top: 168px;
-  }
-
-  @media (min-width: 640px) {
-    :target,
-    section[id] {
-      scroll-margin-top: 152px;
-    }
+    scroll-margin-top: calc(var(--nav-h, 160px) + 14px);
   }
 }
 

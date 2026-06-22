@@ -1,24 +1,64 @@
 <script setup lang="ts">
-import type { MenuCategory, MenuItem } from '~/data/menu'
-defineProps<{ category: MenuCategory }>()
+import { ui, type MenuCategory, type MenuItem } from '~/data/menu'
+const props = defineProps<{ category: MenuCategory }>()
 const emit = defineEmits<{ open: [item: MenuItem] }>()
 const { t } = useLanguage()
+
+// Use the first dish photo as the category banner.
+const banner = computed(() => props.category.items[0]?.image ?? '')
+const bannerFailed = ref(false)
+watch(banner, () => (bannerFailed.value = false))
 </script>
 
 <template>
-  <section :id="category.id" class="scroll-mt-36">
-    <!-- Category heading -->
-    <div class="flex flex-col items-center text-center">
-      <div class="flex items-center gap-3 text-brown">
-        <span class="text-2xl leading-none sm:text-3xl" aria-hidden="true">{{ category.icon }}</span>
-        <h2 class="font-display text-2xl font-bold uppercase tracking-[0.14em] sm:text-3xl">
-          {{ t(category.title) }}
-        </h2>
-      </div>
-      <div class="mt-4 flex w-full max-w-xs items-center gap-3" aria-hidden="true">
-        <span class="h-px flex-1 bg-caramel/40" />
-        <span class="h-1.5 w-1.5 rotate-45 bg-caramel" />
-        <span class="h-px flex-1 bg-caramel/40" />
+  <section :id="category.id">
+    <!-- Category banner card -->
+    <div class="group relative h-36 overflow-hidden rounded-card shadow-card sm:h-44">
+      <!-- fallback base -->
+      <div class="absolute inset-0 bg-gradient-to-br from-brown-light to-brown" />
+      <!-- big category emoji watermark when there is no banner photo -->
+      <span
+        v-if="!banner || bannerFailed"
+        class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-7xl opacity-25 sm:text-8xl"
+        aria-hidden="true"
+      >
+        {{ category.icon }}
+      </span>
+      <img
+        v-if="banner && !bannerFailed"
+        :src="banner"
+        :alt="t(category.title)"
+        loading="lazy"
+        class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+        @error="bannerFailed = true"
+      />
+      <!-- dark gradient overlay for contrast -->
+      <div class="absolute inset-0 bg-gradient-to-t from-brown/95 via-brown/50 to-brown/15" />
+      <!-- decorative wheat -->
+      <IconWheat
+        class="pointer-events-none absolute -right-1 top-1 h-24 w-24 rotate-[14deg] text-caramel opacity-25"
+      />
+
+      <!-- content -->
+      <div class="absolute inset-0 flex flex-col justify-end p-5">
+        <div class="flex items-center gap-3">
+          <span
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-caramel/60 bg-brown/40 text-xl shadow-sm backdrop-blur-sm sm:h-12 sm:w-12 sm:text-2xl"
+            aria-hidden="true"
+          >
+            {{ category.icon }}
+          </span>
+          <div class="min-w-0">
+            <h2
+              class="font-display text-2xl font-bold uppercase leading-tight tracking-[0.12em] text-cream drop-shadow sm:text-3xl"
+            >
+              {{ t(category.title) }}
+            </h2>
+            <p class="mt-0.5 font-serif text-sm text-cream/80">
+              {{ category.items.length }} {{ t(ui.dishCount) }}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -28,6 +68,7 @@ const { t } = useLanguage()
         v-for="item in category.items"
         :key="item.id"
         :item="item"
+        :icon="category.icon"
         @open="emit('open', $event)"
       />
     </div>

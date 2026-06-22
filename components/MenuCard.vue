@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { ui, type MenuItem } from '~/data/menu'
-const props = defineProps<{ item: MenuItem }>()
+const props = defineProps<{ item: MenuItem; icon?: string }>()
 const emit = defineEmits<{ open: [item: MenuItem] }>()
 const { t } = useLanguage()
 
 const formattedPrice = computed(() => props.item.price.toLocaleString('hy-AM'))
 
-// Fall back to a themed placeholder if an (external) image fails to load.
+// Show the photo only when one is set and loads; otherwise a branded tile.
 const imgFailed = ref(false)
 watch(() => props.item.image, () => (imgFailed.value = false))
+const hasPhoto = computed(() => !!props.item.image && !imgFailed.value)
 </script>
 
 <template>
   <article
-    class="group flex flex-row overflow-hidden rounded-card bg-card shadow-card transition-all duration-300 ease-out hover:shadow-card-hover sm:flex-col sm:hover:-translate-y-1.5"
+    class="group flex flex-row overflow-hidden rounded-card border border-brown/5 bg-card shadow-card ring-1 ring-black/[0.01] transition-all duration-300 ease-out hover:border-caramel/30 hover:shadow-card-hover sm:flex-col sm:hover:-translate-y-1.5"
   >
     <!-- Image: square thumbnail on mobile, 4:3 banner on larger screens -->
     <button
@@ -23,7 +24,7 @@ watch(() => props.item.image, () => (imgFailed.value = false))
       @click="emit('open', item)"
     >
       <img
-        v-if="!imgFailed"
+        v-if="hasPhoto"
         :src="item.image"
         :alt="t(item.name)"
         loading="lazy"
@@ -31,11 +32,12 @@ watch(() => props.item.image, () => (imgFailed.value = false))
         class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
         @error="imgFailed = true"
       />
+      <!-- Branded category tile (always loads, always matches the category) -->
       <div
         v-else
-        class="flex h-full w-full items-center justify-center bg-gradient-to-br from-caramel-light/40 to-caramel/30"
+        class="flex h-full w-full items-center justify-center bg-gradient-to-br from-caramel/25 via-cream to-herb/15 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
       >
-        <span class="font-display text-3xl text-cream/90 drop-shadow-sm sm:text-5xl">TL</span>
+        <span class="text-4xl drop-shadow-sm sm:text-5xl" aria-hidden="true">{{ icon || '🍽' }}</span>
       </div>
       <span
         v-if="item.badge"
@@ -56,10 +58,9 @@ watch(() => props.item.image, () => (imgFailed.value = false))
         {{ t(item.description) }}
       </p>
 
-      <div class="mt-auto flex items-end justify-between gap-2 pt-2">
-        <p class="font-display text-lg font-bold tracking-wide text-brown sm:text-xl">
-          {{ formattedPrice }}
-          <span class="text-caramel-dark">{{ ui.currency.AM }}</span>
+      <div class="mt-auto flex items-end justify-between gap-2 border-t border-brown/5 pt-2.5 sm:mt-3">
+        <p class="font-display text-lg font-bold tracking-wide text-caramel-dark sm:text-xl">
+          {{ formattedPrice }}<span class="ml-0.5 text-caramel">{{ ui.currency.AM }}</span>
         </p>
       </div>
     </div>

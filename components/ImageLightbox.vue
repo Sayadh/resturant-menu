@@ -56,7 +56,7 @@ onBeforeUnmount(() => {
           </button>
 
           <img
-            v-if="!imgFailed"
+            v-if="item.image && !imgFailed"
             :src="item.image"
             :alt="t(item.name)"
             class="aspect-[4/3] w-full object-cover"

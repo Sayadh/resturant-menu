@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { menu, ui, type MenuItem, type MenuLevelId } from '~/data/menu'
+import { ui, type MenuItem, type DrinkGroup } from '~/data/menu'
 
 const { t } = useLanguage()
+const store = useMenuStore()
 
-const activeLevel = ref<MenuLevelId>('food')
+const activeLevel = ref<string>(store.levels[0]?.id ?? 'food')
+const activeGroup = ref<DrinkGroup>('soft') // only used inside the Drinks level
 const search = ref('')
 const selected = ref<MenuItem | null>(null)
 
-// Categories belonging to the active level (chips stay stable while searching).
-const levelCategories = computed(() => menu.filter((c) => c.level === activeLevel.value))
+// Categories of the active section (chips stay stable while searching).
+// Food → its categories; Drinks → categories of the active alcohol/soft group.
+const levelCategories = computed(() => store.categoriesOf(activeLevel.value, activeGroup.value))
 
 const activeId = ref(levelCategories.value[0]?.id ?? '')
 
@@ -38,10 +41,20 @@ const filteredCategories = computed(() => {
 
 const hasResults = computed(() => filteredCategories.value.length > 0)
 
-// Switch Level 1 (Food / Drinks / Alcohol).
-const selectLevel = (id: MenuLevelId) => {
+// Switch Level 1 (Food / Drinks).
+const selectLevel = (id: string) => {
   if (id === activeLevel.value) return
   activeLevel.value = id
+  if (id === 'drinks') activeGroup.value = 'soft'
+  search.value = ''
+  activeId.value = levelCategories.value[0]?.id ?? ''
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// Switch the Drinks sub-group (Non-Alcoholic / Alcoholic).
+const selectGroup = (id: DrinkGroup) => {
+  if (id === activeGroup.value) return
+  activeGroup.value = id
   search.value = ''
   activeId.value = levelCategories.value[0]?.id ?? ''
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -53,11 +66,23 @@ const scrollToCategory = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
+// Measure the sticky nav and expose its height as --nav-h (the nav grows a
+// row inside Drinks), so scroll offsets stay accurate.
+const navHeight = ref(160)
+const updateNavHeight = () => {
+  const nav = document.querySelector<HTMLElement>('[data-nav]')
+  if (nav) {
+    navHeight.value = nav.offsetHeight
+    document.documentElement.style.setProperty('--nav-h', `${nav.offsetHeight}px`)
+  }
+}
+
 // Scrollspy — highlight the category currently in view. Re-runs whenever the
-// visible set of sections changes (level switch or search).
+// visible set of sections changes (level switch, group switch or search).
 let observer: IntersectionObserver | null = null
 const setupObserver = async () => {
   await nextTick()
+  updateNavHeight()
   observer?.disconnect()
   observer = new IntersectionObserver(
     (entries) => {
@@ -66,7 +91,7 @@ const setupObserver = async () => {
         .sort((a, b) => b.intersectionRatio - a.intersectionRatio)
       if (visible[0]) activeId.value = visible[0].target.id
     },
-    { rootMargin: '-168px 0px -55% 0px', threshold: [0.1, 0.25, 0.5] },
+    { rootMargin: `-${navHeight.value + 8}px 0px -55% 0px`, threshold: [0.1, 0.25, 0.5] },
   )
   filteredCategories.value.forEach((cat) => {
     const el = document.getElementById(cat.id)
@@ -74,9 +99,27 @@ const setupObserver = async () => {
   })
 }
 
-onMounted(setupObserver)
+// Keep the active section valid if sections change in the admin.
+watch(
+  () => store.levels,
+  (lv) => {
+    if (!lv.find((l) => l.id === activeLevel.value)) {
+      activeLevel.value = lv[0]?.id ?? ''
+      activeId.value = levelCategories.value[0]?.id ?? ''
+    }
+  },
+  { deep: true },
+)
+
+onMounted(() => {
+  setupObserver()
+  window.addEventListener('resize', updateNavHeight)
+})
 watch(filteredCategories, setupObserver, { flush: 'post' })
-onBeforeUnmount(() => observer?.disconnect())
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  window.removeEventListener('resize', updateNavHeight)
+})
 </script>
 
 <template>
@@ -87,15 +130,19 @@ onBeforeUnmount(() => observer?.disconnect())
       :categories="levelCategories"
       :active-id="activeId"
       :active-level="activeLevel"
+      :active-group="activeGroup"
       v-model:search="search"
       @select="scrollToCategory"
       @select-level="selectLevel"
+      @select-group="selectGroup"
     />
 
     <main class="relative mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-5 sm:pt-10">
-      <!-- Subtle corner decorations -->
-      <DecorSprig class="pointer-events-none absolute right-2 top-24 hidden h-28 w-28 rotate-12 text-herb opacity-[0.06] md:block" />
-      <DecorSprig class="pointer-events-none absolute -left-2 bottom-24 hidden h-28 w-28 -rotate-12 scale-x-[-1] text-herb opacity-[0.06] md:block" />
+      <!-- Subtle decorative Armenian food elements (wheat + herbs) -->
+      <IconWheat class="pointer-events-none absolute right-1 top-20 hidden h-28 w-28 rotate-12 text-caramel opacity-[0.07] lg:block" />
+      <DecorSprig class="pointer-events-none absolute -left-3 top-1/3 hidden h-28 w-28 -rotate-12 scale-x-[-1] text-herb opacity-[0.07] lg:block" />
+      <IconWheat class="pointer-events-none absolute -left-2 bottom-24 hidden h-24 w-24 -rotate-[20deg] scale-x-[-1] text-caramel opacity-[0.06] lg:block" />
+      <DecorSprig class="pointer-events-none absolute right-2 bottom-1/3 hidden h-24 w-24 rotate-12 text-herb opacity-[0.06] lg:block" />
 
       <div v-if="hasResults" class="flex flex-col gap-10 sm:gap-14">
         <MenuSection
@@ -113,20 +160,28 @@ onBeforeUnmount(() => observer?.disconnect())
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-caramel/20 bg-card/60">
-      <div class="mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-8 text-center">
-        <p class="font-display text-lg font-semibold uppercase tracking-[0.18em] text-brown">
+    <footer class="relative overflow-hidden border-t border-caramel/25 bg-card/70">
+      <IconWheat class="pointer-events-none absolute -left-2 bottom-0 h-24 w-24 -rotate-12 text-caramel opacity-10" />
+      <IconWheat class="pointer-events-none absolute -right-2 bottom-0 h-24 w-24 rotate-12 scale-x-[-1] text-caramel opacity-10" />
+      <div class="relative mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-9 text-center">
+        <p class="font-display text-xl font-bold uppercase tracking-[0.2em] text-brown">
           TUN LAHMAJO
         </p>
         <div class="flex items-center gap-3" aria-hidden="true">
-          <span class="h-px w-8 bg-caramel/50" />
+          <span class="h-px w-8 bg-caramel/60" />
           <span class="h-1.5 w-1.5 rotate-45 bg-caramel" />
-          <span class="h-px w-8 bg-caramel/50" />
+          <span class="h-px w-8 bg-caramel/60" />
         </div>
         <p class="font-serif text-base italic text-brown-soft">{{ t(ui.footerNote) }}</p>
         <p class="font-serif text-sm text-brown/70">
-          {{ t(ui.city) }} · {{ t(ui.hours) }}
+          {{ t(ui.address) }} · {{ t(ui.hours) }}
         </p>
+        <NuxtLink
+          to="/admin"
+          class="mt-1 font-serif text-xs uppercase tracking-widest text-brown/40 transition-colors hover:text-caramel"
+        >
+          Admin
+        </NuxtLink>
       </div>
     </footer>
 

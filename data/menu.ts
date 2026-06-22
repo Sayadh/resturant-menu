@@ -2,7 +2,10 @@ export type Lang = 'AM' | 'EN' | 'RU'
 
 export type BadgeKey = 'hit' | 'best' | 'new'
 
-export type MenuLevelId = 'food' | 'drinks' | 'alcohol'
+export type MenuLevelId = 'food' | 'drinks'
+
+/** Sub-grouping used only inside the Drinks level. */
+export type DrinkGroup = 'soft' | 'alcohol'
 
 export interface LocalizedText {
   AM: string
@@ -22,6 +25,8 @@ export interface MenuItem {
 export interface MenuCategory {
   id: string
   level: MenuLevelId
+  /** Required for drinks categories: marks alcoholic vs non-alcoholic. */
+  group?: DrinkGroup
   icon: string
   title: LocalizedText
   items: MenuItem[]
@@ -29,6 +34,12 @@ export interface MenuCategory {
 
 export interface MenuLevel {
   id: MenuLevelId
+  icon: string
+  title: LocalizedText
+}
+
+export interface DrinkGroupInfo {
+  id: DrinkGroup
   icon: string
   title: LocalizedText
 }
@@ -55,7 +66,20 @@ export const ui = {
     RU: '«Традиционные армянские вкусы»',
   },
   city: { AM: 'Երևան', EN: 'Yerevan', RU: 'Ереван' },
+  address: {
+    AM: 'Աբովյան 12, Երևան',
+    EN: '12 Abovyan St, Yerevan',
+    RU: 'ул. Абовян 12, Ереван',
+  },
   hours: { AM: '09:00 – 23:00', EN: '09:00 – 23:00', RU: '09:00 – 23:00' },
+  openNow: { AM: 'Բաց է հիմա', EN: 'Open now', RU: 'Открыто' },
+  rating: '4.9',
+  reviews: {
+    AM: '320 կարծիք',
+    EN: '320 reviews',
+    RU: '320 отзывов',
+  },
+  dishCount: { AM: 'ուտեստ', EN: 'items', RU: 'блюд' },
   searchPlaceholder: {
     AM: 'Որոնել ուտեստ',
     EN: 'Search a dish',
@@ -77,17 +101,21 @@ export const ui = {
 export const levels: MenuLevel[] = [
   { id: 'food', icon: '🍽', title: { AM: 'Ուտեստներ', EN: 'Food', RU: 'Еда' } },
   { id: 'drinks', icon: '🥤', title: { AM: 'Ըմպելիքներ', EN: 'Drinks', RU: 'Напитки' } },
-  { id: 'alcohol', icon: '🍷', title: { AM: 'Ալկոհոլ', EN: 'Alcohol', RU: 'Алкоголь' } },
 ]
 
-/**
- * External food/drink photo helper (loremflickr).
- * `lock` returns a stable image per URL so the layout stays consistent
- * across reloads. Items with a curated local photo use /images/*.png instead.
- */
-let imgSeed = 0
-const img = (tags: string): string =>
-  `https://loremflickr.com/640/480/${encodeURIComponent(tags)}?lock=${++imgSeed}`
+/** Second-level toggle inside the Drinks section. */
+export const drinkGroups: DrinkGroupInfo[] = [
+  { id: 'soft', icon: '🧃', title: { AM: 'Ոչ ալկոհոլային', EN: 'Non-Alcoholic', RU: 'Безалкогольные' } },
+  { id: 'alcohol', icon: '🍷', title: { AM: 'Ալկոհոլային', EN: 'Alcoholic', RU: 'Алкогольные' } },
+]
+
+// Images: items with a curated local photo use /images/*.png. For everything
+// else we intentionally return '' — the card then renders a reliable, on-brand
+// category tile (icon on a warm gradient) instead of an unreliable random remote
+// photo that may not load or may not match the dish. To use a real photo for an
+// item, drop a file in /public/images and set `image: '/images/<name>.png'`.
+// The `tags` argument is ignored on purpose (kept so item definitions are stable).
+const img = (_tags: string): string => ''
 
 export const menu: MenuCategory[] = [
   // ════════════════════════════ FOOD ════════════════════════════
@@ -122,7 +150,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'dzvatzegh-panrov',
-        image: img('omelette,cheese'),
+        image: '',
         price: 2200,
         name: { AM: 'Ձվածեղ պանրով', EN: 'Cheese Omelette', RU: 'Омлет с сыром' },
         description: {
@@ -713,6 +741,7 @@ export const menu: MenuCategory[] = [
   {
     id: 'soft-drinks',
     level: 'drinks',
+    group: 'soft',
     icon: '🥤',
     title: { AM: 'Զովացուցիչ ըմպելիքներ', EN: 'Soft Drinks', RU: 'Безалкогольные напитки' },
     items: [
@@ -776,6 +805,7 @@ export const menu: MenuCategory[] = [
   {
     id: 'homemade-drinks',
     level: 'drinks',
+    group: 'soft',
     icon: '🍋',
     title: { AM: 'Տնական ըմպելիքներ', EN: 'Homemade Drinks', RU: 'Домашние напитки' },
     items: [
@@ -840,6 +870,7 @@ export const menu: MenuCategory[] = [
   {
     id: 'coffee',
     level: 'drinks',
+    group: 'soft',
     icon: '☕',
     title: { AM: 'Սուրճ', EN: 'Coffee', RU: 'Кофе' },
     items: [
@@ -907,6 +938,7 @@ export const menu: MenuCategory[] = [
   {
     id: 'tea',
     level: 'drinks',
+    group: 'soft',
     icon: '🍵',
     title: { AM: 'Թեյ', EN: 'Tea', RU: 'Чай' },
     items: [
@@ -959,6 +991,7 @@ export const menu: MenuCategory[] = [
   {
     id: 'fresh-juices',
     level: 'drinks',
+    group: 'soft',
     icon: '🧃',
     title: { AM: 'Թարմ քամած հյութեր', EN: 'Fresh Juices', RU: 'Свежевыжатые соки' },
     items: [
@@ -1011,6 +1044,7 @@ export const menu: MenuCategory[] = [
   {
     id: 'non-alcoholic-cocktails',
     level: 'drinks',
+    group: 'soft',
     icon: '🍹',
     title: { AM: 'Անալկոհոլ կոկտեյլներ', EN: 'Non-Alcoholic Cocktails', RU: 'Безалкогольные коктейли' },
     items: [
@@ -1065,7 +1099,8 @@ export const menu: MenuCategory[] = [
   // ════════════════════════════ ALCOHOL ════════════════════════════
   {
     id: 'beer',
-    level: 'alcohol',
+    level: 'drinks',
+    group: 'alcohol',
     icon: '🍺',
     title: { AM: 'Գարեջուր', EN: 'Beer', RU: 'Пиво' },
     items: [
@@ -1114,7 +1149,8 @@ export const menu: MenuCategory[] = [
   },
   {
     id: 'wine',
-    level: 'alcohol',
+    level: 'drinks',
+    group: 'alcohol',
     icon: '🍷',
     title: { AM: 'Գինի', EN: 'Wine', RU: 'Вино' },
     items: [
@@ -1167,7 +1203,8 @@ export const menu: MenuCategory[] = [
   },
   {
     id: 'cognac',
-    level: 'alcohol',
+    level: 'drinks',
+    group: 'alcohol',
     icon: '🥃',
     title: { AM: 'Կոնյակ', EN: 'Cognac', RU: 'Коньяк' },
     items: [
@@ -1197,7 +1234,8 @@ export const menu: MenuCategory[] = [
   },
   {
     id: 'whiskey',
-    level: 'alcohol',
+    level: 'drinks',
+    group: 'alcohol',
     icon: '🥃',
     title: { AM: 'Վիսկի', EN: 'Whiskey', RU: 'Виски' },
     items: [
@@ -1238,7 +1276,8 @@ export const menu: MenuCategory[] = [
   },
   {
     id: 'vodka',
-    level: 'alcohol',
+    level: 'drinks',
+    group: 'alcohol',
     icon: '🍸',
     title: { AM: 'Օղի', EN: 'Vodka', RU: 'Водка' },
     items: [
@@ -1279,7 +1318,8 @@ export const menu: MenuCategory[] = [
   },
   {
     id: 'gin',
-    level: 'alcohol',
+    level: 'drinks',
+    group: 'alcohol',
     icon: '🍸',
     title: { AM: 'Ջին', EN: 'Gin', RU: 'Джин' },
     items: [
@@ -1305,7 +1345,8 @@ export const menu: MenuCategory[] = [
   },
   {
     id: 'tequila',
-    level: 'alcohol',
+    level: 'drinks',
+    group: 'alcohol',
     icon: '🥃',
     title: { AM: 'Տեկիլա', EN: 'Tequila', RU: 'Текила' },
     items: [
@@ -1335,7 +1376,8 @@ export const menu: MenuCategory[] = [
   },
   {
     id: 'liqueurs',
-    level: 'alcohol',
+    level: 'drinks',
+    group: 'alcohol',
     icon: '🍶',
     title: { AM: 'Լիկյորներ', EN: 'Liqueurs', RU: 'Ликёры' },
     items: [
@@ -1387,7 +1429,8 @@ export const menu: MenuCategory[] = [
   },
   {
     id: 'alcoholic-cocktails',
-    level: 'alcohol',
+    level: 'drinks',
+    group: 'alcohol',
     icon: '🍹',
     title: { AM: 'Ալկոհոլային կոկտեյլներ', EN: 'Alcoholic Cocktails', RU: 'Алкогольные коктейли' },
     items: [

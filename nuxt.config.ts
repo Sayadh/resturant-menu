@@ -20,7 +20,7 @@ export default defineNuxtConfig({
           content:
             'TUN LAHMAJO — ավանդական հայկական ճաշարան Երևանում: Թարմ բաղադրիչներ, տնական համեր և ջերմ հյուրընկալություն:',
         },
-        { name: 'theme-color', content: '#F7F2E8' },
+        { name: 'theme-color', content: '#F5EFE2' },
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
