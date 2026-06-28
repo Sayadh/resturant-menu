@@ -12,9 +12,15 @@ export interface DesignMeta {
 // pages/index.vue's `registry` to make it selectable.
 export const designs: DesignMeta[] = [
   {
+    id: 'aria',
+    name: 'Արիա',
+    description: 'Մոդեռն, պրեմիում, պատվերով',
+    accent: '#3E2723',
+  },
+  {
     id: 'heritage',
     name: 'Ժառանգություն',
-    description: 'Տաք, ավանդական, պրեմիում',
+    description: 'Տաք, ավանդական, դասական',
     accent: '#C69A5A',
   },
 ]

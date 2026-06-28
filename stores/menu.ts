@@ -76,6 +76,15 @@ export const useMenuStore = defineStore('menu', () => {
 
   const categoryById = (id: string) => categories.value.find((c) => c.id === id)
 
+  // Find a product (and its category) anywhere in the menu — used by the order/cart.
+  const findItem = (itemId: string) => {
+    for (const c of categories.value) {
+      const item = c.items.find((i) => i.id === itemId)
+      if (item) return { item, category: c }
+    }
+    return undefined
+  }
+
   // ── section (level) CRUD ─────────────────────────────────────
   const addLevel = (input: { icon: string; title: LocalizedText }) => {
     levels.value.push({ id: uid('lvl'), icon: input.icon, title: { ...input.title } })
@@ -165,6 +174,7 @@ export const useMenuStore = defineStore('menu', () => {
     categories,
     categoriesOf,
     categoryById,
+    findItem,
     addLevel,
     updateLevel,
     removeLevel,

@@ -91,6 +91,20 @@ export const ui = {
     RU: 'Блюда не найдены',
   },
   currency: { AM: '֏', EN: '֏', RU: '֏' },
+  order: { AM: 'Իմ պատվերը', EN: 'My order', RU: 'Мой заказ' },
+  orderEmpty: {
+    AM: 'Պատվերը դատարկ է',
+    EN: 'Your order is empty',
+    RU: 'Заказ пуст',
+  },
+  total: { AM: 'Ընդամենը', EN: 'Total', RU: 'Итого' },
+  clearOrder: { AM: 'Մաքրել', EN: 'Clear', RU: 'Очистить' },
+  showWaiter: {
+    AM: 'Ցույց տալ մատուցողին',
+    EN: 'Show to waiter',
+    RU: 'Показать официанту',
+  },
+  viewOrder: { AM: 'Պատվեր', EN: 'Order', RU: 'Заказ' },
   footerNote: {
     AM: 'Պատրաստված է սիրով և ավանդույթով',
     EN: 'Made with love and tradition',

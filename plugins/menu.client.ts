@@ -3,4 +3,5 @@
 export default defineNuxtPlugin(() => {
   useMenuStore().load()
   useDesign().load()
+  useOrderStore().load()
 })
