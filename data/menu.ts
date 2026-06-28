@@ -80,6 +80,7 @@ export const ui = {
     RU: '320 отзывов',
   },
   dishCount: { AM: 'ուտեստ', EN: 'items', RU: 'блюд' },
+  soldOut: { AM: 'Սպառված է', EN: 'Sold out', RU: 'Распродано' },
   searchPlaceholder: {
     AM: 'Որոնել ուտեստ',
     EN: 'Search a dish',
