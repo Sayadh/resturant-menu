@@ -3,15 +3,25 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Restaurant theme palette (overridable per restaurant) */
+    --c-bg: #f5efe2;
+    --c-card: #fff9ef;
+    --c-brown: #3e2723;
+    --c-caramel: #c69a5a;
+    --c-herb: #6f8b4a;
+    --c-border: #e4d6c2;
+  }
+
   html {
-    background-color: #f7f2e8;
+    background-color: var(--c-bg);
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    background-color: #f7f2e8;
-    color: #5a3923;
+    background-color: var(--c-bg);
+    color: var(--c-brown);
     font-family: "Cormorant Garamond", "Noto Serif Armenian", Georgia, serif;
     /* Almost invisible parchment / paper grain for warmth */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
@@ -20,12 +30,20 @@
   /* Smooth offset so sticky nav doesn't cover anchored sections */
   :target,
   section[id] {
-    scroll-margin-top: 132px;
+    scroll-margin-top: 150px;
   }
 }
 
 @layer components {
   .font-display {
-    font-family: Cinzel, Georgia, serif;
+    font-family: Cinzel, "Noto Serif Armenian", Georgia, serif;
+  }
+
+  /* Hide scrollbar utility for horizontal nav rows */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }

@@ -11,30 +11,38 @@ export default <Partial<Config>>{
   theme: {
     extend: {
       colors: {
-        cream: '#F7F2E8',
-        card: '#FBF8F1',
+        // Driven by RestaurantConfig.theme — kept in sync via CSS variables.
+        cream: 'var(--c-bg)',
+        card: 'var(--c-card)',
+        border: 'var(--c-border)',
         brown: {
-          DEFAULT: '#5A3923',
-          light: '#7A5238',
+          DEFAULT: 'var(--c-brown)',
+          light: '#6B4A38',
           soft: '#8B6B52',
         },
         caramel: {
-          DEFAULT: '#B98552',
-          light: '#D2A877',
-          dark: '#A06E3F',
+          DEFAULT: 'var(--c-caramel)',
+          light: '#DBB682',
+          dark: '#A87B3F',
         },
-        herb: '#6F8B4A',
+        herb: {
+          DEFAULT: 'var(--c-herb)',
+          dark: '#5A7339',
+        },
       },
       fontFamily: {
         serif: ['"Cormorant Garamond"', '"Noto Serif Armenian"', 'Georgia', 'serif'],
         display: ['Cinzel', '"Noto Serif Armenian"', 'Georgia', 'serif'],
       },
       borderRadius: {
-        card: '20px',
+        card: '22px',
+        pill: '999px',
       },
       boxShadow: {
-        card: '0 6px 20px -8px rgba(90, 57, 35, 0.18)',
-        'card-hover': '0 18px 36px -12px rgba(90, 57, 35, 0.30)',
+        card: '0 8px 24px -10px rgba(62, 39, 35, 0.20)',
+        'card-hover': '0 22px 44px -14px rgba(62, 39, 35, 0.34)',
+        pill: '0 6px 16px -6px rgba(198, 154, 90, 0.55)',
+        panel: '0 -10px 40px -12px rgba(62, 39, 35, 0.28)',
       },
     },
   },
