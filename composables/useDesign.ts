@@ -18,6 +18,12 @@ export const designs: DesignMeta[] = [
     accent: '#3E2723',
   },
   {
+    id: 'atelier',
+    name: 'Ատելիե',
+    description: 'Խմբագրական, նրբագեղ, ֆայն-դայնինգ',
+    accent: '#A1502E',
+  },
+  {
     id: 'heritage',
     name: 'Ժառանգություն',
     description: 'Տաք, ավանդական, դասական',
