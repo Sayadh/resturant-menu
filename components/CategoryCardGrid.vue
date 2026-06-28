@@ -33,11 +33,11 @@ const { t } = useLanguage()
         <CategoryIcon :id="cat.id" class="h-5 w-5" />
       </span>
 
-      <div class="relative p-4">
-        <h3 class="font-display text-base font-bold uppercase leading-tight tracking-wide text-cream drop-shadow sm:text-lg">
+      <div class="relative flex flex-col px-3.5 pb-3.5 pt-3">
+        <h3 class="line-clamp-2 font-display text-sm font-bold uppercase leading-tight tracking-wide text-cream drop-shadow sm:text-base">
           {{ t(cat.title) }}
         </h3>
-        <p class="mt-1 font-serif text-sm text-cream/80">
+        <p class="mt-0.5 pb-0.5 font-serif text-xs leading-relaxed text-cream/80 sm:text-sm">
           {{ cat.items.length }} {{ t(ui.itemsCount) }}
         </p>
       </div>
