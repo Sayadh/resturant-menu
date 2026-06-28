@@ -1,0 +1,213 @@
+/* ───────────────────────────────────────────────────────────────────────
+   Maison theme — global styles
+   Everything is scoped under `.maison-theme` so it never leaks into Aria,
+   Atelier, Heritage, or the admin. Imported from layouts/MaisonExperience.vue.
+
+   Design language: luxury lifestyle / food magazine.
+   Ivory + chocolate + soft gold. Generous whitespace, quiet motion.
+   ─────────────────────────────────────────────────────────────────────── */
+
+.maison-theme {
+  --ms-ivory: #f4eee2;
+  --ms-warm-white: #fbf8f1;
+  --ms-chocolate: #241b14;
+  --ms-espresso: #3b2c20;
+  --ms-gold: #b08a4f;
+  --ms-gold-soft: #c9ac7c;
+  --ms-olive: #6e6b4b;
+  --ms-warm-gray: #8c8276;
+  --ms-line: #dfd5c4;
+
+  background-color: var(--ms-ivory);
+  color: var(--ms-chocolate);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Editorial eyebrow — widely letter-spaced uppercase. */
+.ms-eyebrow {
+  letter-spacing: 0.46em;
+  text-transform: uppercase;
+}
+.ms-eyebrow-sm {
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+/* Thin gold rule used to separate chapters. */
+.ms-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--ms-gold) 75%, transparent),
+    transparent
+  );
+}
+
+/* Hide scrollbars on horizontal rails. */
+.ms-scroll {
+  scrollbar-width: none;
+}
+.ms-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Gold gradient text for select display numerals. */
+.ms-gold-text {
+  background: linear-gradient(135deg, var(--ms-gold-soft), var(--ms-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Slow Ken-Burns drift for hero / chapter imagery. */
+@keyframes ms-kenburns {
+  0% {
+    transform: scale(1.08) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.16) translate3d(0, -2%, 0);
+  }
+}
+.maison-theme .ms-kenburns {
+  animation: ms-kenburns 18s ease-in-out infinite alternate;
+}
+
+/* ── Scroll reveal (driven by v-reveal directive) ───────────────────────── */
+.maison-theme .ms-reveal {
+  opacity: 0;
+  transform: translateY(var(--ms-reveal-y, 28px));
+  transition:
+    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--ms-reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.maison-theme .ms-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Image-reveal: a clip that lifts to unveil the photo. */
+.maison-theme .ms-img-reveal {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--ms-reveal-delay, 0ms);
+}
+.maison-theme .ms-img-reveal.is-in {
+  clip-path: inset(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .maison-theme .ms-reveal,
+  .maison-theme .ms-img-reveal {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+    transition: none;
+  }
+  .maison-theme .ms-kenburns {
+    animation: none;
+  }
+}
+
+/* Soft pulse for the "open now" marker + scroll cue. */
+@keyframes ms-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+.maison-theme .ms-pulse {
+  animation: ms-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes ms-bob {
+  0%, 100% { transform: translateY(0); opacity: 0.85; }
+  50% { transform: translateY(7px); opacity: 0.35; }
+}
+.maison-theme .ms-bob {
+  animation: ms-bob 2.4s ease-in-out infinite;
+}
+
+/* Shimmer for loading skeletons. */
+@keyframes ms-shimmer {
+  100% { transform: translateX(100%); }
+}
+.maison-theme .ms-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--ms-chocolate) 6%, var(--ms-warm-white));
+}
+.maison-theme .ms-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, #ffffff 60%, transparent),
+    transparent
+  );
+  animation: ms-shimmer 1.7s ease-in-out infinite;
+}
+
+/* ── Named transitions (keys from animations/index.ts) ──────────────────── */
+.ms-fade-enter-active,
+.ms-fade-leave-active {
+  transition: opacity 0.45s ease;
+}
+.ms-fade-enter-from,
+.ms-fade-leave-to {
+  opacity: 0;
+}
+
+/* Welcome veil lifts away upward. */
+.ms-veil-leave-active {
+  transition:
+    transform 1s cubic-bezier(0.76, 0, 0.24, 1),
+    opacity 0.8s ease;
+}
+.ms-veil-leave-to {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.ms-drawer-enter-active,
+.ms-drawer-leave-active {
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ms-drawer-enter-from,
+.ms-drawer-leave-to {
+  transform: translateX(100%);
+}
+@media (max-width: 640px) {
+  .ms-drawer-enter-from,
+  .ms-drawer-leave-to {
+    transform: translateY(100%);
+  }
+}
+
+.ms-dock-enter-active,
+.ms-dock-leave-active {
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease;
+}
+.ms-dock-enter-from,
+.ms-dock-leave-to {
+  transform: translateY(180%);
+  opacity: 0;
+}
+
+.ms-modal-enter-active,
+.ms-modal-leave-active {
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease;
+}
+.ms-modal-enter-from,
+.ms-modal-leave-to {
+  transform: translateY(-18px);
+  opacity: 0;
+}

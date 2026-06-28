@@ -5,12 +5,17 @@
 import type { Component } from 'vue'
 import DesignHeritage from '~/components/DesignHeritage.vue'
 import DesignAria from '~/components/DesignAria.vue'
+import AtelierMenu from '~/themes/atelier/layouts/AtelierMenu.vue'
+import MaisonExperience from '~/themes/maison/layouts/MaisonExperience.vue'
 
 // Registry: map a design id → its root component.
-// To add a design: create components/DesignX.vue, import it here, add it to the
-// map, and add its metadata to composables/useDesign.ts.
+// To add a design: create its root component, import it here, add it to the
+// map, and add its metadata to composables/useDesign.ts. Themes can live in
+// their own self-contained folder (e.g. themes/atelier/) or in components/.
 const registry: Record<string, Component> = {
   aria: DesignAria,
+  atelier: AtelierMenu,
+  maison: MaisonExperience,
   heritage: DesignHeritage,
 }
 

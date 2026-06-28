@@ -1,0 +1,172 @@
+/* ───────────────────────────────────────────────────────────────────────
+   Atelier theme — global styles
+   Everything is scoped under `.atelier-theme` so it never leaks into Aria,
+   Heritage, or the admin. Imported from layouts/AtelierMenu.vue.
+   ─────────────────────────────────────────────────────────────────────── */
+
+.atelier-theme {
+  --atl-ink: #16130f;
+  --atl-bone: #eae3d6;
+  --atl-paper: #f6f2ea;
+  --atl-clay: #a1502e;
+  --atl-line: #d4c9b8;
+  --atl-muted: #857b6c;
+
+  background-color: var(--atl-bone);
+  color: var(--atl-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Fine paper grain over the whole experience — barely perceptible. */
+.atl-grain::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Hairline letter-spaced editorial eyebrow. */
+.atl-eyebrow {
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+
+/* Dotted leader between a dish name and its price (printed-menu feel). */
+.atl-leader {
+  flex: 1 1 auto;
+  margin: 0 0.6rem;
+  align-self: flex-end;
+  border-bottom: 1px dotted color-mix(in srgb, var(--atl-ink) 32%, transparent);
+  transform: translateY(-0.28em);
+}
+
+/* Thin hidden scrollbars for the horizontal rails. */
+.atl-scroll {
+  scrollbar-width: none;
+}
+.atl-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Drop-cap style numeral for section indices. */
+.atl-numeral {
+  font-feature-settings: 'lnum' 1;
+  line-height: 0.8;
+}
+
+/* ── Scroll reveal (driven by v-reveal directive) ───────────────────────── */
+.atelier-theme .atl-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--atl-reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.atelier-theme .atl-reveal.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier-theme .atl-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Soft pulse for the "open now" marker ───────────────────────────────── */
+@keyframes atl-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.7); }
+}
+.atelier-theme .atl-pulse {
+  animation: atl-pulse 2.4s ease-in-out infinite;
+}
+
+/* ── Shimmer for loading skeletons ──────────────────────────────────────── */
+@keyframes atl-shimmer {
+  100% { transform: translateX(100%); }
+}
+.atelier-theme .atl-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--atl-ink) 7%, var(--atl-paper));
+}
+.atelier-theme .atl-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, #ffffff 55%, transparent),
+    transparent
+  );
+  animation: atl-shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Named transitions (keys from animations.ts) ────────────────────────── */
+.atl-fade-enter-active,
+.atl-fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+.atl-fade-enter-from,
+.atl-fade-leave-to {
+  opacity: 0;
+}
+
+.atl-drawer-enter-active,
+.atl-drawer-leave-active {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.atl-drawer-enter-from,
+.atl-drawer-leave-to {
+  transform: translateX(100%);
+}
+@media (max-width: 640px) {
+  .atl-drawer-enter-from,
+  .atl-drawer-leave-to {
+    transform: translateY(100%);
+  }
+}
+
+.atl-dock-enter-active,
+.atl-dock-leave-active {
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease;
+}
+.atl-dock-enter-from,
+.atl-dock-leave-to {
+  transform: translateY(160%);
+  opacity: 0;
+}
+
+.atl-modal-enter-active,
+.atl-modal-leave-active {
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease;
+}
+.atl-modal-enter-from,
+.atl-modal-leave-to {
+  transform: translateY(28px) scale(0.985);
+  opacity: 0;
+}
+
+.atl-section-enter-active {
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.atl-section-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+}
