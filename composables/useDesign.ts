@@ -24,6 +24,12 @@ export const designs: DesignMeta[] = [
     accent: '#A1502E',
   },
   {
+    id: 'maison',
+    name: 'Մեզոն',
+    description: 'Լյուքս, իմերսիվ, ամսագրային',
+    accent: '#B08A4F',
+  },
+  {
     id: 'heritage',
     name: 'Ժառանգություն',
     description: 'Տաք, ավանդական, դասական',

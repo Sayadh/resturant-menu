@@ -6,6 +6,7 @@ import type { Component } from 'vue'
 import DesignHeritage from '~/components/DesignHeritage.vue'
 import DesignAria from '~/components/DesignAria.vue'
 import AtelierMenu from '~/themes/atelier/layouts/AtelierMenu.vue'
+import MaisonExperience from '~/themes/maison/layouts/MaisonExperience.vue'
 
 // Registry: map a design id → its root component.
 // To add a design: create its root component, import it here, add it to the
@@ -14,6 +15,7 @@ import AtelierMenu from '~/themes/atelier/layouts/AtelierMenu.vue'
 const registry: Record<string, Component> = {
   aria: DesignAria,
   atelier: AtelierMenu,
+  maison: MaisonExperience,
   heritage: DesignHeritage,
 }
 
