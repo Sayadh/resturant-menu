@@ -25,7 +25,7 @@ const { t } = useLanguage()
       :aria-pressed="activeGroup === group.id"
       @click="emit('select', group.id)"
     >
-      <span class="text-lg leading-none" aria-hidden="true">{{ group.icon }}</span>
+      <CategoryIcon :id="group.id" class="h-5 w-5 shrink-0" />
       <span>{{ t(group.title) }}</span>
     </button>
   </div>

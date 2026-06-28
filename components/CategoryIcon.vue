@@ -11,6 +11,25 @@ defineProps<{ id: string }>()
       <path d="M18 13h3.5" />
     </template>
 
+    <!-- Group: Food (fork & knife) -->
+    <template v-else-if="id === 'food'">
+      <path d="M8 3v8m0 0v10M6 3v5a2 2 0 0 0 4 0V3" />
+      <path d="M16 3c-1.5 0-2.5 2-2.5 5.5 0 2 1 2.8 2 3V21" />
+    </template>
+
+    <!-- Group: Drinks (glass with straw) -->
+    <template v-else-if="id === 'drinks'">
+      <path d="M7 7h10l-1 13H8L7 7Z" />
+      <path d="M6.5 7h11" />
+      <path d="M14 3.5 12.5 7" />
+    </template>
+
+    <!-- Group: Alcohol (wine glass) -->
+    <template v-else-if="id === 'alcohol'">
+      <path d="M7 3h10c0 5-2 7.5-5 7.5S7 8 7 3Z" />
+      <path d="M12 10.5V19M8.5 19h7" />
+    </template>
+
     <!-- Salads: leaf -->
     <template v-else-if="id === 'salads'">
       <path d="M19 5C11 5 5 9 5 16c0 1.5.4 2.6.4 2.6S10 19 14 16s5-7 5-11Z" />

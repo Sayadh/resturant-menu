@@ -18,6 +18,15 @@ watch(open, (val) => {
   if (typeof document !== 'undefined') document.body.style.overflow = val ? 'hidden' : ''
 })
 
+const onKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape' && open.value) close()
+}
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeydown)
+  if (typeof document !== 'undefined') document.body.style.overflow = ''
+})
+
 // Auto-close panel when the order becomes empty.
 watch(count, (c) => {
   if (c === 0) close()

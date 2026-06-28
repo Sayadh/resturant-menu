@@ -27,10 +27,10 @@ const { t } = useLanguage()
 
       <!-- Icon badge -->
       <span
-        class="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-cream/90 text-base shadow-sm"
+        class="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-cream/90 text-brown shadow-sm"
         aria-hidden="true"
       >
-        {{ cat.icon }}
+        <CategoryIcon :id="cat.id" class="h-5 w-5" />
       </span>
 
       <div class="relative p-4">
