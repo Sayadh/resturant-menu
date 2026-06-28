@@ -150,7 +150,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'dzvatzegh-panrov',
-        image: '',
+        image: 'https://dyj6gt4964deb.cloudfront.net/images/9419c573-4af6-4c18-959c-1587b55c6f6a.jpeg',
         price: 2200,
         name: { AM: 'Ձվածեղ պանրով', EN: 'Cheese Omelette', RU: 'Омлет с сыром' },
         description: {
@@ -170,29 +170,7 @@ export const menu: MenuCategory[] = [
           RU: 'Яйца в пряном томатном соусе',
         },
         badge: 'hit',
-      },
-      {
-        id: 'nakhachashi-havaqatsu',
-        image: img('breakfast,platter'),
-        price: 4500,
-        name: { AM: 'Նախաճաշի հավաքածու', EN: 'Breakfast Set', RU: 'Завтрак-сет' },
-        description: {
-          AM: 'Պանիր, կարագ, մուրաբա, ձու, հաց',
-          EN: 'Cheese, butter, jam, eggs and bread',
-          RU: 'Сыр, масло, варенье, яйца и хлеб',
-        },
-      },
-      {
-        id: 'basturmayov-dzvatzegh',
-        image: img('omelette,bacon'),
-        price: 2800,
-        name: { AM: 'Բաստուրմայով ձվածեղ', EN: 'Basturma Omelette', RU: 'Омлет с бастурмой' },
-        description: {
-          AM: 'Ձվածեղ բաստուրմայով',
-          EN: 'Omelette with basturma',
-          RU: 'Омлет с бастурмой',
-        },
-      },
+      }
     ],
   },
   {
@@ -203,7 +181,7 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'panri-tesakani',
-        image: img('cheese,platter'),
+        image: 'https://buy.am/media/image/be/fd/4d/rena-new-pic03.webp',
         price: 3500,
         name: { AM: 'Պանրի տեսականի', EN: 'Cheese Platter', RU: 'Сырная тарелка' },
         description: {
@@ -215,7 +193,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'ttuneri-tesakani',
-        image: img('pickles'),
+        image: 'https://gatapandok.am/wp-content/uploads/2024/04/haykakan-ttu.png',
         price: 2200,
         name: { AM: 'Թթուների տեսականի', EN: 'Pickles Platter', RU: 'Соленья' },
         description: {
@@ -226,7 +204,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'tarm-kanachi',
-        image: img('fresh,herbs,greens'),
+        image: 'https://buy.am/media/image/06/18/d0/D42A4296k.jpg',
         price: 1500,
         name: { AM: 'Թարմ կանաչի', EN: 'Fresh Herbs', RU: 'Свежая зелень' },
         description: {
@@ -237,7 +215,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'basturma',
-        image: img('cured,meat'),
+        image: 'https://www.sas.am/upload/iblock/69e/%D4%B2%D5%A1%D5%BD%D5%BF%D5%B8%D6%82%D6%80%D5%B4%D5%A1,%20%D5%BD%D5%B8%D6%82%D5%BB%D5%B8%D6%82%D5%AD.png',
         price: 3200,
         name: { AM: 'Բաստուրմա', EN: 'Basturma', RU: 'Бастурма' },
         description: {
@@ -248,7 +226,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'sujukh',
-        image: img('sausage,cured'),
+        image: 'https://i.ytimg.com/vi/hNa3AgfNYF0/maxresdefault.jpg',
         price: 3200,
         name: { AM: 'Սուջուխ', EN: 'Sujukh', RU: 'Суджух' },
         description: {
@@ -301,7 +279,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'amarayin-aghtsan',
-        image: img('vegetable,salad'),
+        image: 'https://genacvale.am/wp-content/uploads/2021/03/Amarayin.webp',
         price: 1800,
         name: { AM: 'Ամառային աղցան', EN: 'Summer Salad', RU: 'Летний салат' },
         description: {
@@ -312,7 +290,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'imam-bayaldi',
-        image: img('eggplant'),
+        image: 'https://static.parma.am/origin/product/1024/14614(1).jpg',
         price: 2200,
         name: { AM: 'Իմամ Բայալդի', EN: 'Imam Bayildi', RU: 'Имам Баялды' },
         description: {
@@ -323,7 +301,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'havov-aghtsan',
-        image: img('chicken,salad'),
+        image: 'https://buy.am/media/image/0a/dd/44/Chicken-salad-plate-Lagonid.webp',
         price: 2600,
         name: { AM: 'Հավով աղցան', EN: 'Chicken Salad', RU: 'Салат с курицей' },
         description: {
@@ -342,7 +320,7 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'spas',
-        image: img('yogurt,soup'),
+        image: 'https://buy.am/media/image/82/9c/0b/Spas-Slavyanka.webp',
         price: 1600,
         name: { AM: 'Սպաս', EN: 'Spas', RU: 'Спас' },
         description: {
@@ -354,28 +332,28 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'vospov-apur',
-        image: img('lentil,soup'),
+        image: 'https://www.xohanoc.info/wp-content/uploads/2017/06/62631970-min.jpg',
         price: 1700,
         name: { AM: 'Ոսպով ապուր', EN: 'Lentil Soup', RU: 'Чечевичный суп' },
         description: { AM: 'Ոսպի ապուր', EN: 'Lentil soup', RU: 'Чечевичный суп' },
       },
       {
         id: 'havov-apur',
-        image: img('chicken,soup'),
+        image: 'https://buy.am/media/image/b6/8f/47/sorriso028.jpg',
         price: 1900,
         name: { AM: 'Հավով ապուր', EN: 'Chicken Soup', RU: 'Куриный суп' },
         description: { AM: 'Հավի ապուր', EN: 'Chicken soup', RU: 'Куриный суп' },
       },
       {
         id: 'borscht',
-        image: img('borscht,soup'),
+        image: 'https://baxadratomser.am/wp-content/uploads/2020/09/%D4%B2%D5%B8%D6%80%D5%B7%D5%B9-%D5%A2%D5%B8%D6%82%D5%AC%D5%B2%D5%A1%D6%80%D5%A1%D5%AF%D5%A1%D5%B6-%D5%BA%D5%B2%D5%BA%D5%A5%D5%B2%D5%B8%D5%BE20.jpg',
         price: 2200,
         name: { AM: 'Բորշչ', EN: 'Borscht', RU: 'Борщ' },
         description: { AM: 'Ճակնդեղով ապուր', EN: 'Beetroot soup', RU: 'Свекольный суп' },
       },
       {
         id: 'lobu-apur',
-        image: img('bean,soup'),
+        image: 'https://i.ytimg.com/vi/O7cUFcDR2Ao/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCP2PbkHb8iXSPnD8jZGzYEbk8NVQ',
         price: 1800,
         name: { AM: 'Լոբու ապուր', EN: 'Bean Soup', RU: 'Фасолевый суп' },
         description: { AM: 'Լոբու ապուր', EN: 'Bean soup', RU: 'Фасолевый суп' },
@@ -402,7 +380,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'panrov-lahmajo',
-        image: img('lahmacun,cheese'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjVG8Sutsm7qHxeFYB0B-laHQnu8HDfsRLUg&s',
         price: 1500,
         name: { AM: 'Պանրով լահմաջո', EN: 'Lahmajo with Cheese', RU: 'Лахмаджо с сыром' },
         description: {
@@ -413,7 +391,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'ajarakan-khachapuri',
-        image: img('khachapuri'),
+        image: 'https://i.ytimg.com/vi/djgiMvl_hHw/maxresdefault.jpg',
         price: 3500,
         name: { AM: 'Աջարական խաչապուրի', EN: 'Adjarian Khachapuri', RU: 'Аджарский хачапури' },
         description: {
@@ -425,7 +403,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'imerakan-khachapuri',
-        image: img('khachapuri,bread'),
+        image: 'https://aragilrestaurant.am/wp-content/uploads/2021/05/imeruli.jpg',
         price: 3200,
         name: { AM: 'Իմերական խաչապուրի', EN: 'Imeretian Khachapuri', RU: 'Имеретинский хачапури' },
         description: {
@@ -436,7 +414,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'tolma',
-        image: img('dolma'),
+        image: 'https://qmarikhovsepyanc.home.blog/wp-content/uploads/2020/11/3e6640e0659fe060f4e23d4028be020c3771638686318473521.jpg?w=735',
         price: 3800,
         name: { AM: 'Տոլմա', EN: 'Tolma', RU: 'Толма' },
         description: {
@@ -447,7 +425,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'khashlama',
-        image: img('beef,stew'),
+        image: 'https://www.xohanoc.info/wp-content/uploads/2018/11/98635302-1024x538.jpg',
         price: 4900,
         name: { AM: 'Խաշլամա', EN: 'Khashlama', RU: 'Хашлама' },
         description: {
@@ -458,7 +436,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'harisa',
-        image: img('porridge,meat'),
+        image: 'https://i.ytimg.com/vi/Ti6ok8IQ_p0/maxresdefault.jpg',
         price: 3500,
         name: { AM: 'Հարիսա', EN: 'Harisa', RU: 'Хариса' },
         description: {
@@ -469,7 +447,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'tjvjik',
-        image: img('liver,fried'),
+        image: 'https://gatapandok.am/wp-content/uploads/2023/07/haykakan-khohanoc-2.png',
         price: 3800,
         name: { AM: 'Տժվժիկ', EN: 'Tjvjik', RU: 'Тжвжик' },
         description: {
@@ -488,14 +466,14 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'sig-khorovats',
-        image: img('grilled,fish'),
+        image: 'https://buy.am/media/image/0a/b2/9e/APN135.jpg',
         price: 4800,
         name: { AM: 'Սիգ խորոված', EN: 'Grilled Whitefish', RU: 'Сиг на гриле' },
         description: { AM: 'Խորոված սիգ ձուկ', EN: 'Grilled whitefish', RU: 'Сиг на гриле' },
       },
       {
         id: 'ishkhan-khorovats',
-        image: img('grilled,trout'),
+        image: 'https://genacvale.am/wp-content/uploads/2021/10/Ishxan-xorovac.webp',
         price: 5200,
         name: { AM: 'Իշխան խորոված', EN: 'Grilled Trout', RU: 'Форель на гриле' },
         description: { AM: 'Խորոված իշխան', EN: 'Grilled trout', RU: 'Форель на гриле' },
@@ -503,7 +481,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'ishkhan-banjareghenov',
-        image: img('trout,vegetables'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgtm3YHYJPsCWhhNt2FSamSl6MZbrA_UYDUw&s',
         price: 5800,
         name: { AM: 'Իշխան բանջարեղենով', EN: 'Trout with Vegetables', RU: 'Форель с овощами' },
         description: {
@@ -514,7 +492,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'saghmon-steyk',
-        image: img('salmon,steak'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbEy5NNfwfefaozmDg25vLQ4IRX7HEyZnrQg&s',
         price: 8900,
         name: { AM: 'Սաղմոն սթեյք', EN: 'Salmon Steak', RU: 'Стейк из лосося' },
         description: { AM: 'Սաղմոնի սթեյք', EN: 'Salmon steak', RU: 'Стейк из лосося' },
@@ -541,7 +519,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'tavari-khorovats',
-        image: img('beef,grill'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRX5nC46RHioijQM5WK3anq6Vl2YR1O7SH10Q&s',
         price: 4200,
         name: { AM: 'Տավարի խորոված', EN: 'Beef BBQ', RU: 'Говяжий шашлык' },
         description: {
@@ -552,7 +530,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'garan-khorovats',
-        image: img('lamb,grill'),
+        image: 'https://grillexpress.am/wp-content/uploads/2020/08/Tandoor-Barbecue-lamb-Loin.jpg',
         price: 4600,
         name: { AM: 'Գառան խորոված', EN: 'Lamb BBQ', RU: 'Шашлык из баранины' },
         description: {
@@ -563,7 +541,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'havi-khorovats',
-        image: img('chicken,grill'),
+        image: 'https://genacvale.am/wp-content/uploads/2024/02/37.jpg',
         price: 2900,
         name: { AM: 'Հավի խորոված', EN: 'Chicken BBQ', RU: 'Куриный шашлык' },
         description: {
@@ -574,7 +552,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'tavari-qyabab',
-        image: img('kebab,beef'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxCFIULIx-WjARkB58otjrCTv6aIQk2sDUVg&s',
         price: 2400,
         name: { AM: 'Տավարի քյաբաբ', EN: 'Beef Kebab', RU: 'Говяжий кебаб' },
         description: {
@@ -585,7 +563,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'havi-qyabab',
-        image: img('kebab,chicken'),
+        image: 'https://3f.am/public/uploads/all/5tvNvUOLP8xvBl0PTaIVrA4ciApd7Qvau1BZbqLs.jpg',
         price: 2200,
         name: { AM: 'Հավի քյաբաբ', EN: 'Chicken Kebab', RU: 'Куриный кебаб' },
         description: {
@@ -608,7 +586,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'khary-gril',
-        image: img('mixed,grill,platter'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRz1m2WOBrSL6i3s3tNH8thtNbMCIYW1EnfdQ&s',
         price: 8900,
         name: { AM: 'Խառը գրիլ', EN: 'Mixed Grill', RU: 'Микс-гриль' },
         description: {
@@ -627,7 +605,7 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'havi-shawarma',
-        image: img('shawarma,chicken'),
+        image: 'https://libananyan.am/wp-content/uploads/2026/05/Glovo_Libananyan_Chicken-Shawarma.png',
         price: 1900,
         name: { AM: 'Հավի շաուրմա', EN: 'Chicken Shawarma', RU: 'Куриная шаурма' },
         description: {
@@ -639,7 +617,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'tavari-shawarma',
-        image: img('shawarma,beef'),
+        image: 'https://degusto.am/storage/images/products/1718449676.webp',
         price: 2400,
         name: { AM: 'Տավարի շաուրմա', EN: 'Beef Shawarma', RU: 'Говяжья шаурма' },
         description: {
@@ -661,7 +639,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'panrov-shawarma',
-        image: img('shawarma,cheese'),
+        image: 'https://eda.yandex.ru/images/3528285/301f357a4085460aaa058f17238791c6-216x188.jpeg',
         price: 2300,
         name: { AM: 'Պանրով շաուրմա', EN: 'Cheese Shawarma', RU: 'Шаурма с сыром' },
         description: {
@@ -680,7 +658,7 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'gata',
-        image: img('pastry,sweet'),
+        image: 'https://i.ytimg.com/vi/qXgaOZOF0u4/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCM8w5J5aIt7Eyt8dn-QBU-HJWiBA',
         price: 1200,
         name: { AM: 'Գաթա', EN: 'Gata', RU: 'Гата' },
         description: {
@@ -691,7 +669,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'pakhlava',
-        image: img('baklava'),
+        image: 'https://i.ytimg.com/vi/J4AqcCMBENk/maxresdefault.jpg',
         price: 1500,
         name: { AM: 'Փախլավա', EN: 'Baklava', RU: 'Пахлава' },
         description: {
@@ -703,7 +681,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'napoleon',
-        image: img('napoleon,cake'),
+        image: 'https://i.ytimg.com/vi/V5_AWuwU8Xc/maxresdefault.jpg',
         price: 1800,
         name: { AM: 'Նապոլեոն', EN: 'Napoleon', RU: 'Наполеон' },
         description: {
@@ -714,7 +692,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'shokolade-tort',
-        image: img('chocolate,cake'),
+        image: 'https://i.ytimg.com/vi/4GNgzV7eQcQ/maxresdefault.jpg',
         price: 1900,
         name: { AM: 'Շոկոլադե տորթ', EN: 'Chocolate Cake', RU: 'Шоколадный торт' },
         description: {
@@ -725,7 +703,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'paghpaghak',
-        image: img('icecream'),
+        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Ice_Cream_dessert_02.jpg/960px-Ice_Cream_dessert_02.jpg',
         price: 1200,
         name: { AM: 'Պաղպաղակ', EN: 'Ice Cream', RU: 'Мороженое' },
         description: {
@@ -747,7 +725,7 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'coca-cola',
-        image: img('cola,soda'),
+        image: 'https://jur.am/media/catalog/product/cache/19d3ab1dca0dc3888973d193ac4915be/c/o/coca-cola-classic-carbonated-drink-0-33l.webp',
         price: 900,
         name: { AM: 'Coca-Cola 0.5լ', EN: 'Coca-Cola 0.5L', RU: 'Coca-Cola 0.5л' },
         description: {
@@ -758,7 +736,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'fanta',
-        image: img('fanta,orange,soda'),
+        image: 'https://gurmenia.am/u/items/thumbs/wh1q4s5VUmFZNGciiR.webp',
         price: 900,
         name: { AM: 'Fanta 0.5լ', EN: 'Fanta 0.5L', RU: 'Fanta 0.5л' },
         description: {
@@ -769,7 +747,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'sprite',
-        image: img('sprite,soda,lemon'),
+        image: 'https://buy.am/media/image/b0/fd/7e/Sprite-250ml.webp',
         price: 900,
         name: { AM: 'Sprite 0.5լ', EN: 'Sprite 0.5L', RU: 'Sprite 0.5л' },
         description: {
@@ -780,7 +758,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'mineral-water',
-        image: img('mineral,water,bottle'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2mv-yql7yb7mYEtYY5Fz7_XxmdpcHdvJgxA&s',
         price: 700,
         name: { AM: 'Հանքային ջուր', EN: 'Mineral Water', RU: 'Минеральная вода' },
         description: {
@@ -791,7 +769,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'sparkling-water',
-        image: img('sparkling,water,glass'),
+        image: 'https://barshop.am/wp-content/uploads/2024/03/3993-1.jpg',
         price: 700,
         name: { AM: 'Գազավորված ջուր', EN: 'Sparkling Water', RU: 'Газированная вода' },
         description: {
@@ -811,7 +789,7 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'tnakan-limonad',
-        image: img('lemonade'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdeDNbNWjOlT9Zkw5iekpNeid8oSmS7YckfA&s',
         price: 1400,
         name: { AM: 'Տնական լիմոնադ', EN: 'Homemade Lemonade', RU: 'Домашний лимонад' },
         description: {
@@ -823,7 +801,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'tan',
-        image: img('yogurt,drink'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFay7SSJzuU-xGhA6WGGtpf2h6-ltwq6B4yw&s',
         price: 900,
         name: { AM: 'Թան', EN: 'Tan', RU: 'Тан' },
         description: {
@@ -834,7 +812,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'tan-grafin',
-        image: img('ayran,carafe,drink'),
+        image: 'https://gatapandok.am/wp-content/uploads/2024/10/tan-armenian-yogurt-drink.png',
         price: 2500,
         name: { AM: 'Թան գրաֆին', EN: 'Tan Carafe', RU: 'Тан графин' },
         description: {
@@ -845,7 +823,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'kompot',
-        image: img('compote,fruit,drink'),
+        image: 'https://buy.am/media/image/47/93/d4/APN201.jpg',
         price: 1200,
         name: { AM: 'Կոմպոտ', EN: 'Compote', RU: 'Компот' },
         description: {
@@ -856,7 +834,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'mors',
-        image: img('berry,drink,juice'),
+        image: 'https://buy.am/media/image/2e/48/d9/SW105570.jpg',
         price: 1500,
         name: { AM: 'Մորս', EN: 'Mors', RU: 'Морс' },
         description: {
@@ -876,7 +854,7 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'haykakan-surch',
-        image: img('turkish,coffee'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6plmr9wZuwaT3I2mzwOUERVrY_-BpwGPSkg&s',
         price: 900,
         name: { AM: 'Հայկական սուրճ', EN: 'Armenian Coffee', RU: 'Армянский кофе' },
         description: {
@@ -888,7 +866,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'espresso',
-        image: img('espresso,coffee'),
+        image: 'https://buy.am/media/image/b8/29/e4/partricsnew0018.webp',
         price: 1100,
         name: { AM: 'Էսպրեսսո', EN: 'Espresso', RU: 'Эспрессо' },
         description: {
@@ -899,14 +877,14 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'americano',
-        image: img('americano,coffee'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWeLMPjdvTIBxgrrwUrr8tjJy3if5poM21VQ&s',
         price: 1300,
         name: { AM: 'Ամերիկանո', EN: 'Americano', RU: 'Американо' },
         description: { AM: 'Ամերիկանո', EN: 'Americano', RU: 'Американо' },
       },
       {
         id: 'cappuccino',
-        image: img('cappuccino'),
+        image: 'https://prepa.am/wp-content/uploads/Capuccino-%E2%80%93-0133-scaled.jpg',
         price: 1600,
         name: { AM: 'Կապուչինո', EN: 'Cappuccino', RU: 'Капучино' },
         description: {
@@ -917,14 +895,14 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'latte',
-        image: img('latte,coffee'),
+        image: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Latte_art.jpg',
         price: 1800,
         name: { AM: 'Լատտե', EN: 'Latte', RU: 'Латте' },
         description: { AM: 'Մեղմ լատտե', EN: 'Smooth latte', RU: 'Мягкий латте' },
       },
       {
         id: 'glase',
-        image: img('iced,coffee'),
+        image: 'https://buy.am/media/image/a2/f8/89/partricsnew0009.webp',
         price: 1900,
         name: { AM: 'Գլասե', EN: 'Iced Coffee (Glacé)', RU: 'Гляссе' },
         description: {
@@ -944,28 +922,28 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'sev-tey',
-        image: img('black,tea'),
+        image: 'https://sotskiy.am/static/articles/19/94/xl-FibOoHMtYN.jpeg',
         price: 900,
         name: { AM: 'Սև թեյ', EN: 'Black Tea', RU: 'Чёрный чай' },
         description: { AM: 'Անուշաբույր սև թեյ', EN: 'Aromatic black tea', RU: 'Ароматный чёрный чай' },
       },
       {
         id: 'kanach-tey',
-        image: img('green,tea'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmfh4kFufT-wRJtk_eOC_n-vPca2ssUQUs3Q&s',
         price: 900,
         name: { AM: 'Կանաչ թեյ', EN: 'Green Tea', RU: 'Зелёный чай' },
         description: { AM: 'Կանաչ թեյ', EN: 'Green tea', RU: 'Зелёный чай' },
       },
       {
         id: 'mrgayin-tey',
-        image: img('fruit,tea'),
+        image: 'https://168.am/wp-content/uploads/2017/02/Dollarphotoclub_77281053.jpg',
         price: 1400,
         name: { AM: 'Մրգային թեյ', EN: 'Fruit Tea', RU: 'Фруктовый чай' },
         description: { AM: 'Մրգային թեյ', EN: 'Fruit tea', RU: 'Фруктовый чай' },
       },
       {
         id: 'chichkhani-tey',
-        image: img('seabuckthorn,tea'),
+        image: 'https://168.am/wp-content/uploads/2018/10/oblepixa.jpg',
         price: 1600,
         name: { AM: 'Չիչխանի թեյ', EN: 'Sea Buckthorn Tea', RU: 'Облепиховый чай' },
         description: {
@@ -977,7 +955,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'busakan-tey',
-        image: img('herbal,tea'),
+        image: 'https://upload.wikimedia.org/wikipedia/commons/d/d0/LE_POINT_DE_VUE11n4000.jpg',
         price: 1200,
         name: { AM: 'Բուսական թեյ', EN: 'Herbal Tea', RU: 'Травяной чай' },
         description: {
@@ -997,7 +975,7 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'narnji-fresh',
-        image: img('orange,juice'),
+        image: 'https://buy.am/media/image/92/7f/74/Fresh-squeezed-juice-Orange-N12.webp',
         price: 1600,
         name: { AM: 'Նարնջի ֆրեշ', EN: 'Orange Juice', RU: 'Апельсиновый фреш' },
         description: {
@@ -1008,21 +986,21 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'khndzori-fresh',
-        image: img('apple,juice'),
+        image: 'https://buy.am/media/image/11/9c/f5/signature018.jpg',
         price: 1500,
         name: { AM: 'Խնձորի ֆրեշ', EN: 'Apple Juice', RU: 'Яблочный фреш' },
         description: { AM: 'Թարմ խնձորի հյութ', EN: 'Fresh apple juice', RU: 'Свежий яблочный сок' },
       },
       {
         id: 'gazari-fresh',
-        image: img('carrot,juice'),
+        image: 'https://buy.am/media/image/0a/80/29/Fresh-squeezed-juice-Carrot-N15.webp',
         price: 1500,
         name: { AM: 'Գազարի ֆրեշ', EN: 'Carrot Juice', RU: 'Морковный фреш' },
         description: { AM: 'Թարմ գազարի հյութ', EN: 'Fresh carrot juice', RU: 'Свежий морковный сок' },
       },
       {
         id: 'nrran-fresh',
-        image: img('pomegranate,juice'),
+        image: 'https://buy.am/media/image/0b/7f/ad/dragon-garden-juice004.webp',
         price: 2200,
         name: { AM: 'Նռան ֆրեշ', EN: 'Pomegranate Juice', RU: 'Гранатовый фреш' },
         description: {
@@ -1034,7 +1012,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'khary-fresh',
-        image: img('mixed,fruit,juice'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSi1D_MWKXsit7Ray1zp3U-VG6XdRWKI5WimA&s',
         price: 1900,
         name: { AM: 'Խառը ֆրեշ', EN: 'Mixed Juice', RU: 'Микс фреш' },
         description: { AM: 'Մրգային խառը ֆրեշ', EN: 'Mixed fruit juice', RU: 'Микс фруктовый фреш' },
@@ -1050,7 +1028,7 @@ export const menu: MenuCategory[] = [
     items: [
       {
         id: 'virgin-mojito',
-        image: img('mojito,mocktail'),
+        image: 'https://www.joyfulhealthyeats.com/wp-content/uploads/2025/06/Virgin-Mojito-Nojito-Recipe-web-6.jpg',
         price: 1900,
         name: { AM: 'Virgin Mojito', EN: 'Virgin Mojito', RU: 'Virgin Mojito' },
         description: {
@@ -1062,7 +1040,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'tropical-mix',
-        image: img('tropical,cocktail'),
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-nQ6zDbmBhudpu1W8Rk8v9Q_urRDHqWKwWA&s',
         price: 2200,
         name: { AM: 'Tropical Mix', EN: 'Tropical Mix', RU: 'Tropical Mix' },
         description: {
@@ -1073,7 +1051,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'berry-fresh',
-        image: img('berry,cocktail'),
+        image: 'https://diethood.com/wp-content/uploads/2014/07/agua-fresca-5.jpg',
         price: 2200,
         name: { AM: 'Berry Fresh', EN: 'Berry Fresh', RU: 'Berry Fresh' },
         description: {
@@ -1084,7 +1062,7 @@ export const menu: MenuCategory[] = [
       },
       {
         id: 'citrus-energy',
-        image: img('citrus,cocktail'),
+        image: 'https://images.albertsons-media.com/is/image/ABS/970306170-C1N1?$ng-ecom-pdp-desktop$&defaultImage=Not_Available',
         price: 2100,
         name: { AM: 'Citrus Energy', EN: 'Citrus Energy', RU: 'Citrus Energy' },
         description: {

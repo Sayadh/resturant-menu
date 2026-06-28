@@ -29,6 +29,7 @@ export interface ProductInput {
   price: number
   image: string
   badge?: BadgeKey
+  available?: boolean
 }
 
 export const useMenuStore = defineStore('menu', () => {
@@ -130,6 +131,7 @@ export const useMenuStore = defineStore('menu', () => {
       price: input.price,
       image: input.image,
       badge: input.badge,
+      available: input.available ?? true,
     }
     cat.items.push(item)
     save()
@@ -142,11 +144,19 @@ export const useMenuStore = defineStore('menu', () => {
     item.price = input.price
     item.image = input.image
     item.badge = input.badge
+    item.available = input.available ?? true
     save()
   }
   const removeProduct = (categoryId: string, itemId: string) => {
     const cat = categoryById(categoryId)
     if (cat) cat.items = cat.items.filter((i) => i.id !== itemId)
+    save()
+  }
+  // Quick toggle for "in stock / sold out".
+  const toggleAvailable = (categoryId: string, itemId: string) => {
+    const item = categoryById(categoryId)?.items.find((i) => i.id === itemId)
+    if (!item) return
+    item.available = item.available === false ? true : false
     save()
   }
 
@@ -164,6 +174,7 @@ export const useMenuStore = defineStore('menu', () => {
     addProduct,
     updateProduct,
     removeProduct,
+    toggleAvailable,
     load,
     save,
     reset,

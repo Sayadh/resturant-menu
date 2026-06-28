@@ -48,6 +48,7 @@ const form = reactive({
   price: 0,
   image: '',
   badge: '' as '' | BadgeKey,
+  available: true,
 })
 
 const resetForm = () => {
@@ -60,6 +61,7 @@ const resetForm = () => {
   form.price = 0
   form.image = ''
   form.badge = ''
+  form.available = true
 }
 
 const closeModal = () => {
@@ -106,11 +108,12 @@ const openEditProduct = (categoryId: string, item: MenuItem) => {
   form.price = item.price
   form.image = item.image
   form.badge = item.badge ?? ''
+  form.available = item.available !== false
   Object.assign(modal, { open: true, type: 'product', mode: 'edit', categoryId, editId: item.id })
 }
 
 // ── submit ─────────────────────────────────────────────────────
-const submit = () => {
+const submit = async () => {
   if (modal.type === 'level') {
     const payload = { icon: form.icon, title: { ...form.title } }
     if (modal.mode === 'add') store.addLevel(payload)
@@ -125,12 +128,19 @@ const submit = () => {
     if (modal.mode === 'add') store.addCategory(payload)
     else store.updateCategory(modal.editId, payload)
   } else {
+    // Resolve a pasted page/Google link into a direct image before saving.
+    try {
+      form.image = await normalizeImage(form.image)
+    } catch {
+      /* leave as typed; the card falls back to a category tile if it can't load */
+    }
     const payload = {
       name: { ...form.name },
       description: { ...form.description },
       price: Number(form.price) || 0,
       image: form.image,
       badge: form.badge || undefined,
+      available: form.available,
     }
     if (modal.mode === 'add') store.addProduct(modal.categoryId, payload)
     else store.updateProduct(modal.categoryId, modal.editId, payload)
@@ -162,6 +172,50 @@ const onFile = (e: Event) => {
     form.image = reader.result as string
   }
   reader.readAsDataURL(file)
+}
+
+// ── resolve a pasted link (page / Google) into a direct image ───
+const resolving = ref(false)
+const resolveError = ref('')
+
+const isDirectImage = (u: string) =>
+  /\.(jpe?g|png|webp|gif|avif|svg)(\?|#|$)/i.test(u) ||
+  /(i0\.wp\.com|i1\.wp\.com|i2\.wp\.com|images\.unsplash\.com|gstatic\.com|googleusercontent\.com|fbcdn\.net|cdn\.)/i.test(u)
+
+// Google "copy image link" / result URLs embed the real image in a query param.
+const extractGoogle = (u: string) => {
+  try {
+    const url = new URL(u)
+    const candidate =
+      url.searchParams.get('imgurl') || url.searchParams.get('media') || url.searchParams.get('url') || url.searchParams.get('q')
+    if (candidate && /^https?:\/\//i.test(candidate)) return candidate
+  } catch {
+    /* not a URL */
+  }
+  return u
+}
+
+const normalizeImage = async (raw: string): Promise<string> => {
+  let u = (raw || '').trim()
+  if (!u || u.startsWith('data:')) return u
+  u = extractGoogle(u)
+  if (isDirectImage(u)) return u
+  // It's a page link — ask the server for its og:image.
+  const r = await $fetch<{ image: string }>('/api/resolve-image', { params: { url: u } })
+  return r.image
+}
+
+const resolveImage = async () => {
+  if (!form.image.trim()) return
+  resolving.value = true
+  resolveError.value = ''
+  try {
+    form.image = await normalizeImage(form.image)
+  } catch {
+    resolveError.value = 'Չհաջողվեց ստանալ նկարը այս հղումից։ Փորձիր ուղիղ նկարի հղում (.jpg/.png) կամ վերբեռնիր ֆայլ։'
+  } finally {
+    resolving.value = false
+  }
 }
 
 const fmtPrice = (n: number) => n.toLocaleString('hy-AM')
@@ -340,17 +394,32 @@ const fmtPrice = (n: number) => n.toLocaleString('hy-AM')
                 v-for="item in cat.items"
                 :key="item.id"
                 class="flex items-center gap-3 rounded-2xl border border-brown/5 bg-white p-2"
+                :class="{ 'opacity-60': item.available === false }"
               >
                 <div
                   class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-caramel/25 to-herb/15"
                 >
-                  <img v-if="item.image" :src="item.image" :alt="item.name.AM" class="h-full w-full object-cover" />
+                  <img v-if="item.image" :src="item.image" :alt="item.name.AM" class="h-full w-full object-cover" :class="{ grayscale: item.available === false }" />
                   <span v-else aria-hidden="true">{{ cat.icon }}</span>
                 </div>
                 <div class="min-w-0 flex-1">
                   <p class="truncate font-serif font-semibold text-brown">{{ item.name.AM }}</p>
                   <p class="truncate font-serif text-xs text-brown-soft">{{ item.description.AM }}</p>
                 </div>
+                <!-- Availability toggle -->
+                <button
+                  type="button"
+                  class="shrink-0 rounded-full px-2.5 py-1 text-xs font-bold transition"
+                  :class="
+                    item.available === false
+                      ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                      : 'bg-herb/15 text-herb hover:bg-herb/25'
+                  "
+                  :title="item.available === false ? 'Նշել որպես կա' : 'Նշել որպես չկա'"
+                  @click="store.toggleAvailable(cat.id, item.id)"
+                >
+                  {{ item.available === false ? 'Չկա' : 'Կա' }}
+                </button>
                 <span
                   v-if="item.badge"
                   class="hidden shrink-0 rounded-full bg-caramel/15 px-2 py-0.5 text-xs font-semibold text-caramel-dark sm:inline"
@@ -488,6 +557,10 @@ const fmtPrice = (n: number) => n.toLocaleString('hy-AM')
                   </select>
                 </label>
               </div>
+              <label class="flex items-center gap-2.5 rounded-xl border border-caramel/30 bg-white px-3 py-2.5">
+                <input v-model="form.available" type="checkbox" class="h-4 w-4 accent-herb" />
+                <span class="font-serif text-sm font-semibold text-brown">Հասանելի է (կա պահին)</span>
+              </label>
               <!-- Image -->
               <div>
                 <span class="mb-1 block font-serif text-xs font-semibold text-brown-soft">Նկար</span>
@@ -497,14 +570,32 @@ const fmtPrice = (n: number) => n.toLocaleString('hy-AM')
                     <span v-else class="text-2xl" aria-hidden="true">🖼</span>
                   </div>
                   <div class="flex-1">
-                    <input v-model="form.image" type="text" placeholder="Նկարի URL (.jpg/.png) ..." class="w-full rounded-xl border border-caramel/30 bg-white px-3 py-2 text-sm outline-none focus:border-caramel" />
+                    <div class="flex gap-2">
+                      <input
+                        v-model="form.image"
+                        type="text"
+                        placeholder="Նկարի, էջի կամ Google հղում ..."
+                        class="w-full rounded-xl border border-caramel/30 bg-white px-3 py-2 text-sm outline-none focus:border-caramel"
+                        @keydown.enter.prevent="resolveImage"
+                      />
+                      <button
+                        type="button"
+                        :disabled="resolving"
+                        class="shrink-0 rounded-xl bg-brown px-3 py-2 text-sm font-semibold text-white transition hover:bg-brown-light disabled:opacity-60"
+                        @click="resolveImage"
+                      >
+                        {{ resolving ? '...' : 'Բացել' }}
+                      </button>
+                    </div>
                     <div class="mt-1.5 flex items-center gap-2">
                       <label class="cursor-pointer rounded-full bg-cream px-3 py-1 text-xs font-semibold text-brown transition hover:bg-caramel/20">
-                        Վերբեռնել
+                        Վերբեռնել ֆայլ
                         <input type="file" accept="image/*" class="hidden" @change="onFile" />
                       </label>
                       <button v-if="form.image" type="button" class="text-xs font-semibold text-red-500 hover:underline" @click="form.image = ''">Մաքրել</button>
                     </div>
+                    <p v-if="resolveError" class="mt-1 text-xs text-red-500">{{ resolveError }}</p>
+                    <p class="mt-1 text-xs text-brown-soft">Տեղադրիր էջի կամ Google հղում ու սեղմիր «Բացել» — նկարն ինքն կբացվի։</p>
                   </div>
                 </div>
               </div>

@@ -15,6 +15,7 @@ const hasPhoto = computed(() => !!props.item.image && !imgFailed.value)
 <template>
   <article
     class="group flex flex-row overflow-hidden rounded-card border border-brown/5 bg-card shadow-card ring-1 ring-black/[0.01] transition-all duration-300 ease-out hover:border-caramel/30 hover:shadow-card-hover sm:flex-col sm:hover:-translate-y-1.5"
+    :class="{ 'opacity-80': item.available === false }"
   >
     <!-- Image: square thumbnail on mobile, 4:3 banner on larger screens -->
     <button
@@ -30,6 +31,7 @@ const hasPhoto = computed(() => !!props.item.image && !imgFailed.value)
         loading="lazy"
         decoding="async"
         class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+        :class="{ 'grayscale': item.available === false }"
         @error="imgFailed = true"
       />
       <!-- Branded category tile (always loads, always matches the category) -->
@@ -45,6 +47,17 @@ const hasPhoto = computed(() => !!props.item.image && !imgFailed.value)
       >
         <MenuBadge :badge="item.badge" />
       </span>
+      <!-- Sold out overlay -->
+      <div
+        v-if="item.available === false"
+        class="absolute inset-0 flex items-center justify-center bg-brown/45"
+      >
+        <span
+          class="rounded-full border border-cream/40 bg-brown/90 px-3 py-1 text-xs font-bold uppercase tracking-wide text-cream"
+        >
+          {{ t(ui.soldOut) }}
+        </span>
+      </div>
     </button>
 
     <!-- Content -->

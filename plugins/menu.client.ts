@@ -2,4 +2,5 @@
 // across reloads and show up on the public site.
 export default defineNuxtPlugin(() => {
   useMenuStore().load()
+  useDesign().load()
 })
