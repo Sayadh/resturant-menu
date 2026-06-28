@@ -28,6 +28,17 @@ export default <Partial<Config>>{
         herb: '#6F8B4A', // accent green
       },
       fontFamily: {
+        sans: [
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          '"Segoe UI"',
+          'Roboto',
+          '"Noto Sans Armenian"',
+          'Helvetica',
+          'Arial',
+          'sans-serif',
+        ],
         serif: ['"Cormorant Garamond"', '"Noto Serif Armenian"', 'Georgia', 'serif'],
         display: ['Cinzel', '"Noto Serif Armenian"', 'Georgia', 'serif'],
       },
