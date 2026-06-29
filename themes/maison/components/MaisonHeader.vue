@@ -4,7 +4,7 @@
 // has scrolled past the cinematic hero. Holds the wordmark, language, a
 // search reveal trigger and the selection (basket) count.
 // ─────────────────────────────────────────────────────────────────────────
-import { maisonBrand } from '~/themes/maison/config'
+const brand = useBrand()
 
 defineProps<{ visible: boolean; count: number }>()
 defineEmits<{ (e: 'search'): void; (e: 'open-order'): void }>()
@@ -19,7 +19,7 @@ defineEmits<{ (e: 'search'): void; (e: 'open-order'): void }>()
       <div class="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5 sm:px-8">
         <!-- Wordmark -->
         <a href="#top" class="font-display text-base tracking-[0.22em] text-[#241B14] sm:text-lg">
-          {{ maisonBrand.name }}
+          {{ brand.name }}
         </a>
 
         <!-- Actions -->

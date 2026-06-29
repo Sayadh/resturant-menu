@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ui } from '~/data/menu'
 const { t } = useLanguage()
+const brand = useBrand()
 </script>
 
 <template>
@@ -30,11 +31,11 @@ const { t } = useLanguage()
         <h1
           class="mt-4 font-display text-4xl font-bold uppercase leading-tight tracking-[0.2em] text-brown sm:text-5xl md:text-6xl"
         >
-          TUN LAHMAJO
+          {{ brand.name }}
         </h1>
 
         <p class="mt-3 font-serif text-lg italic text-brown-soft sm:text-xl">
-          {{ t(ui.tagline) }}
+          {{ t(brand.tagline) }}
         </p>
 
         <!-- Rating -->
@@ -42,7 +43,7 @@ const { t } = useLanguage()
           <div class="flex text-caramel" aria-hidden="true">
             <IconStar v-for="n in 5" :key="n" class="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
           </div>
-          <span class="font-display text-base font-bold text-brown sm:text-lg">{{ ui.rating }}</span>
+          <span class="font-display text-base font-bold text-brown sm:text-lg">{{ brand.rating }}</span>
           <span class="font-serif text-sm text-brown-soft">· {{ t(ui.reviews) }}</span>
         </div>
 
@@ -59,11 +60,11 @@ const { t } = useLanguage()
         >
           <span class="inline-flex items-center gap-1.5">
             <IconPin class="h-4 w-4 text-caramel" />
-            {{ t(ui.address) }}
+            {{ brand.address }}
           </span>
           <span class="inline-flex items-center gap-1.5">
             <IconClock class="h-4 w-4 text-caramel" />
-            {{ t(ui.hours) }}
+            {{ brand.hours }}
           </span>
           <span
             class="inline-flex items-center gap-1.5 rounded-full bg-herb/15 px-2.5 py-1 text-sm font-semibold text-herb"

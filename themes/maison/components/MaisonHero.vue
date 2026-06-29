@@ -10,6 +10,7 @@ import { maisonBrand, maisonHero } from '~/themes/maison/config'
 defineEmits<{ (e: 'enter'): void }>()
 
 const { t } = useLanguage()
+const brand = useBrand()
 </script>
 
 <template>
@@ -44,7 +45,7 @@ const { t } = useLanguage()
 
       <!-- Wordmark -->
       <h1 class="font-display text-5xl font-light leading-[0.95] tracking-wide sm:text-7xl lg:text-8xl">
-        {{ maisonBrand.name }}
+        {{ brand.name }}
       </h1>
 
       <!-- Gold rule + kicker -->
@@ -55,7 +56,7 @@ const { t } = useLanguage()
       </div>
 
       <p class="mt-6 max-w-md text-balance font-serif text-lg leading-relaxed text-[#FBF8F1]/75 sm:text-xl">
-        {{ t(maisonBrand.tagline) }}
+        {{ t(brand.tagline) }}
       </p>
 
       <!-- Meta row: rating · location · hours -->
@@ -64,14 +65,14 @@ const { t } = useLanguage()
           <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 fill-[#C9AC7C]" aria-hidden="true">
             <path d="M12 2l2.9 6.1 6.7.9-4.9 4.6 1.2 6.6L12 18.6 6.1 20.8l1.2-6.6L2.4 9.6l6.7-.9z" />
           </svg>
-          {{ maisonBrand.rating }} · {{ t(maisonBrand.reviews) }}
+          {{ brand.rating }} · {{ t(maisonBrand.reviews) }}
         </span>
         <span class="hidden h-3 w-px bg-[#FBF8F1]/30 sm:block" aria-hidden="true" />
-        <span>{{ t(maisonBrand.address) }}</span>
+        <span>{{ brand.address }}</span>
         <span class="hidden h-3 w-px bg-[#FBF8F1]/30 sm:block" aria-hidden="true" />
         <span class="flex items-center gap-1.5">
           <span class="ms-pulse inline-block h-1.5 w-1.5 rounded-full bg-[#A7BE7C]" aria-hidden="true" />
-          {{ t(ui.openNow) }} · {{ maisonBrand.hours }}
+          {{ t(ui.openNow) }} · {{ brand.hours }}
         </span>
       </div>
 

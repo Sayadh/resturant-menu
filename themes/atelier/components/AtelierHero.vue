@@ -5,6 +5,7 @@ import { ui } from '~/data/menu'
 import { atelierBrand } from '~/themes/atelier/config'
 
 const { t } = useLanguage()
+const brand = useBrand()
 </script>
 
 <template>
@@ -18,11 +19,11 @@ const { t } = useLanguage()
 
         <h1 class="mt-6 font-serif text-[clamp(2.75rem,9vw,5.5rem)] font-medium leading-[0.95] tracking-[-0.01em] text-[#16130F]">
           {{ t(atelierBrand.kicker) }}
-          <span class="mt-1 block italic text-[#A1502E]">{{ atelierBrand.name }}</span>
+          <span class="mt-1 block italic text-[#A1502E]">{{ brand.name }}</span>
         </h1>
 
         <p class="mt-7 max-w-md font-serif text-lg leading-relaxed text-[#857B6C] sm:text-xl">
-          {{ t(atelierBrand.tagline) }}
+          {{ t(brand.tagline) }}
         </p>
 
         <!-- Editorial meta row -->
@@ -30,7 +31,7 @@ const { t } = useLanguage()
           <div class="flex flex-col">
             <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">Rating</dt>
             <dd class="mt-1 flex items-baseline gap-1.5 font-serif text-[#16130F]">
-              <span class="text-2xl font-semibold">{{ atelierBrand.rating }}</span>
+              <span class="text-2xl font-semibold">{{ brand.rating }}</span>
               <span class="text-sm text-[#857B6C]">/ 5 · {{ t(atelierBrand.reviews) }}</span>
             </dd>
           </div>
@@ -39,14 +40,14 @@ const { t } = useLanguage()
             <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">Hours</dt>
             <dd class="mt-1 flex items-center gap-2 font-serif text-[#16130F]">
               <span class="atl-pulse h-1.5 w-1.5 rounded-full bg-[#A1502E]" aria-hidden="true" />
-              <span class="text-base">{{ atelierBrand.hours }}</span>
+              <span class="text-base">{{ brand.hours }}</span>
               <span class="text-sm text-[#857B6C]">· {{ t(ui.openNow) }}</span>
             </dd>
           </div>
           <span class="hidden h-9 w-px bg-[#D4C9B8] sm:block" aria-hidden="true" />
           <div class="flex flex-col">
             <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">Location</dt>
-            <dd class="mt-1 font-serif text-base text-[#16130F]">{{ t(atelierBrand.city) }}</dd>
+            <dd class="mt-1 font-serif text-base text-[#16130F]">{{ brand.address }}</dd>
           </div>
         </dl>
       </div>
@@ -65,7 +66,7 @@ const { t } = useLanguage()
         <!-- caption tag -->
         <figcaption class="absolute -bottom-4 left-5 bg-[#16130F] px-4 py-2.5 sm:left-8">
           <span class="atl-eyebrow font-display text-[9px] text-[#A1502E]">Signature</span>
-          <span class="mt-0.5 block font-serif text-sm italic text-[#F6F2EA]">{{ t(atelierBrand.address) }}</span>
+          <span class="mt-0.5 block font-serif text-sm italic text-[#F6F2EA]">{{ brand.address }}</span>
         </figcaption>
       </figure>
     </div>

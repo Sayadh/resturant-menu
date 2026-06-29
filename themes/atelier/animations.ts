@@ -30,31 +30,44 @@ export const atelierTransitions = {
  * the editorial fade-up defined in styles/atelier.css. Supports an optional
  * stagger index via the binding value: `v-reveal="3"`.
  */
+type RevealEl = HTMLElement & {
+  _atlIo?: IntersectionObserver
+  _atlTimer?: ReturnType<typeof setTimeout>
+}
+
 export const vReveal: Directive<HTMLElement, number | undefined> = {
-  mounted(el, binding) {
+  mounted(el: RevealEl, binding) {
     const delay = typeof binding.value === 'number' ? binding.value : 0
     el.style.setProperty('--atl-reveal-delay', `${Math.min(delay, 8) * 60}ms`)
     el.classList.add('atl-reveal')
 
+    const reveal = () => el.classList.add('is-revealed')
+
     if (typeof IntersectionObserver === 'undefined') {
-      el.classList.add('is-revealed')
+      reveal()
       return
     }
     const io = new IntersectionObserver(
       (entries, obs) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            entry.target.classList.add('is-revealed')
+            reveal()
             obs.unobserve(entry.target)
           }
         }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+      // Generous margins so elements near the very bottom of the page still
+      // trigger; threshold 0.01 means "any sliver visible".
+      { threshold: 0.01, rootMargin: '0px 0px 5% 0px' },
     )
     io.observe(el)
-    ;(el as HTMLElement & { _atlIo?: IntersectionObserver })._atlIo = io
+    el._atlIo = io
+    // Safety net: never leave content hidden if the observer never fires
+    // (e.g. last sections on a short page that can't scroll far enough).
+    el._atlTimer = setTimeout(reveal, 1600 + Math.min(delay, 8) * 60)
   },
-  unmounted(el) {
-    ;(el as HTMLElement & { _atlIo?: IntersectionObserver })._atlIo?.disconnect()
+  unmounted(el: RevealEl) {
+    el._atlIo?.disconnect()
+    if (el._atlTimer) clearTimeout(el._atlTimer)
   },
 }

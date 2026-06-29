@@ -12,7 +12,6 @@ import { type MenuItem, type MenuCategory, type LocalizedText } from '~/data/men
 import {
   maisonAlcoholTitle,
   maisonStory,
-  maisonRecommendation,
   maisonChefSelection,
   maisonCategories,
 } from '~/themes/maison/config'
@@ -153,9 +152,13 @@ const onScroll = () => {
 
 let readyTimer: ReturnType<typeof setTimeout> | null = null
 onMounted(() => {
+  // Defensive: clear any body scroll-lock a previous overlay/theme may have left.
+  if (import.meta.client) document.body.style.overflow = ''
+  // Render content immediately; lift the intro veil shortly after so it can
+  // never trap scrolling/interaction if something delays mount.
   readyTimer = setTimeout(() => {
     ready.value = true
-  }, 700)
+  }, 400)
   window.addEventListener('scroll', onScroll, { passive: true })
   onScroll()
 })
@@ -197,18 +200,7 @@ onBeforeUnmount(() => {
 
     <!-- When searching, collapse the editorial chapters and show results. -->
     <template v-if="!isSearching">
-      <!-- 3 · Today's Recommendation -->
-      <section v-if="todaysPick" class="bg-[#FBF8F1] py-20 sm:py-28">
-        <div class="mx-auto max-w-6xl px-5 sm:px-8">
-          <MaisonFeaturedDish
-            :item="todaysPick"
-            :eyebrow="t(maisonRecommendation.kicker)"
-            :note="t(maisonRecommendation.note)"
-          />
-        </div>
-      </section>
-
-      <!-- 4 · Chef's Selection (dark band) -->
+      <!-- Chef's Selection (dark band) -->
       <section v-if="chefSelection.length" class="bg-[#241B14] py-20 sm:py-28">
         <div class="mx-auto max-w-6xl px-5 sm:px-8">
           <header v-reveal class="mb-16 text-center">

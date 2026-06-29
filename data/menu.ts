@@ -19,7 +19,15 @@ export interface MenuItem {
   price: number
   name: LocalizedText
   description: LocalizedText
+  /** Primary badge rendered by the public themes. */
   badge?: BadgeKey
+  /** Full badge list (backend-ready); themes render `badge`. */
+  badges?: string[]
+  /** Undefined/true = available; false = currently sold out / unavailable. */
+  available?: boolean
+  /** Published state (backend-ready). */
+  active?: boolean
+  sortOrder?: number
 }
 
 export interface MenuCategory {
@@ -30,6 +38,11 @@ export interface MenuCategory {
   icon: string
   title: LocalizedText
   items: MenuItem[]
+  /** Backend-ready extras (themes derive a banner from items if unset). */
+  image?: string
+  description?: LocalizedText
+  active?: boolean
+  sortOrder?: number
 }
 
 export interface MenuLevel {
@@ -66,11 +79,6 @@ export const ui = {
     RU: '«Традиционные армянские вкусы»',
   },
   city: { AM: 'Երևան', EN: 'Yerevan', RU: 'Ереван' },
-  address: {
-    AM: 'Աբովյան 12, Երևան',
-    EN: '12 Abovyan St, Yerevan',
-    RU: 'ул. Абовян 12, Ереван',
-  },
   hours: { AM: '09:00 – 23:00', EN: '09:00 – 23:00', RU: '09:00 – 23:00' },
   openNow: { AM: 'Բաց է հիմա', EN: 'Open now', RU: 'Открыто' },
   rating: '4.9',

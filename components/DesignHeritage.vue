@@ -6,6 +6,7 @@ import { ui, type MenuItem, type DrinkGroup } from '~/data/menu'
 
 const { t } = useLanguage()
 const store = useMenuStore()
+const brand = useBrand()
 
 const activeLevel = ref<string>(store.levels[0]?.id ?? 'food')
 const activeGroup = ref<DrinkGroup>('soft') // only used inside the Drinks level
@@ -153,14 +154,14 @@ onBeforeUnmount(() => {
       <IconWheat class="pointer-events-none absolute -left-2 bottom-0 h-24 w-24 -rotate-12 text-caramel opacity-10" />
       <IconWheat class="pointer-events-none absolute -right-2 bottom-0 h-24 w-24 rotate-12 scale-x-[-1] text-caramel opacity-10" />
       <div class="relative mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-9 text-center">
-        <p class="font-display text-xl font-bold uppercase tracking-[0.2em] text-brown">TUN LAHMAJO</p>
+        <p class="font-display text-xl font-bold uppercase tracking-[0.2em] text-brown">{{ brand.name }}</p>
         <div class="flex items-center gap-3" aria-hidden="true">
           <span class="h-px w-8 bg-caramel/60" />
           <span class="h-1.5 w-1.5 rotate-45 bg-caramel" />
           <span class="h-px w-8 bg-caramel/60" />
         </div>
         <p class="font-serif text-base italic text-brown-soft">{{ t(ui.footerNote) }}</p>
-        <p class="font-serif text-sm text-brown/70">{{ t(ui.address) }} · {{ t(ui.hours) }}</p>
+        <p class="font-serif text-sm text-brown/70">{{ brand.address }} · {{ t(ui.hours) }}</p>
         <NuxtLink
           to="/admin"
           class="mt-1 font-serif text-xs uppercase tracking-widest text-brown/40 transition-colors hover:text-caramel"

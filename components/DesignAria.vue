@@ -14,6 +14,11 @@ import {
 const { t } = useLanguage()
 const store = useMenuStore()
 const order = useOrderStore()
+const brand = useBrand()
+const mono = computed(() => {
+  const i = brand.name.value.split(/\s+/).map((w) => w[0]).join('')
+  return (i.length > 1 ? i : brand.name.value).slice(0, 2).toUpperCase()
+})
 
 // Three top tabs derived from the data structure (no data change):
 // Food → level food · Drinks → level drinks/soft · Alcohol → level drinks/alcohol.
@@ -172,14 +177,14 @@ onBeforeUnmount(() => {
           <!-- monogram -->
           <div class="mx-auto flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] p-[2px] shadow-[0_10px_24px_-8px_rgba(198,154,90,0.7)]">
             <div class="flex h-full w-full items-center justify-center rounded-full bg-[#FFF9EF] font-display text-2xl font-bold tracking-wide text-[#3E2723]">
-              {{ ariaBrand.monogram }}
+              {{ mono }}
             </div>
           </div>
 
           <h1 class="mt-4 font-display text-[28px] font-bold uppercase leading-tight tracking-[0.22em] text-[#3E2723] sm:text-5xl">
-            {{ ariaBrand.name }}
+            {{ brand.name }}
           </h1>
-          <p class="mt-1.5 font-serif text-base italic text-[#7A6654] sm:text-xl">{{ t(ariaBrand.tagline) }}</p>
+          <p class="mt-1.5 font-serif text-base italic text-[#7A6654] sm:text-xl">{{ t(brand.tagline) }}</p>
 
           <!-- ornate gold divider -->
           <div class="mx-auto mt-4 flex w-52 items-center gap-2.5" aria-hidden="true">
@@ -195,17 +200,17 @@ onBeforeUnmount(() => {
             <span class="flex text-[#C69A5A]" aria-hidden="true">
               <IconStar v-for="n in 5" :key="n" class="h-[17px] w-[17px]" />
             </span>
-            <span class="font-display text-base font-bold text-[#3E2723]">{{ ariaBrand.rating }}</span>
+            <span class="font-display text-base font-bold text-[#3E2723]">{{ brand.rating }}</span>
             <span class="font-serif text-sm text-[#7A6654]">· {{ t(ariaBrand.reviews) }}</span>
           </div>
 
           <!-- info chips -->
           <div class="mt-4 flex flex-wrap items-center justify-center gap-2 font-serif text-sm">
             <span class="inline-flex items-center gap-1.5 rounded-full border border-[#E4D6C2] bg-[#FFF9EF] px-3 py-1.5 text-[#3E2723]/85 shadow-sm">
-              <IconPin class="h-4 w-4 text-[#C69A5A]" /> {{ t(ariaBrand.city) }}
+              <IconPin class="h-4 w-4 text-[#C69A5A]" /> {{ brand.address }}
             </span>
             <span class="inline-flex items-center gap-1.5 rounded-full border border-[#E4D6C2] bg-[#FFF9EF] px-3 py-1.5 text-[#3E2723]/85 shadow-sm">
-              <IconClock class="h-4 w-4 text-[#C69A5A]" /> {{ ariaBrand.hours }}
+              <IconClock class="h-4 w-4 text-[#C69A5A]" /> {{ brand.hours }}
             </span>
             <span class="inline-flex items-center gap-1.5 rounded-full bg-[#6F8B4A]/15 px-3 py-1.5 font-semibold text-[#5A7038]">
               <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-[#6F8B4A]" /> {{ t(ui.openNow) }}
@@ -414,7 +419,7 @@ onBeforeUnmount(() => {
     <!-- Footer -->
     <footer class="mt-12 border-t border-[#E4D6C2] bg-[#FFF9EF]/70">
       <div class="mx-auto flex max-w-5xl flex-col items-center gap-2 px-5 py-8 text-center">
-        <p class="font-display text-lg font-bold uppercase tracking-[0.2em] text-[#3E2723]">{{ ariaBrand.name }}</p>
+        <p class="font-display text-lg font-bold uppercase tracking-[0.2em] text-[#3E2723]">{{ brand.name }}</p>
         <p class="font-serif text-sm italic text-[#7A6654]">{{ t(ui.footerNote) }}</p>
         <NuxtLink to="/admin" class="mt-1 font-serif text-xs uppercase tracking-widest text-[#3E2723]/40 transition hover:text-[#C69A5A]">Admin</NuxtLink>
       </div>

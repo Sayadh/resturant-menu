@@ -42,26 +42,40 @@ export const vReveal: Directive<HTMLElement, number | RevealOpts | undefined> = 
     if (typeof opts.y === 'number') el.style.setProperty('--ms-reveal-y', `${opts.y}px`)
     el.classList.add('ms-reveal')
 
+    const reveal = () => el.classList.add('is-in')
+
     if (typeof IntersectionObserver === 'undefined') {
-      el.classList.add('is-in')
+      reveal()
       return
     }
     const io = new IntersectionObserver(
       (entries, obs) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            entry.target.classList.add('is-in')
+            reveal()
             obs.unobserve(entry.target)
           }
         }
       },
-      { threshold: 0.14, rootMargin: '0px 0px -10% 0px' },
+      // Generous margins so bottom-of-page elements still trigger.
+      { threshold: 0.01, rootMargin: '0px 0px 5% 0px' },
     )
     io.observe(el)
-    ;(el as HTMLElement & { _msIo?: IntersectionObserver })._msIo = io
+    const elx = el as HTMLElement & {
+      _msIo?: IntersectionObserver
+      _msTimer?: ReturnType<typeof setTimeout>
+    }
+    elx._msIo = io
+    // Safety net so content is never left hidden.
+    elx._msTimer = setTimeout(reveal, 1600 + delay * 70)
   },
   unmounted(el) {
-    ;(el as HTMLElement & { _msIo?: IntersectionObserver })._msIo?.disconnect()
+    const elx = el as HTMLElement & {
+      _msIo?: IntersectionObserver
+      _msTimer?: ReturnType<typeof setTimeout>
+    }
+    elx._msIo?.disconnect()
+    if (elx._msTimer) clearTimeout(elx._msTimer)
   },
 }
 

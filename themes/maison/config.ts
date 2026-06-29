@@ -52,11 +52,6 @@ export const maisonBrand = {
     EN: '320 reviews',
     RU: '320 отзывов',
   } satisfies LocalizedText,
-  address: {
-    AM: 'Աբովյան 12, Երևան',
-    EN: '12 Abovyan Street, Yerevan',
-    RU: 'ул. Абовян 12, Ереван',
-  } satisfies LocalizedText,
   hours: '09:00 — 23:00',
 } as const
 

@@ -54,7 +54,7 @@ const activeView = computed(() => views.value.find((v) => v.key === activeKey.va
 const search = ref('')
 const selected = ref<MenuItem | null>(null)
 const billOpen = ref(false)
-const ready = ref(false)
+const ready = ref(true)
 
 const baseCategories = computed(() =>
   activeView.value ? store.categoriesOf(activeView.value.level, activeView.value.group) : [],
@@ -96,17 +96,33 @@ const iconForSelected = computed(() =>
 )
 const pad = (n: number) => String(n + 1).padStart(2, '0')
 
-const selectView = (key: string) => {
-  if (key === activeKey.value) return
-  activeKey.value = key
-  search.value = ''
-  activeId.value = baseCategories.value[0]?.id ?? ''
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+// Scroll a section so its header sits just below the sticky nav (uses the live
+// nav height, so it stays correct as the nav grows/shrinks).
+const scrollToId = (id: string) => {
+  const el = document.getElementById(id)
+  if (!el) return
+  const navH = document.querySelector<HTMLElement>('[data-nav]')?.offsetHeight ?? 0
+  const top = window.scrollY + el.getBoundingClientRect().top - navH - 12
+  window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' })
 }
 
 const scrollToCategory = (id: string) => {
   activeId.value = id
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  scrollToId(id)
+}
+
+const selectView = (key: string) => {
+  if (key === activeKey.value) return
+  activeKey.value = key
+  search.value = ''
+  const firstId = baseCategories.value[0]?.id ?? ''
+  activeId.value = firstId
+  // Wait for the new sections to render, then bring the first one's header
+  // right below the sticky nav.
+  nextTick(() => {
+    if (firstId) scrollToId(firstId)
+    else window.scrollTo({ top: 0, behavior: 'smooth' })
+  })
 }
 
 // Sticky nav height → scroll offset (CSS var consumed by section scroll-margin)
@@ -136,25 +152,23 @@ const setupObserver = async () => {
   })
 }
 
-// Keep the active chip centered in the rail.
+// Keep the active chip centered in the rail — scrolling ONLY the horizontal
+// rail (never the window), so it can't fight the user's vertical scroll.
 watch(activeId, async (id) => {
   if (!id) return
   await nextTick()
-  document.querySelector<HTMLElement>(`[data-chip="${id}"]`)?.scrollIntoView({
-    behavior: 'smooth',
-    inline: 'center',
-    block: 'nearest',
-  })
+  const chip = document.querySelector<HTMLElement>(`[data-chip="${id}"]`)
+  const rail = chip?.closest<HTMLElement>('.atl-scroll')
+  if (!chip || !rail) return
+  const c = chip.getBoundingClientRect()
+  const r = rail.getBoundingClientRect()
+  rail.scrollTo({ left: rail.scrollLeft + (c.left - r.left) - r.width / 2 + c.width / 2, behavior: 'smooth' })
 })
 
-let readyTimer: ReturnType<typeof setTimeout> | null = null
 onMounted(() => {
   activeId.value = baseCategories.value[0]?.id ?? ''
-  // Brief editorial "setting the table" loading beat.
-  readyTimer = setTimeout(() => {
-    ready.value = true
-    setupObserver()
-  }, 650)
+  if (import.meta.client) document.body.style.overflow = ''
+  setupObserver()
   window.addEventListener('resize', updateNavHeight)
 })
 watch(categories, () => ready.value && setupObserver(), { flush: 'post' })
@@ -167,7 +181,6 @@ watch(
 )
 onBeforeUnmount(() => {
   observer?.disconnect()
-  if (readyTimer) clearTimeout(readyTimer)
   window.removeEventListener('resize', updateNavHeight)
 })
 </script>

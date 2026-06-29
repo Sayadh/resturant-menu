@@ -10,7 +10,8 @@ import {
   type BadgeKey,
 } from '~/data/menu'
 
-const STORAGE_KEY = 'tunlahmajo-menu-v1'
+// Per-tenant persistence key (admin edits are scoped to one restaurant).
+const keyFor = (restaurantId: string) => `qrmenu:menu:${restaurantId || 'default'}`
 
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v))
 const uid = (prefix: string): string =>
@@ -21,6 +22,10 @@ export interface CategoryInput {
   group?: DrinkGroup
   icon: string
   title: LocalizedText
+  image?: string
+  description?: LocalizedText
+  active?: boolean
+  sortOrder?: number
 }
 
 export interface ProductInput {
@@ -29,19 +34,26 @@ export interface ProductInput {
   price: number
   image: string
   badge?: BadgeKey
+  badges?: string[]
   available?: boolean
+  active?: boolean
+  sortOrder?: number
 }
 
 export const useMenuStore = defineStore('menu', () => {
+  const currentRestaurantId = ref('tun-lahmajo')
   const levels = ref<MenuLevel[]>(clone(seedLevels))
   const categories = ref<MenuCategory[]>(clone(seedMenu))
+  // Baseline (server/mock) data for the current tenant — used by reset().
+  const seedLevelsForTenant = ref<MenuLevel[]>(clone(seedLevels))
+  const seedCategoriesForTenant = ref<MenuCategory[]>(clone(seedMenu))
 
-  // ── persistence ──────────────────────────────────────────────
+  // ── persistence (scoped per restaurant) ──────────────────────
   const save = () => {
     if (!import.meta.client) return
     try {
       localStorage.setItem(
-        STORAGE_KEY,
+        keyFor(currentRestaurantId.value),
         JSON.stringify({ levels: levels.value, categories: categories.value }),
       )
     } catch {
@@ -49,22 +61,36 @@ export const useMenuStore = defineStore('menu', () => {
     }
   }
 
-  const load = () => {
-    if (!import.meta.client) return
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return
-    try {
-      const data = JSON.parse(raw)
-      if (Array.isArray(data.levels)) levels.value = data.levels
-      if (Array.isArray(data.categories)) categories.value = data.categories
-    } catch {
-      /* ignore corrupt state */
+  /**
+   * Load a tenant's menu into the store. `payload` is the server/mock baseline;
+   * any locally-saved admin edits for that restaurant override it.
+   */
+  const setTenant = (
+    restaurantId: string,
+    payload: { levels: MenuLevel[]; categories: MenuCategory[] },
+  ) => {
+    currentRestaurantId.value = restaurantId
+    seedLevelsForTenant.value = clone(payload.levels)
+    seedCategoriesForTenant.value = clone(payload.categories)
+    levels.value = clone(payload.levels)
+    categories.value = clone(payload.categories)
+    if (import.meta.client) {
+      const raw = localStorage.getItem(keyFor(restaurantId))
+      if (raw) {
+        try {
+          const data = JSON.parse(raw)
+          if (Array.isArray(data.levels)) levels.value = data.levels
+          if (Array.isArray(data.categories)) categories.value = data.categories
+        } catch {
+          /* ignore corrupt state */
+        }
+      }
     }
   }
 
   const reset = () => {
-    levels.value = clone(seedLevels)
-    categories.value = clone(seedMenu)
+    levels.value = clone(seedLevelsForTenant.value)
+    categories.value = clone(seedCategoriesForTenant.value)
     save()
   }
 
@@ -110,6 +136,10 @@ export const useMenuStore = defineStore('menu', () => {
       icon: input.icon,
       title: { ...input.title },
       items: [],
+      image: input.image,
+      description: input.description ? { ...input.description } : undefined,
+      active: input.active ?? true,
+      sortOrder: input.sortOrder,
     }
     categories.value.push(category)
     save()
@@ -122,6 +152,10 @@ export const useMenuStore = defineStore('menu', () => {
     cat.group = input.level === 'drinks' ? input.group : undefined
     cat.icon = input.icon
     cat.title = { ...input.title }
+    if (input.image !== undefined) cat.image = input.image
+    if (input.description) cat.description = { ...input.description }
+    if (input.active !== undefined) cat.active = input.active
+    if (input.sortOrder !== undefined) cat.sortOrder = input.sortOrder
     save()
   }
   const removeCategory = (id: string) => {
@@ -140,7 +174,10 @@ export const useMenuStore = defineStore('menu', () => {
       price: input.price,
       image: input.image,
       badge: input.badge,
+      badges: input.badges ? [...input.badges] : undefined,
       available: input.available ?? true,
+      active: input.active ?? true,
+      sortOrder: input.sortOrder,
     }
     cat.items.push(item)
     save()
@@ -153,7 +190,10 @@ export const useMenuStore = defineStore('menu', () => {
     item.price = input.price
     item.image = input.image
     item.badge = input.badge
+    item.badges = input.badges ? [...input.badges] : undefined
     item.available = input.available ?? true
+    if (input.active !== undefined) item.active = input.active
+    if (input.sortOrder !== undefined) item.sortOrder = input.sortOrder
     save()
   }
   const removeProduct = (categoryId: string, itemId: string) => {
@@ -185,7 +225,8 @@ export const useMenuStore = defineStore('menu', () => {
     updateProduct,
     removeProduct,
     toggleAvailable,
-    load,
+    currentRestaurantId,
+    setTenant,
     save,
     reset,
   }

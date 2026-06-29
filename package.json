@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nuxt dev",
-    "build": "nuxt build",
-    "generate": "nuxt generate",
+    "dev": "ESBUILD_WORKER_THREADS=0 nuxt dev --no-fork",
+    "build": "ESBUILD_WORKER_THREADS=0 nuxt build",
+    "generate": "ESBUILD_WORKER_THREADS=0 nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },

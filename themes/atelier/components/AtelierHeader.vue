@@ -1,8 +1,12 @@
 <script setup lang="ts">
 // Masthead — a slim editorial bar at the very top: monogram + wordmark on the
 // left, language toggle on the right. Not sticky (the nav below handles that).
-import { atelierBrand } from '~/themes/atelier/config'
 import AtelierLangSwitch from './AtelierLangSwitch.vue'
+const brand = useBrand()
+const mono = computed(() => {
+  const i = brand.name.value.split(/\s+/).map((w) => w[0]).join('')
+  return (i.length > 1 ? i : brand.name.value).slice(0, 2).toUpperCase()
+})
 </script>
 
 <template>
@@ -14,10 +18,10 @@ import AtelierLangSwitch from './AtelierLangSwitch.vue'
           class="flex h-9 w-9 items-center justify-center rounded-full border border-[#16130F] font-display text-[13px] font-semibold tracking-[0.08em] text-[#16130F]"
           aria-hidden="true"
         >
-          {{ atelierBrand.monogram }}
+          {{ mono }}
         </span>
         <span class="font-display text-[15px] font-semibold tracking-[0.32em] text-[#16130F]">
-          {{ atelierBrand.name }}
+          {{ brand.name }}
         </span>
       </div>
 

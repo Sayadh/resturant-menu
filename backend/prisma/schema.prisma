@@ -1,0 +1,584 @@
+// ─────────────────────────────────────────────────────────────────────────
+//  QR Menu Platform — multi-tenant SaaS database (PostgreSQL + Prisma)
+//  Final schema per BLUEPRINT.md + confirmed corrections.
+//
+//  Conventions
+//  • Multi-tenant by `restaurantId`; UUID PKs; createdAt/updatedAt everywhere.
+//  • Soft delete (`deletedAt`) on Restaurant, User, Domain, Category, Product,
+//    ProductImage — never hard-deleted (referenced by orders/analytics/audit).
+//    Default reads filter `deletedAt IS NULL` via a Prisma client extension.
+//  • Money is whole AMD drams → `Int`. No floats, no Decimal.
+//  • Translations live in *Translation tables keyed by Language (no name_hy…).
+//  • Partial indexes (`WHERE deletedAt IS NULL`) and time-series BRIN indexes
+//    can't be expressed in Prisma — see prisma/raw-indexes.sql.
+// ─────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // postgresql://…/qr_menu_platform
+}
+
+// ─────────────────────────── Enums ───────────────────────────
+enum UserRole {
+  SUPER_ADMIN
+  OWNER
+  MANAGER
+  EMPLOYEE
+}
+
+enum SectionType {
+  FOOD
+  DRINKS
+  ALCOHOL
+}
+
+enum OrderDraftStatus {
+  OPEN
+  SHOWN
+  CLOSED
+  EXPIRED
+}
+
+enum DayOfWeek {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+// ───────────────────────── Platform ──────────────────────────
+
+/// Reusable visual theme (aria, maison, atelier, heritage, noir). Global.
+model Theme {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  restaurants Restaurant[]
+
+  @@map("themes")
+}
+
+/// Subscription plan (limits/pricing). Assigned by super-admin.
+model Plan {
+  id           String   @id @default(uuid()) @db.Uuid
+  key          String   @unique // 'free' | 'pro' | 'business'
+  name         String
+  priceMonthly Int      @default(0)
+  maxProducts  Int?
+  maxDomains   Int?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurants Restaurant[]
+
+  @@map("plans")
+}
+
+/// Platform languages. Restaurants enable a subset (RestaurantLanguage).
+model Language {
+  id         String  @id @default(uuid()) @db.Uuid
+  code       String  @unique // 'hy' | 'en' | 'ru'
+  name       String
+  nativeName String
+  isActive   Boolean @default(true)
+
+  restaurantLanguages   RestaurantLanguage[]
+  defaultForRestaurants Restaurant[]            @relation("RestaurantDefaultLanguage")
+  restaurantTexts       RestaurantTranslation[]
+  categoryTexts         CategoryTranslation[]
+  productTexts          ProductTranslation[]
+  badgeTexts            BadgeTranslation[]
+
+  @@map("languages")
+}
+
+// ──────────────────────── Tenant root ────────────────────────
+
+model Restaurant {
+  id            String    @id @default(uuid()) @db.Uuid
+  slug          String    @unique
+  name          String
+  email         String?
+  phone         String?
+  logoUrl       String?
+  coverImageUrl String?
+  address       String? // simple free-text address (v1; no maps/coordinates)
+  workingHoursText String? // human-readable label, e.g. "09:00 – 23:00" (structured hours live in RestaurantWorkingHour)
+  rating           Float? // editable display rating (0–5)
+  currency      String    @default("AMD")
+  timezone      String    @default("Asia/Yerevan")
+  isActive      Boolean   @default(true)
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  themeId String? @db.Uuid
+  theme   Theme?  @relation(fields: [themeId], references: [id], onDelete: SetNull)
+
+  planId String? @db.Uuid
+  plan   Plan?   @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  defaultLanguageId String?   @db.Uuid
+  defaultLanguage   Language? @relation("RestaurantDefaultLanguage", fields: [defaultLanguageId], references: [id], onDelete: SetNull)
+
+  settings RestaurantSettings?
+
+  users        User[]
+  domains      Domain[]
+  languages    RestaurantLanguage[]
+  workingHours RestaurantWorkingHour[]
+  categories   Category[]
+  products     Product[]
+  badges       Badge[]
+  orderDrafts  OrderDraft[]
+  favorites    Favorite[]
+  translations RestaurantTranslation[]
+  auditLogs    AuditLog[]
+  menuViews    MenuView[]
+  productViews ProductView[]
+  qrScans      QRCodeScan[]
+
+  @@index([themeId])
+  @@index([planId])
+  @@map("restaurants")
+}
+
+model RestaurantTranslation {
+  id           String @id @default(uuid()) @db.Uuid
+  restaurantId String @db.Uuid
+  languageId   String @db.Uuid
+
+  tagline        String?
+  seoTitle       String?
+  seoDescription String?
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  language   Language   @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, languageId])
+  @@index([languageId])
+  @@map("restaurant_translations")
+}
+
+model RestaurantSettings {
+  id           String @id @default(uuid()) @db.Uuid
+  restaurantId String @unique @db.Uuid
+
+  primaryColor    String @default("#3E2723")
+  secondaryColor  String @default("#8A7868")
+  backgroundColor String @default("#F5EFE2")
+  accentColor     String @default("#C69A5A")
+  fontFamily      String @default("modern")
+  cardRadius      Int    @default(22)
+
+  showRating              Boolean @default(true)
+  showBasket              Boolean @default(true)
+  showFavorites           Boolean @default(true)
+  showProductDescriptions Boolean @default(true)
+  animationsEnabled       Boolean @default(true)
+
+  instagramUrl String?
+  facebookUrl  String?
+  websiteUrl   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("restaurant_settings")
+}
+
+/// Weekly hours. Multiple rows per day = split shifts (10–15, 18–23).
+/// A closed day is a single row with isClosed = true (or no rows).
+model RestaurantWorkingHour {
+  id           String    @id @default(uuid()) @db.Uuid
+  restaurantId String    @db.Uuid
+  dayOfWeek    DayOfWeek
+  openTime     String? // "HH:mm" (null when closed)
+  closeTime    String? // "HH:mm"
+  isClosed     Boolean   @default(false)
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, dayOfWeek])
+  @@map("restaurant_working_hours")
+}
+
+// ─────────────────────────── Auth ────────────────────────────
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  passwordHash String
+  name         String?
+  role         UserRole  @default(OWNER)
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  restaurantId String?     @db.Uuid // null for SUPER_ADMIN
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+
+  @@index([restaurantId])
+  @@map("users")
+}
+
+/// Long-lived refresh tokens, stored HASHED (never plaintext). Rotated on use.
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String // SHA-256 of the issued refresh token
+  userAgent String?
+  ipHash    String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+/// Custom domain / subdomain → restaurant. Verified via DNS TXT token.
+model Domain {
+  id                String    @id @default(uuid()) @db.Uuid
+  // Uniqueness is enforced on LIVE rows only via a partial unique index
+  // (raw-indexes.sql) so a soft-deleted host can be re-added later.
+  domain            String
+  isPrimary         Boolean   @default(false)
+  isVerified        Boolean   @default(false)
+  verificationToken String?
+  verifiedAt        DateTime?
+  deletedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  restaurantId String     @db.Uuid
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+  @@map("domains")
+}
+
+// ─────────────────────────── Menu ────────────────────────────
+
+model Category {
+  id           String      @id @default(uuid()) @db.Uuid
+  restaurantId String      @db.Uuid
+  section      SectionType
+  icon         String?
+  imageUrl     String?
+  sortOrder    Int         @default(0)
+  isActive     Boolean     @default(true)
+  deletedAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  parentId String?    @db.Uuid
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children Category[] @relation("CategoryTree")
+
+  restaurant   Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  translations CategoryTranslation[]
+  products     Product[]
+
+  @@index([restaurantId, section])
+  @@index([restaurantId, parentId])
+  @@index([restaurantId, sortOrder])
+  @@map("categories")
+}
+
+model CategoryTranslation {
+  id          String  @id @default(uuid()) @db.Uuid
+  categoryId  String  @db.Uuid
+  languageId  String  @db.Uuid
+  name        String
+  description String?
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, languageId])
+  @@index([languageId])
+  @@map("category_translations")
+}
+
+model Product {
+  id            String    @id @default(uuid()) @db.Uuid
+  restaurantId  String    @db.Uuid
+  categoryId    String    @db.Uuid
+  price         Int // whole AMD drams
+  oldPrice      Int? // strikethrough / discount (must be > price)
+  isAvailable   Boolean   @default(true)
+  isActive      Boolean   @default(true)
+  isPopular     Boolean   @default(false)
+  isNew         Boolean   @default(false)
+  isRecommended Boolean   @default(false)
+  sortOrder     Int       @default(0)
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  restaurant   Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category     Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  translations ProductTranslation[]
+  images       ProductImage[]
+  badges       ProductBadge[]
+  favorites    Favorite[]
+  orderItems   OrderDraftItem[]
+  productViews ProductView[]
+
+  @@index([restaurantId])
+  @@index([categoryId, sortOrder])
+  @@index([restaurantId, isActive])
+  @@map("products")
+}
+
+model ProductTranslation {
+  id          String  @id @default(uuid()) @db.Uuid
+  productId   String  @db.Uuid
+  languageId  String  @db.Uuid
+  name        String
+  description String?
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, languageId])
+  @@index([languageId])
+  @@map("product_translations")
+}
+
+model ProductImage {
+  id        String    @id @default(uuid()) @db.Uuid
+  productId String    @db.Uuid
+  url        String // public/CDN URL
+  storageKey String? // object-storage key (null for external/linked images)
+  altText    String?
+  isMain    Boolean   @default(false)
+  sortOrder Int       @default(0)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// ─────────────────────────── Badges ──────────────────────────
+
+model Badge {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String // 'hit' | 'new' | 'spicy' | 'chef_choice' | 'limited' ...
+  icon      String?
+  color     String?
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  restaurantId String?     @db.Uuid // null = system badge
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  translations BadgeTranslation[]
+  products     ProductBadge[]
+
+  @@unique([restaurantId, key])
+  @@index([restaurantId])
+  @@map("badges")
+}
+
+model BadgeTranslation {
+  id         String @id @default(uuid()) @db.Uuid
+  badgeId    String @db.Uuid
+  languageId String @db.Uuid
+  label      String
+
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([badgeId, languageId])
+  @@index([languageId])
+  @@map("badge_translations")
+}
+
+model ProductBadge {
+  productId String @db.Uuid
+  badgeId   String @db.Uuid
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  badge   Badge   @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([productId, badgeId])
+  @@index([badgeId])
+  @@map("product_badges")
+}
+
+// ───────────────────── Guest interactions ────────────────────
+
+model OrderDraft {
+  id                 String           @id @default(uuid()) @db.Uuid
+  restaurantId       String           @db.Uuid
+  status             OrderDraftStatus @default(OPEN)
+  tableCode          String?
+  sessionId          String? // anonymous guest/session token
+  totalPriceSnapshot Int              @default(0)
+  note               String?
+  expiresAt          DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  restaurant Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items      OrderDraftItem[]
+
+  @@index([restaurantId, status])
+  @@index([restaurantId, createdAt])
+  @@index([sessionId])
+  @@map("order_drafts")
+}
+
+model OrderDraftItem {
+  id           String  @id @default(uuid()) @db.Uuid
+  orderDraftId String  @db.Uuid
+  productId    String  @db.Uuid
+  quantity     Int     @default(1)
+  unitPrice    Int // price snapshot (drams) at add time
+  note         String?
+
+  orderDraft OrderDraft @relation(fields: [orderDraftId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderDraftId])
+  @@index([productId])
+  @@map("order_draft_items")
+}
+
+model Favorite {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @db.Uuid
+  productId    String   @db.Uuid
+  deviceId     String
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([deviceId, productId])
+  @@index([restaurantId])
+  @@index([productId])
+  @@map("favorites")
+}
+
+// ──────────────────────────── Audit ──────────────────────────
+
+/// Append-only history of admin actions. `action`/`entityType` are strings so
+/// new audited actions never require a migration.
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  restaurantId String? @db.Uuid // null for super-admin/platform actions
+  userId     String?  @db.Uuid
+  entityType String // "Product" | "Category" | "Restaurant" | "Domain" | "Theme"
+  entityId   String?
+  action     String // "UPDATE_PRODUCT_PRICE" | "DELETE_PRODUCT" | "CHANGE_THEME" ...
+  oldValue   Json?
+  newValue   Json?
+  createdAt  DateTime @default(now())
+
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([restaurantId, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+// ────────────────────────── Analytics ────────────────────────
+// Append-only event tables. Denormalized (store domain/language/tableCode as
+// captured) so reads never join. BRIN(createdAt) + partitioning via raw SQL.
+
+model MenuView {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @db.Uuid
+  domain       String?
+  path         String?
+  language     String?
+  userAgent    String?
+  ipHash       String? // hashed, never raw IP
+  referrer     String?
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, createdAt])
+  @@index([restaurantId, language, createdAt])
+  @@map("menu_views")
+}
+
+model ProductView {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @db.Uuid
+  productId    String   @db.Uuid
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([restaurantId, createdAt])
+  @@index([productId, createdAt])
+  @@map("product_views")
+}
+
+model QRCodeScan {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @db.Uuid
+  tableCode    String?
+  domain       String?
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, createdAt])
+  @@index([restaurantId, tableCode, createdAt])
+  @@map("qr_code_scans")
+}
+
+// ───────────────────── Restaurant ⇆ Language ──────────────────
+
+model RestaurantLanguage {
+  id           String  @id @default(uuid()) @db.Uuid
+  restaurantId String  @db.Uuid
+  languageId   String  @db.Uuid
+  isDefault    Boolean @default(false)
+  sortOrder    Int     @default(0)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  language   Language   @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, languageId])
+  @@index([languageId])
+  @@map("restaurant_languages")
+}

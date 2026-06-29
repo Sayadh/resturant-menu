@@ -49,11 +49,6 @@ export const atelierBrand = {
     RU: '320 отзывов',
   } satisfies LocalizedText,
   city: { AM: 'Երևան, Հայաստան', EN: 'Yerevan, Armenia', RU: 'Ереван, Армения' } satisfies LocalizedText,
-  address: {
-    AM: 'Աբովյան 12',
-    EN: '12 Abovyan St.',
-    RU: 'ул. Абовян 12',
-  } satisfies LocalizedText,
   hours: '09:00 — 23:00',
 } as const
 
