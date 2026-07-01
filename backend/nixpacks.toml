@@ -1,0 +1,15 @@
+# Deterministic Railway/Nixpacks build for the NestJS backend.
+# Forces devDependencies at install time (so `nest` CLI + TypeScript exist),
+# then compiles to dist/, then starts the compiled server.
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "openssl"]
+
+[phases.install]
+cmds = ["npm install --include=dev"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm run start"
