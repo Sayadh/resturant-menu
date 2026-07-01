@@ -54,7 +54,7 @@ const brand = useBrand()
 
       <!-- Framed photograph -->
       <figure class="relative">
-        <div class="relative aspect-[4/5] overflow-hidden rounded-[2px] bg-[#16130F] shadow-[0_40px_80px_-40px_rgba(22,19,15,0.6)]">
+        <div class="relative aspect-[16/11] overflow-hidden rounded-[2px] bg-[#16130F] shadow-[0_40px_80px_-40px_rgba(22,19,15,0.6)] sm:aspect-[4/5]">
           <img
             src="/images/atelier-hero.png"
             alt=""

@@ -4,6 +4,7 @@
 export { restaurantService } from './restaurantService'
 export { themeService } from './themeService'
 export { menuService, type MenuPayload } from './menuService'
+export { sectionService, type SectionDraft } from './sectionService'
 export { categoryService, type CategoryDraft } from './categoryService'
 export { productService, type ProductDraft } from './productService'
 export { uploadService } from './uploadService'

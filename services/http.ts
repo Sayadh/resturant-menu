@@ -65,8 +65,12 @@ export function useApiClient() {
 
 /** Surface the backend's error message instead of a generic fetch error. */
 function normalizeError(err: unknown): Error {
-  const data = (err as { data?: { message?: string; errors?: unknown } })?.data
-  const msg = data?.message || (err as Error)?.message || 'Request failed'
+  const data = (err as { data?: { message?: string | string[]; errors?: unknown } })?.data
+  // NestJS validation errors come back as an array of messages.
+  const raw = data?.message
+  const msg = Array.isArray(raw)
+    ? raw.join(', ')
+    : raw || (err as Error)?.message || 'Request failed'
   const e = new Error(msg)
   ;(e as Error & { errors?: unknown }).errors = data?.errors
   return e

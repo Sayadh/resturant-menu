@@ -6,7 +6,7 @@ import type {
   ThemeSettings,
 } from '~/models/types'
 import { restaurantService, themeService } from '~/services'
-import { seedRestaurant, seedSettings, seedThemeSettings, THEMES } from '~/services/seed'
+import { emptyRestaurant, seedSettings, seedThemeSettings, THEMES } from '~/services/seed'
 
 /**
  * Restaurant profile, settings, theme catalog and theme customization — the
@@ -14,7 +14,7 @@ import { seedRestaurant, seedSettings, seedThemeSettings, THEMES } from '~/servi
  * the shared `useMenuStore` (consumed by every public theme).
  */
 export const useRestaurantStore = defineStore('restaurant', () => {
-  const restaurant = ref<Restaurant>(seedRestaurant)
+  const restaurant = ref<Restaurant>(emptyRestaurant)
   const settings = ref<RestaurantSettings>(seedSettings)
   const themeSettings = ref<ThemeSettings>(seedThemeSettings)
   const themes = ref<Theme[]>(THEMES)

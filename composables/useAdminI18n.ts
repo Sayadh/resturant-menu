@@ -1,0 +1,147 @@
+// Admin-panel UI translations (separate from the public menu language).
+// The admin can view the panel in Armenian / Russian / English.
+export type AdminLang = 'hy' | 'ru' | 'en'
+
+type Dict = Record<string, Record<AdminLang, string>>
+
+const T: Dict = {
+  // nav
+  dashboard: { hy: 'Վահանակ', ru: 'Панель', en: 'Dashboard' },
+  restaurantInfo: { hy: 'Ռեստորանի տվյալներ', ru: 'О ресторане', en: 'Restaurant Info' },
+  menuBuilder: { hy: 'Մենյուի կառուցում', ru: 'Конструктор меню', en: 'Menu Builder' },
+  products: { hy: 'Ապրանքներ', ru: 'Товары', en: 'Products' },
+  design: { hy: 'Դիզայն', ru: 'Дизайн', en: 'Design' },
+  customization: { hy: 'Կարգավորում', ru: 'Кастомизация', en: 'Customization' },
+  languages: { hy: 'Լեզուներ', ru: 'Языки', en: 'Languages' },
+  qrCode: { hy: 'QR կոդ', ru: 'QR-код', en: 'QR Code' },
+  settings: { hy: 'Կարգավորումներ', ru: 'Настройки', en: 'Settings' },
+
+  // header
+  adminSubtitle: { hy: 'QR Մենյու · ադմին', ru: 'QR Меню · админ', en: 'QR Menu Admin' },
+  viewMenu: { hy: 'Տեսնել մենյուն', ru: 'Открыть меню', en: 'View menu' },
+  logout: { hy: 'Ելք', ru: 'Выход', en: 'Log out' },
+
+  // dashboard
+  totalProducts: { hy: 'Ընդհանուր ապրանքներ', ru: 'Всего товаров', en: 'Total products' },
+  categoriesCount: { hy: 'Կատեգորիաներ', ru: 'Категории', en: 'Categories' },
+  available: { hy: 'Հասանելի', ru: 'Доступно', en: 'Available' },
+  activeTheme: { hy: 'Ակտիվ թեմա', ru: 'Активная тема', en: 'Active theme' },
+  qrMenuLink: { hy: 'QR մենյուի հղում', ru: 'Ссылка QR-меню', en: 'QR menu link' },
+  copy: { hy: 'Պատճենել', ru: 'Копировать', en: 'Copy' },
+  quickActions: { hy: 'Արագ գործողություններ', ru: 'Быстрые действия', en: 'Quick actions' },
+  changeTheme: { hy: 'Փոխել թեման', ru: 'Сменить тему', en: 'Change theme' },
+
+  // common
+  addSection: { hy: '+ Բաժին', ru: '+ Раздел', en: '+ Section' },
+  addCategory: { hy: '+ Կատեգորիա', ru: '+ Категория', en: '+ Category' },
+  addProduct: { hy: '+ Ապրանք', ru: '+ Товар', en: '+ Product' },
+  save: { hy: 'Պահպանել', ru: 'Сохранить', en: 'Save' },
+  saving: { hy: 'Պահպանում…', ru: 'Сохранение…', en: 'Saving…' },
+  cancel: { hy: 'Չեղարկել', ru: 'Отмена', en: 'Cancel' },
+  delete: { hy: 'Ջնջել', ru: 'Удалить', en: 'Delete' },
+  deleting: { hy: 'Ջնջում…', ru: 'Удаление…', en: 'Deleting…' },
+  edit: { hy: 'Խմբագրել', ru: 'Изменить', en: 'Edit' },
+  active: { hy: 'Ակտիվ', ru: 'Активно', en: 'Active' },
+  search: { hy: 'Որոնել…', ru: 'Поиск…', en: 'Search…' },
+  all: { hy: 'Բոլորը', ru: 'Все', en: 'All' },
+  optional: { hy: 'ըստ ցանկության', ru: 'необязательно', en: 'optional' },
+
+  // menu builder / lists
+  noSections: { hy: 'Բաժին չկա — ավելացրու «+ Բաժին»', ru: 'Нет разделов — добавьте «+ Раздел»', en: 'No sections — add “+ Section”' },
+  noCategories: { hy: 'Կատեգորիա չկա', ru: 'Нет категорий', en: 'No categories' },
+  noProducts: { hy: 'Ապրանք չկա', ru: 'Нет товаров', en: 'No products' },
+  itemsWord: { hy: 'ապրանք', ru: 'товаров', en: 'items' },
+
+  // products table
+  colProduct: { hy: 'Ապրանք', ru: 'Товар', en: 'Product' },
+  colCategory: { hy: 'Կատեգորիա', ru: 'Категория', en: 'Category' },
+  colPrice: { hy: 'Գին', ru: 'Цена', en: 'Price' },
+  colStatus: { hy: 'Կարգավիճակ', ru: 'Статус', en: 'Status' },
+  inStock: { hy: 'Առկա է', ru: 'В наличии', en: 'Available' },
+  outOfStock: { hy: 'Առկա չէ', ru: 'Нет в наличии', en: 'Sold out' },
+
+  // fields / modals
+  icon: { hy: 'Իկոն', ru: 'Иконка', en: 'Icon' },
+  sectionField: { hy: 'Բաժին', ru: 'Раздел', en: 'Section' },
+  nameTranslations: { hy: 'Անվանում · թարգմանություններ', ru: 'Название · переводы', en: 'Name · translations' },
+  descTranslations: { hy: 'Նկարագրություն · թարգմանություններ', ru: 'Описание · переводы', en: 'Description · translations' },
+  category: { hy: 'Կատեգորիա', ru: 'Категория', en: 'Category' },
+  price: { hy: 'Գին', ru: 'Цена', en: 'Price' },
+  badges: { hy: 'Պիտակներ', ru: 'Бейджи', en: 'Badges' },
+  image: { hy: 'Նկար', ru: 'Изображение', en: 'Image' },
+  newSection: { hy: 'Նոր բաժին', ru: 'Новый раздел', en: 'New section' },
+  editSection: { hy: 'Խմբագրել բաժինը', ru: 'Изменить раздел', en: 'Edit section' },
+  newCategory: { hy: 'Նոր կատեգորիա', ru: 'Новая категория', en: 'New category' },
+  editCategory: { hy: 'Խմբագրել կատեգորիան', ru: 'Изменить категорию', en: 'Edit category' },
+  newProduct: { hy: 'Նոր ապրանք', ru: 'Новый товар', en: 'New product' },
+  editProduct: { hy: 'Խմբագրել ապրանքը', ru: 'Изменить товар', en: 'Edit product' },
+
+  // toasts
+  saved: { hy: 'Պահպանված է', ru: 'Сохранено', en: 'Saved' },
+  deleted: { hy: 'Ջնջված է', ru: 'Удалено', en: 'Deleted' },
+  loadFailed: { hy: 'Չհաջողվեց բեռնել', ru: 'Не удалось загрузить', en: 'Failed to load' },
+  createFailed: { hy: 'Չհաջողվեց ստեղծել', ru: 'Не удалось создать', en: 'Failed to create' },
+
+  // super-admin · restaurants
+  restaurants: { hy: 'Ռեստորաններ', ru: 'Рестораны', en: 'Restaurants' },
+  restaurantsHint: {
+    hy: 'Կառավարիր հարթակի բոլոր ռեստորանները և ավելացրու նորերը',
+    ru: 'Управляйте всеми ресторанами платформы и добавляйте новые',
+    en: 'Manage every restaurant on the platform and add new ones',
+  },
+  addRestaurant: { hy: '+ Ավելացնել ռեստորան', ru: '+ Добавить ресторан', en: '+ Add restaurant' },
+  creating: { hy: 'Ստեղծվում է…', ru: 'Создание…', en: 'Creating…' },
+  name: { hy: 'Անվանում', ru: 'Название', en: 'Name' },
+  namePlaceholder: { hy: 'Իմ սրճարանը', ru: 'Моё кафе', en: 'My Cafe' },
+  slug: { hy: 'Հասցե (slug)', ru: 'Адрес (slug)', en: 'Slug' },
+  theme: { hy: 'Թեմա', ru: 'Тема', en: 'Theme' },
+  defaultLang: { hy: 'Հիմնական լեզու', ru: 'Язык по умолчанию', en: 'Default language' },
+  ownerEmail: { hy: 'Սեփականատիրոջ էլ. հասցե', ru: 'Email владельца', en: 'Owner email' },
+  ownerPassword: { hy: 'Սեփականատիրոջ գաղտնաբառ', ru: 'Пароль владельца', en: 'Owner password' },
+  slugInvalid: {
+    hy: 'Հասցեն պետք է լինի փոքրատառ, թվեր կամ գծիկ (2–40)',
+    ru: 'Адрес: строчные буквы, цифры или дефис (2–40)',
+    en: 'Slug must be lowercase letters, numbers or dashes (2–40)',
+  },
+  nameRequired: { hy: 'Անվանումը պարտադիր է', ru: 'Название обязательно', en: 'Name is required' },
+  restaurantCreated: { hy: 'Ռեստորանը ստեղծված է', ru: 'Ресторан создан', en: 'Restaurant created' },
+  publicUrl: { hy: 'Հանրային հղում', ru: 'Публичная ссылка', en: 'Public URL' },
+  ownerLogin: { hy: 'Մուտք', ru: 'Вход', en: 'Login' },
+  sectionsCount: { hy: 'Բաժիններ', ru: 'Разделы', en: 'Sections' },
+  productsCount: { hy: 'Ապրանքներ', ru: 'Товары', en: 'Products' },
+  view: { hy: 'Դիտել', ru: 'Открыть', en: 'View' },
+  noRestaurants: { hy: 'Ռեստորան չկա', ru: 'Нет ресторанов', en: 'No restaurants yet' },
+  editRestaurant: { hy: 'Խմբագրել ռեստորանը', ru: 'Изменить ресторан', en: 'Edit restaurant' },
+  activeRestaurant: { hy: 'Ակտիվ (հասանելի է հանրության համար)', ru: 'Активен (виден публично)', en: 'Active (publicly visible)' },
+  deleteRestaurant: { hy: 'Ջնջե՞լ ռեստորանը', ru: 'Удалить ресторан?', en: 'Delete restaurant?' },
+  deleteRestaurantConfirm: {
+    hy: '«{name}» ռեստորանը և դրա ԲՈԼՈՐ բաժինները, կատեգորիաներն ու ապրանքները մշտապես կջնջվեն։ Այս գործողությունը հնարավոր չէ հետարկել։',
+    ru: 'Ресторан «{name}» и ВСЕ его разделы, категории и товары будут удалены навсегда. Это действие необратимо.',
+    en: 'Restaurant “{name}” and ALL its sections, categories and products will be permanently deleted. This cannot be undone.',
+  },
+}
+
+export const ADMIN_LANGS: { code: AdminLang; label: string }[] = [
+  { code: 'hy', label: 'ՀԱՅ' },
+  { code: 'ru', label: 'РУС' },
+  { code: 'en', label: 'ENG' },
+]
+
+export const useAdminI18n = () => {
+  const lang = useState<AdminLang>('admin-lang', () => 'hy')
+
+  // Restore persisted choice on the client.
+  if (import.meta.client) {
+    const saved = localStorage.getItem('admin-lang') as AdminLang | null
+    if (saved && saved !== lang.value) lang.value = saved
+  }
+
+  const setLang = (l: AdminLang) => {
+    lang.value = l
+    if (import.meta.client) localStorage.setItem('admin-lang', l)
+  }
+
+  const t = (key: keyof typeof T): string => T[key]?.[lang.value] ?? String(key)
+
+  return { lang, setLang, t, langs: ADMIN_LANGS }
+}

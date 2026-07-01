@@ -1,11 +1,10 @@
 import { Transform } from 'class-transformer'
-import { IsBoolean, IsEnum, IsOptional } from 'class-validator'
-import { SectionType } from '@prisma/client'
+import { IsBoolean, IsOptional, IsUUID } from 'class-validator'
 import { ListQueryDto } from '../../common/dto/list-query.dto'
 
 export class CategoryListQueryDto extends ListQueryDto {
-  @IsOptional() @IsEnum(SectionType)
-  section?: SectionType
+  @IsOptional() @IsUUID()
+  sectionId?: string
 
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true)

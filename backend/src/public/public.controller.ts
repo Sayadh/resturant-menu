@@ -1,16 +1,34 @@
-import { Controller, Get, Param, Query } from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, Param, Post, Query, Req } from '@nestjs/common'
+import type { Request } from 'express'
 import { PublicService } from './public.service'
+import { LeadService } from './lead.service'
+import { CreateLeadDto } from './dto/create-lead.dto'
 import { Public } from '../common/decorators/public.decorator'
 
 /** Unauthenticated public menu API consumed by the customer-facing frontend. */
 @Public()
 @Controller('public')
 export class PublicController {
-  constructor(private readonly svc: PublicService) {}
+  constructor(
+    private readonly svc: PublicService,
+    private readonly leads: LeadService,
+  ) {}
+
+  // POST /api/v1/public/lead — landing "Get started" form → Telegram.
+  @Post('lead')
+  @HttpCode(200)
+  lead(@Body() dto: CreateLeadDto, @Req() req: Request) {
+    return this.leads.submit(dto, { ua: req.headers['user-agent'] })
+  }
 
   @Get('resolve')
   resolve(@Query('host') host?: string, @Query('slug') slug?: string) {
     return this.svc.resolve(host, slug)
+  }
+
+  @Get('restaurants')
+  list() {
+    return this.svc.listRestaurants()
   }
 
   @Get('restaurants/:slug')

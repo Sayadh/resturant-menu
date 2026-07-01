@@ -46,7 +46,6 @@ const isDark = computed(() => props.tone === 'dark')
           :src="item.image"
           :alt="t(item.name)"
           class="aspect-[5/4] w-full scale-110 object-cover"
-          crossorigin="anonymous"
         />
         <div
           v-else

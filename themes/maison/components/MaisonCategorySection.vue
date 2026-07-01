@@ -20,7 +20,7 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
 </script>
 
 <template>
-  <div class="relative h-[78svh] min-h-[480px] w-full overflow-hidden">
+  <div class="relative h-[46svh] min-h-[300px] w-full overflow-hidden sm:h-[78svh] sm:min-h-[480px]">
     <!-- Background -->
     <img
       v-if="image"
@@ -29,7 +29,6 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
       alt=""
       aria-hidden="true"
       class="absolute inset-0 h-[118%] w-full -translate-y-[6%] scale-105 object-cover"
-      crossorigin="anonymous"
     />
     <div
       v-else
@@ -45,11 +44,11 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
 
     <!-- Content -->
     <div class="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center text-[#FBF8F1]">
-      <span v-reveal class="ms-gold-text font-display text-5xl sm:text-6xl">{{ num }}</span>
-      <h2 v-reveal="1" class="mt-4 text-balance font-serif text-4xl leading-tight sm:text-6xl">
+      <span v-reveal class="ms-gold-text font-display text-4xl sm:text-6xl">{{ num }}</span>
+      <h2 v-reveal="1" class="mt-3 text-balance font-serif text-3xl leading-tight sm:mt-4 sm:text-6xl">
         {{ t(category.title) }}
       </h2>
-      <div v-reveal="2" class="mt-6 flex items-center gap-3 font-sans text-[11px] tracking-[0.24em] text-[#FBF8F1]/75">
+      <div v-reveal="2" class="mt-4 flex items-center gap-3 font-sans text-[11px] tracking-[0.24em] text-[#FBF8F1]/75 sm:mt-6">
         <span class="h-px w-8 bg-[#C9AC7C]/60" aria-hidden="true" />
         {{ category.items.length }} {{ t(maisonCategories.dishesWord).toUpperCase() }}
         <span class="h-px w-8 bg-[#C9AC7C]/60" aria-hidden="true" />
@@ -58,7 +57,7 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
       <button
         v-reveal="3"
         type="button"
-        class="group mt-9 inline-flex items-center gap-3 border border-[#FBF8F1]/40 px-8 py-3 font-sans text-[11px] tracking-[0.26em] transition-colors duration-500 hover:border-[#C9AC7C] hover:bg-[#C9AC7C] hover:text-[#241B14]"
+        class="group mt-6 inline-flex items-center gap-3 border border-[#FBF8F1]/40 px-8 py-3 font-sans text-[11px] tracking-[0.26em] transition-colors duration-500 hover:border-[#C9AC7C] hover:bg-[#C9AC7C] hover:text-[#241B14] sm:mt-9"
         @click="$emit('explore')"
       >
         {{ t(maisonCategories.explore).toUpperCase() }}

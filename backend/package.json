@@ -11,6 +11,10 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "db:seed": "ts-node prisma/seed.ts",
+    "clone:menu": "ts-node prisma/clone-menu.ts",
+    "create:demo": "ts-node prisma/create-demo.ts",
+    "add:restaurant": "ts-node prisma/add-restaurant.ts",
+    "add:superadmin": "ts-node prisma/add-super-admin.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

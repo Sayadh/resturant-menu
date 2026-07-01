@@ -1,38 +1,50 @@
 <script setup lang="ts">
 // Public tenant route: /<restaurant-slug>
-// Resolves the restaurant + its menu through the service layer, then hands the
-// normalized data to ThemeRenderer. Works on direct access / refresh (SSR) and
-// on client-side navigation for ANY slug from the database.
+// Restaurant is fetched once per slug. The menu is fetched in the ACTIVE
+// language only (one request) and refetched whenever the language changes.
 import { restaurantService, menuService } from '~/services'
+import type { Lang } from '~/data/menu'
 
 const route = useRoute()
 const slug = computed(() => String(route.params.slug || ''))
 
-const load = async () => {
-  const restaurant = await restaurantService.getRestaurantBySlug(slug.value)
-  if (!restaurant) return { restaurant: null as Awaited<ReturnType<typeof restaurantService.getRestaurantBySlug>>, menu: null }
-  const menu = await menuService.getMenu(restaurant.id)
-  return { restaurant, menu: menu ?? { levels: [], categories: [] } }
-}
-
-const { data, pending, refresh: reload } = await useAsyncData(`tenant-${slug.value}`, load, {
-  watch: [slug],
+// Optional render-only theme override via ?theme= (used by the landing demo
+// preview so switching a theme opens the demo in that theme). Never persisted.
+const VALID_THEMES = ['aria', 'atelier', 'maison', 'heritage']
+const themeOverride = computed(() => {
+  const q = String(route.query.theme || '').toLowerCase()
+  return VALID_THEMES.includes(q) ? q : ''
 })
 
-// Refresh resilience: if SSR couldn't resolve the tenant (e.g. the SSR runtime
-// momentarily failed to reach the API), retry once on the client — where the
-// fetch is reliable — before deciding the restaurant doesn't exist. This makes
-// a hard refresh behave exactly like client-side navigation.
-const settled = ref(false)
-onMounted(async () => {
-  if (!data.value?.restaurant) await reload()
-  settled.value = true
-})
+const { lang } = useLanguage()
+const API_LANG: Record<Lang, string> = { AM: 'hy', EN: 'en', RU: 'ru' }
+const apiLang = computed(() => API_LANG[lang.value])
 
-const restaurant = computed(() => data.value?.restaurant ?? null)
-// Only declare "not found" after the client retry has settled, so a transient
-// SSR miss never flashes the not-found screen.
-const notFound = computed(() => settled.value && !pending.value && !restaurant.value)
+// Restaurant — once per slug, language-independent.
+const { data: restaurant, pending: restPending } = useLazyAsyncData(
+  () => `rest-${slug.value}`,
+  () => restaurantService.getRestaurantBySlug(slug.value),
+  { server: false, watch: [slug] },
+)
+
+// Menu — active language only; refetches when restaurant or language changes.
+const { data: menu } = useLazyAsyncData(
+  () => `menu-${slug.value}-${apiLang.value}`,
+  () => (restaurant.value ? menuService.getMenu(restaurant.value.id, apiLang.value) : Promise.resolve(null)),
+  { server: false, watch: [() => restaurant.value?.id, apiLang] },
+)
+
+// Full loader only on the FIRST load; a language switch keeps the current menu
+// visible (Nuxt retains previous data) until the new language arrives.
+const loadingInitial = computed(() => restPending.value || (!!restaurant.value && menu.value == null))
+const notFound = computed(() => !restPending.value && restaurant.value == null)
+
+// Apply the theme override for rendering only (clone, don't mutate the source).
+const displayRestaurant = computed(() =>
+  restaurant.value && themeOverride.value
+    ? { ...restaurant.value, themeId: themeOverride.value }
+    : restaurant.value,
+)
 
 useHead(() => ({
   title: restaurant.value ? `${restaurant.value.name} — Menu` : 'Menu',
@@ -40,14 +52,13 @@ useHead(() => ({
 </script>
 
 <template>
-  <RestaurantNotFound v-if="notFound" :slug="slug" />
+  <MenuLoading v-if="loadingInitial" />
+  <RestaurantNotFound v-else-if="notFound" :slug="slug" />
   <ThemeRenderer
-    v-else-if="restaurant && data?.menu"
-    :restaurant="restaurant"
-    :levels="data.menu.levels"
-    :categories="data.menu.categories"
+    v-else-if="displayRestaurant && menu"
+    :restaurant="displayRestaurant"
+    :levels="menu.levels"
+    :categories="menu.categories"
   />
-  <div v-else class="flex min-h-screen items-center justify-center bg-[#F5EFE2]">
-    <span class="h-8 w-8 animate-spin rounded-full border-2 border-[#E4D6C2] border-t-[#C69A5A]"></span>
-  </div>
+  <MenuLoading v-else />
 </template>

@@ -15,6 +15,7 @@ export const useBrand = () => {
     address: computed<string>(() => r.value.address),
     rating: computed(() => r.value.rating),
     hours: computed(() => r.value.workingHours),
-    phone: computed(() => r.value.phone),
+    logo: computed<string>(() => r.value.logo),
+    cover: computed<string>(() => r.value.coverImage),
   }
 }

@@ -3,7 +3,6 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
-  IsEnum,
   IsInt,
   IsOptional,
   IsString,
@@ -12,12 +11,11 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator'
-import { SectionType } from '@prisma/client'
 import { TranslationInputDto } from '../../common/dto/translation-input.dto'
 
 export class CreateCategoryDto {
-  @IsEnum(SectionType)
-  section!: SectionType
+  @IsUUID()
+  sectionId!: string
 
   @IsOptional() @IsUUID()
   parentId?: string

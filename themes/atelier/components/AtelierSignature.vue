@@ -38,7 +38,7 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
         >
           <button
             type="button"
-            class="relative aspect-[3/4] overflow-hidden rounded-[2px] bg-[#0E0C09]"
+            class="relative aspect-[16/10] overflow-hidden rounded-[2px] bg-[#0E0C09] sm:aspect-[3/4]"
             :aria-label="t(d.item.name)"
             @click="emit('open', d.item)"
           >

@@ -186,7 +186,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="atelier-theme atl-grain relative min-h-screen overflow-x-hidden pb-28 font-serif">
+  <div class="atelier-theme atl-grain relative flex min-h-screen flex-col overflow-x-hidden pb-28 font-serif">
+    <!-- growing content wrapper — pushes the footer to the bottom on short pages -->
+    <div class="flex-1">
     <!-- everything sits above the fixed grain layer -->
     <AtelierHeader />
     <AtelierHero />
@@ -257,6 +259,7 @@ onBeforeUnmount(() => {
         <AtelierEmpty v-else />
       </main>
     </template>
+    </div>
 
     <AtelierFooter />
 

@@ -1,14 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────
 // Mapping between the NestJS API payloads and the frontend domain model.
-// Backend speaks: SectionType (FOOD/DRINKS/ALCOHOL), single-language menu rows,
-// translations[] with language.code, price as Int (AMD), badge keys.
-// Frontend speaks: level/group + LocalizedText (AM/EN/RU), Translation, Badge[].
+// Backend speaks: dynamic Section ids, single-language menu rows, translations[]
+// with language.code, price as Int (AMD), badge keys.
+// Frontend speaks: levels(=sections) + LocalizedText (AM/EN/RU), Translation, Badge[].
 // ─────────────────────────────────────────────────────────────────────────
 import type {
   Category,
   Product,
   Restaurant,
-  SectionType,
+  Section,
   Translation,
   Badge,
   ThemeId,
@@ -20,20 +20,7 @@ import type {
   MenuLevel,
   LocalizedText,
   BadgeKey,
-  DrinkGroup,
 } from '~/data/menu'
-
-// ── enums ────────────────────────────────────────────────────────────────
-export type ApiSection = 'FOOD' | 'DRINKS' | 'ALCOHOL'
-
-export const sectionToApi = (s: SectionType): ApiSection =>
-  s === 'food' ? 'FOOD' : s === 'alcohol' ? 'ALCOHOL' : 'DRINKS'
-
-export const apiToSection = (s: ApiSection | string | null): SectionType =>
-  s === 'FOOD' ? 'food' : s === 'ALCOHOL' ? 'alcohol' : 'drinks'
-
-const sectionToLevelGroup = (s: ApiSection | string | null): { level: 'food' | 'drinks'; group?: DrinkGroup } =>
-  s === 'FOOD' ? { level: 'food' } : s === 'ALCOHOL' ? { level: 'drinks', group: 'alcohol' } : { level: 'drinks', group: 'soft' }
 
 // ── badges ────────────────────────────────────────────────────────────────
 const KNOWN_BADGES: Badge[] = ['hit', 'new', 'recommended', 'spicy', 'vegan', 'affordable']
@@ -98,9 +85,15 @@ export const translationToRows = (name: Translation, description?: Translation) 
 // PUBLIC: multi-language menu → MenuPayload (levels + nested categories)
 // ════════════════════════════════════════════════════════════════════════
 export interface ApiMenuResponse {
+  sections: {
+    id: string
+    icon: string | null
+    sortOrder: number
+    name: string
+  }[]
   categories: {
     id: string
-    section: ApiSection | string
+    sectionId: string | null
     icon: string | null
     image: string | null
     sortOrder: number
@@ -110,7 +103,7 @@ export interface ApiMenuResponse {
   products: {
     id: string
     categoryId: string
-    section: ApiSection | string | null
+    sectionId: string | null
     price: number
     oldPrice: number | null
     isAvailable: boolean
@@ -126,33 +119,34 @@ export interface ApiMenuResponse {
   }[]
 }
 
-const LEVELS: MenuLevel[] = [
-  { id: 'food', icon: '🍽', title: { AM: 'Ուտեստներ', EN: 'Food', RU: 'Блюда' } },
-  { id: 'drinks', icon: '🥤', title: { AM: 'Ըմպելիքներ', EN: 'Drinks', RU: 'Напитки' } },
-]
+// The menu API returns ONE localized language per request. We mirror that text
+// across all LocalizedText slots so the theme's active-language read always
+// shows it; the page refetches when the user switches language.
+const mirror = (s: string): LocalizedText => ({ AM: s, EN: s, RU: s })
 
 /**
- * Merge one menu response per language into a single MenuPayload that carries
- * all languages (the public themes switch language client-side).
+ * Build a MenuPayload from a single-language menu response. Each Section becomes
+ * a top-level "level" (tab); each category's `level` is its sectionId. This lets
+ * the existing level-driven themes render dynamic sections with no changes.
  */
-export function mergeMenus(byLang: Partial<Record<LangCode, ApiMenuResponse>>): { levels: MenuLevel[]; categories: MenuCategory[] } {
-  const langs = Object.keys(byLang) as LangCode[]
-  const primaryLang = langs[0]
-  const primary = primaryLang ? byLang[primaryLang] : undefined
-  if (!primary) return { levels: [], categories: [] }
+export function buildMenu(payload: ApiMenuResponse): { levels: MenuLevel[]; categories: MenuCategory[] } {
+  const levels: MenuLevel[] = payload.sections.map((s) => ({
+    id: s.id,
+    icon: s.icon ?? '🍽',
+    title: mirror(s.name),
+  }))
 
   const catMap = new Map<string, MenuCategory>()
   const order: string[] = []
 
-  for (const c of primary.categories) {
-    const { level, group } = sectionToLevelGroup(c.section)
+  for (const c of payload.categories) {
     catMap.set(c.id, {
       id: c.id,
-      level,
-      group,
+      level: c.sectionId ?? '',
+      group: undefined,
       icon: c.icon ?? '🍽',
-      title: emptyLT(),
-      description: emptyLT(),
+      title: mirror(c.name),
+      description: mirror(c.description ?? ''),
       image: c.image ?? '',
       items: [],
       sortOrder: c.sortOrder,
@@ -161,14 +155,15 @@ export function mergeMenus(byLang: Partial<Record<LangCode, ApiMenuResponse>>): 
     order.push(c.id)
   }
 
-  const itemMap = new Map<string, MenuItem>()
-  for (const p of primary.products) {
-    itemMap.set(p.id, {
+  for (const p of payload.products) {
+    const cat = catMap.get(p.categoryId)
+    if (!cat) continue
+    cat.items.push({
       id: p.id,
       image: p.image ?? p.images[0] ?? '',
       price: p.price,
-      name: emptyLT(),
-      description: emptyLT(),
+      name: mirror(p.name),
+      description: mirror(p.description ?? ''),
       badge: primaryBadge(p.badges, p),
       badges: p.badges,
       available: p.isAvailable,
@@ -177,38 +172,40 @@ export function mergeMenus(byLang: Partial<Record<LangCode, ApiMenuResponse>>): 
     })
   }
 
-  // Fill every language's text.
-  for (const lang of langs) {
-    const k = langToLT[lang]
-    const payload = byLang[lang]
-    if (!k || !payload) continue
-    for (const c of payload.categories) {
-      const cat = catMap.get(c.id)
-      if (cat) {
-        cat.title[k] = c.name
-        if (cat.description) cat.description[k] = c.description ?? ''
-      }
-    }
-    for (const p of payload.products) {
-      const item = itemMap.get(p.id)
-      if (item) {
-        item.name[k] = p.name
-        item.description[k] = p.description ?? ''
-      }
-    }
-  }
-
-  // Attach products to their categories, preserving order.
-  for (const p of primary.products) {
-    const item = itemMap.get(p.id)
-    const cat = catMap.get(p.categoryId)
-    if (item && cat) cat.items.push(item)
-  }
-
   const categories = order.map((id) => catMap.get(id)!).filter(Boolean)
-  const usedLevels = new Set(categories.map((c) => c.level))
-  const levels = LEVELS.filter((l) => usedLevels.has(l.id))
-  return { levels: levels.length ? levels : LEVELS, categories }
+  return { levels, categories }
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// SECTIONS (admin + summary) ↔ frontend Section
+// ════════════════════════════════════════════════════════════════════════
+export interface ApiSectionRow {
+  id: string
+  icon: string | null
+  sortOrder: number
+  isActive: boolean
+  translations: ApiTranslationRow[]
+}
+
+export function mapSection(s: ApiSectionRow): Section {
+  const { title } = rowsToLocalized(s.translations)
+  return {
+    id: s.id,
+    restaurantId: '',
+    name: ltToTranslation(title),
+    icon: s.icon ?? '',
+    sortOrder: s.sortOrder,
+    active: s.isActive,
+  }
+}
+
+export function sectionDraftToDto(d: Omit<Section, 'id' | 'restaurantId'>) {
+  return {
+    icon: d.icon || undefined,
+    sortOrder: d.sortOrder,
+    isActive: d.active,
+    translations: translationToRows(d.name),
+  }
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -223,19 +220,12 @@ export interface ApiRestaurantBySlug {
     logoUrl: string | null
     coverImageUrl: string | null
     address: string | null
-    phone: string | null
     workingHoursText?: string | null
     rating?: number | null
     currency: string
   }
   // themeId on the restaurant is a FK uuid; the human key lives on theme.key.
   theme: { id: string; key: string } | null
-  settings: {
-    customDomain?: string | null
-    instagramUrl?: string | null
-    facebookUrl?: string | null
-    websiteUrl?: string | null
-  } | null
   translations?: { tagline: string | null; language: { code: string } }[]
   languages: { code: string; isDefault: boolean }[]
 }
@@ -243,6 +233,38 @@ export interface ApiRestaurantBySlug {
 const themeKeyToId = (key: string | null): ThemeId => {
   const allowed: ThemeId[] = ['aria', 'atelier', 'maison', 'heritage', 'noir']
   return (allowed.includes(key as ThemeId) ? key : 'aria') as ThemeId
+}
+
+export interface ApiRestaurantSummary {
+  id: string
+  slug: string
+  name: string
+  logoUrl: string | null
+  theme: { id: string; key: string } | null
+  translations?: { tagline: string | null; language: { code: string } }[]
+}
+
+/** Lightweight list item → Restaurant (landing cards). */
+export function mapRestaurantSummary(r: ApiRestaurantSummary): Restaurant {
+  const tagline: Translation = { hy: '', en: '', ru: '' }
+  for (const t of r.translations ?? []) {
+    const k = t.language.code as keyof Translation
+    if (k in tagline) tagline[k] = t.tagline ?? ''
+  }
+  return {
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+    themeId: themeKeyToId(r.theme?.key ?? null),
+    logo: r.logoUrl ?? '',
+    coverImage: '',
+    tagline,
+    address: '',
+    workingHours: '',
+    rating: 0,
+    defaultLanguage: 'hy',
+    activeLanguages: ['hy', 'en', 'ru'],
+  }
 }
 
 export function mapRestaurant(r: ApiRestaurantBySlug): Restaurant {
@@ -261,15 +283,9 @@ export function mapRestaurant(r: ApiRestaurantBySlug): Restaurant {
     logo: r.restaurant.logoUrl ?? '',
     coverImage: r.restaurant.coverImageUrl ?? '',
     tagline,
-    phone: r.restaurant.phone ?? '',
     address: r.restaurant.address ?? '',
     workingHours: r.restaurant.workingHoursText ?? '',
     rating: r.restaurant.rating ?? 0,
-    social: {
-      instagram: r.settings?.instagramUrl ?? '',
-      facebook: r.settings?.facebookUrl ?? '',
-      website: r.settings?.websiteUrl ?? '',
-    },
     defaultLanguage: def ?? langs[0] ?? 'hy',
     activeLanguages: langs.length ? langs : ['hy'],
   }
@@ -282,7 +298,6 @@ export interface ApiAdminRestaurant {
   id: string
   slug: string
   name: string
-  phone: string | null
   address: string | null
   workingHoursText: string | null
   rating: number | null
@@ -290,11 +305,6 @@ export interface ApiAdminRestaurant {
   coverImageUrl: string | null
   currency: string
   theme: { id: string; key: string } | null
-  settings: {
-    instagramUrl?: string | null
-    facebookUrl?: string | null
-    websiteUrl?: string | null
-  } | null
   translations?: { tagline: string | null; language: { code: string } }[]
 }
 
@@ -312,15 +322,9 @@ export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
     logo: r.logoUrl ?? '',
     coverImage: r.coverImageUrl ?? '',
     tagline,
-    phone: r.phone ?? '',
     address: r.address ?? '',
     workingHours: r.workingHoursText ?? '',
     rating: r.rating ?? 0,
-    social: {
-      instagram: r.settings?.instagramUrl ?? '',
-      facebook: r.settings?.facebookUrl ?? '',
-      website: r.settings?.websiteUrl ?? '',
-    },
     defaultLanguage: 'hy',
     activeLanguages: ['hy', 'en', 'ru'],
   }
@@ -330,7 +334,6 @@ export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
 export function restaurantPatchToDto(patch: Partial<Restaurant>) {
   const dto: Record<string, unknown> = {}
   if (patch.name !== undefined) dto.name = patch.name
-  if (patch.phone !== undefined) dto.phone = patch.phone || undefined
   if (patch.address !== undefined) dto.address = patch.address || undefined
   if (patch.workingHours !== undefined) dto.workingHours = patch.workingHours || undefined
   if (patch.rating !== undefined) dto.rating = patch.rating
@@ -345,7 +348,7 @@ export function restaurantPatchToDto(patch: Partial<Restaurant>) {
 // ════════════════════════════════════════════════════════════════════════
 export interface ApiCategoryRow {
   id: string
-  section: ApiSection | string
+  sectionId: string | null
   icon: string | null
   imageUrl: string | null
   sortOrder: number
@@ -358,7 +361,7 @@ export function mapCategory(c: ApiCategoryRow): Category {
   return {
     id: c.id,
     restaurantId: '',
-    section: apiToSection(c.section),
+    sectionId: c.sectionId ?? '',
     name: ltToTranslation(title),
     description: ltToTranslation(desc),
     icon: c.icon ?? '',
@@ -384,14 +387,14 @@ export interface ApiProductRow {
   badges: { badge: { key: string } }[]
 }
 
-export function mapProduct(p: ApiProductRow, sectionByCat: Map<string, SectionType>): Product {
+export function mapProduct(p: ApiProductRow, sectionByCat: Map<string, string>): Product {
   const { title, desc } = rowsToLocalized(p.translations)
   const main = p.images.find((i) => i.isMain) ?? p.images[0]
   return {
     id: p.id,
     restaurantId: '',
     categoryId: p.categoryId,
-    section: sectionByCat.get(p.categoryId) ?? 'food',
+    sectionId: sectionByCat.get(p.categoryId) ?? '',
     name: ltToTranslation(title),
     description: ltToTranslation(desc),
     price: p.price,
@@ -406,7 +409,7 @@ export function mapProduct(p: ApiProductRow, sectionByCat: Map<string, SectionTy
 // ── drafts → backend DTOs ─────────────────────────────────────────────────
 export function categoryDraftToDto(d: Omit<Category, 'id' | 'restaurantId'>) {
   return {
-    section: sectionToApi(d.section),
+    sectionId: d.sectionId,
     icon: d.icon || undefined,
     imageUrl: d.image || undefined,
     sortOrder: d.sortOrder,

@@ -40,7 +40,6 @@ const soldOut = (item: MenuItem) => item.available === false
               :alt="t(item.name)"
               class="aspect-[5/4] w-full object-cover transition-transform duration-700 hover:scale-[1.04]"
               :class="soldOut(item) ? 'opacity-60 grayscale' : ''"
-              crossorigin="anonymous"
             />
             <div
               v-else
@@ -93,7 +92,6 @@ const soldOut = (item: MenuItem) => item.available === false
             :alt="t(item.name)"
             class="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
             :class="soldOut(item) ? 'opacity-60 grayscale' : ''"
-            crossorigin="anonymous"
           />
           <div
             v-else

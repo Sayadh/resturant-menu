@@ -37,6 +37,6 @@ export class RestaurantController {
   @Patch('theme')
   @Roles(UserRole.OWNER, UserRole.MANAGER)
   updateTheme(@RestaurantId() restaurantId: string, @Body() dto: UpdateThemeDto) {
-    return this.restaurant.updateTheme(restaurantId, dto.themeId)
+    return this.restaurant.updateTheme(restaurantId, dto.themeKey)
   }
 }

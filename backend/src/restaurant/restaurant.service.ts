@@ -63,14 +63,14 @@ export class RestaurantService {
     })
   }
 
-  async updateTheme(restaurantId: string, themeId: string) {
+  async updateTheme(restaurantId: string, themeKey: string) {
     await this.getOwn(restaurantId)
-    const theme = await this.prisma.theme.findFirst({ where: { id: themeId, isActive: true } })
+    const theme = await this.prisma.theme.findFirst({ where: { key: themeKey, isActive: true } })
     if (!theme) throw new BadRequestException('Theme not found or inactive')
     return this.prisma.restaurant.update({
       where: { id: restaurantId },
-      data: { themeId },
-      include: { settings: true, theme: true },
+      data: { themeId: theme.id },
+      include: this.include,
     })
   }
 }

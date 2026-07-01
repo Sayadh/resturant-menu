@@ -1,13 +1,11 @@
 import { defineStore } from 'pinia'
-import {
-  menu as seedMenu,
-  levels as seedLevels,
-  type MenuCategory,
-  type MenuItem,
-  type MenuLevel,
-  type DrinkGroup,
-  type LocalizedText,
-  type BadgeKey,
+import type {
+  MenuCategory,
+  MenuItem,
+  MenuLevel,
+  DrinkGroup,
+  LocalizedText,
+  BadgeKey,
 } from '~/data/menu'
 
 // Per-tenant persistence key (admin edits are scoped to one restaurant).
@@ -41,12 +39,13 @@ export interface ProductInput {
 }
 
 export const useMenuStore = defineStore('menu', () => {
-  const currentRestaurantId = ref('tun-lahmajo')
-  const levels = ref<MenuLevel[]>(clone(seedLevels))
-  const categories = ref<MenuCategory[]>(clone(seedMenu))
-  // Baseline (server/mock) data for the current tenant — used by reset().
-  const seedLevelsForTenant = ref<MenuLevel[]>(clone(seedLevels))
-  const seedCategoriesForTenant = ref<MenuCategory[]>(clone(seedMenu))
+  const currentRestaurantId = ref('')
+  // Runtime render container — populated per tenant via setTenant() from the API.
+  const levels = ref<MenuLevel[]>([])
+  const categories = ref<MenuCategory[]>([])
+  // Baseline (server) data for the current tenant — used by reset().
+  const seedLevelsForTenant = ref<MenuLevel[]>([])
+  const seedCategoriesForTenant = ref<MenuCategory[]>([])
 
   // ── persistence (scoped per restaurant) ──────────────────────
   const save = () => {
@@ -62,8 +61,8 @@ export const useMenuStore = defineStore('menu', () => {
   }
 
   /**
-   * Load a tenant's menu into the store. `payload` is the server/mock baseline;
-   * any locally-saved admin edits for that restaurant override it.
+   * Load a tenant's menu (from the API) into the store as the render source.
+   * Called on tenant change and on language refetch.
    */
   const setTenant = (
     restaurantId: string,
@@ -74,18 +73,6 @@ export const useMenuStore = defineStore('menu', () => {
     seedCategoriesForTenant.value = clone(payload.categories)
     levels.value = clone(payload.levels)
     categories.value = clone(payload.categories)
-    if (import.meta.client) {
-      const raw = localStorage.getItem(keyFor(restaurantId))
-      if (raw) {
-        try {
-          const data = JSON.parse(raw)
-          if (Array.isArray(data.levels)) levels.value = data.levels
-          if (Array.isArray(data.categories)) categories.value = data.categories
-        } catch {
-          /* ignore corrupt state */
-        }
-      }
-    }
   }
 
   const reset = () => {

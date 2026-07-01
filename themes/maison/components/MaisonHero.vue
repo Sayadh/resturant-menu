@@ -15,12 +15,14 @@ const brand = useBrand()
 
 <template>
   <section class="relative h-[100svh] min-h-[600px] w-full overflow-hidden">
-    <!-- Cover photography with a slow Ken-Burns drift -->
-    <img
-      src="/images/maison/hero.png"
-      alt=""
+    <!-- Warm base (always present, so there's never a broken hero) -->
+    <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 30%, #3B2C20, #241B14)" aria-hidden="true" />
+    <!-- Cover photography (only if the restaurant has one) with a slow drift -->
+    <div
+      v-if="brand.cover"
+      class="ms-kenburns absolute inset-0 bg-cover bg-center"
+      :style="{ backgroundImage: `url(${brand.cover})` }"
       aria-hidden="true"
-      class="ms-kenburns absolute inset-0 h-full w-full object-cover"
     />
     <!-- Soft gradient overlays for legibility -->
     <div

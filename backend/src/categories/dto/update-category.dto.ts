@@ -2,7 +2,6 @@ import { Type } from 'class-transformer'
 import {
   IsArray,
   IsBoolean,
-  IsEnum,
   IsInt,
   IsOptional,
   IsString,
@@ -11,12 +10,11 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator'
-import { SectionType } from '@prisma/client'
 import { TranslationInputDto } from '../../common/dto/translation-input.dto'
 
 export class UpdateCategoryDto {
-  @IsOptional() @IsEnum(SectionType)
-  section?: SectionType
+  @IsOptional() @IsUUID()
+  sectionId?: string
 
   @IsOptional() @IsUUID()
   parentId?: string

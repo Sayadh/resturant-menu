@@ -35,7 +35,8 @@ const { t } = useLanguage()
 const store = useMenuStore()
 const order = useOrderStore()
 
-const fallbackTexture = '/images/maison/texture.png'
+// No local texture asset — empty lets MaisonCategorySection show its gradient.
+const fallbackTexture = ''
 
 // Three "chapters" derived from the data (no data change):
 // Cuisine → level food · Drinks → drinks/soft · Cellar → drinks/alcohol.

@@ -10,9 +10,6 @@ export class UpdateRestaurantDto {
   @IsOptional() @IsEmail()
   email?: string
 
-  @IsOptional() @IsString() @MaxLength(40)
-  phone?: string
-
   @IsOptional() @IsString() @MaxLength(300)
   address?: string
 

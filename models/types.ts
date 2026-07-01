@@ -17,9 +17,6 @@ export interface Translation {
   ru: string
 }
 
-/** Top-level menu section. The menu hierarchy is Section → Category → Product. */
-export type SectionType = 'food' | 'drinks' | 'alcohol'
-
 /** Product highlight badges. */
 export type Badge = 'hit' | 'new' | 'recommended' | 'spicy' | 'vegan' | 'affordable'
 
@@ -27,16 +24,20 @@ export type Badge = 'hit' | 'new' | 'recommended' | 'spicy' | 'vegan' | 'afforda
 export type ThemeId = 'aria' | 'atelier' | 'maison' | 'heritage' | 'noir'
 
 // ── Menu ────────────────────────────────────────────────────────────────
-export interface MenuSection {
-  type: SectionType
-  title: Translation
+/** A dynamic, per-restaurant top-level section (Food, Drinks, …). */
+export interface Section {
+  id: string
+  restaurantId: string
+  name: Translation
   icon: string
+  sortOrder: number
+  active: boolean
 }
 
 export interface Category {
   id: string
   restaurantId: string
-  section: SectionType
+  sectionId: string
   name: Translation
   description: Translation
   icon: string
@@ -49,7 +50,8 @@ export interface Product {
   id: string
   restaurantId: string
   categoryId: string
-  section: SectionType
+  /** Resolved from the product's category (read-only convenience). */
+  sectionId: string
   name: Translation
   description: Translation
   /** Price in minor-less AMD (whole drams). */
@@ -98,12 +100,6 @@ export interface ThemeSettings {
 }
 
 // ── Restaurant ──────────────────────────────────────────────────────────
-export interface SocialLinks {
-  instagram: string
-  facebook: string
-  website: string
-}
-
 export interface RestaurantSettings {
   active: boolean
   subdomain: string
@@ -124,12 +120,10 @@ export interface Restaurant {
   logo: string
   coverImage: string
   tagline: Translation
-  phone: string
   /** Simple free-text address (v1; no maps/coordinates). */
   address: string
   workingHours: string
   rating: number
-  social: SocialLinks
   defaultLanguage: LangCode
   activeLanguages: LangCode[]
 }

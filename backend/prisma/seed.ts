@@ -85,7 +85,6 @@ interface RestaurantInfo {
   themeKey: string
   defaultLang: string
   email: string
-  phone: string
   address: string
   currency: string
   timezone: string
@@ -94,7 +93,6 @@ interface RestaurantInfo {
   tagline?: Record<string, string>
   logoUrl?: string
   coverImageUrl?: string
-  social: { instagram?: string; facebook?: string; website?: string }
   colors?: { primaryColor?: string; secondaryColor?: string; backgroundColor?: string; accentColor?: string }
 }
 
@@ -105,7 +103,6 @@ async function seedRestaurant(opts: RestaurantInfo & { langs: { id: string; code
   const info = {
     name: opts.name,
     email: opts.email,
-    phone: opts.phone,
     address: opts.address,
     workingHoursText: opts.workingHours ?? null,
     rating: opts.rating ?? null,
@@ -136,11 +133,8 @@ async function seedRestaurant(opts: RestaurantInfo & { langs: { id: string; code
     }
   }
 
-  // settings (social links + theme colors) — idempotent
+  // settings (theme colors) — idempotent
   const settingsData = {
-    instagramUrl: opts.social.instagram ?? null,
-    facebookUrl: opts.social.facebook ?? null,
-    websiteUrl: opts.social.website ?? null,
     ...opts.colors,
   }
   await prisma.restaurantSettings.upsert({
@@ -211,11 +205,12 @@ async function seedCategoryWithProducts(
   badgeIdByKey: Map<string, string>,
   cat: SeedCategory,
   sortOrder: number,
+  sectionId: string,
 ) {
   const category = await prisma.category.create({
     data: {
       restaurantId,
-      section: cat.section,
+      sectionId,
       icon: cat.icon,
       sortOrder,
       translations: { create: langs.map((l) => ({ languageId: l.id, name: cat.name[l.code] ?? cat.name.en })) },
@@ -251,17 +246,60 @@ async function seedCategoryWithProducts(
   }
 }
 
+/** Default sections every restaurant starts with (matches the legacy enum). */
+const SECTION_DEFS: { key: SectionType; icon: string; name: Record<string, string> }[] = [
+  { key: SectionType.FOOD, icon: '🍽', name: { hy: 'Ուտեստներ', en: 'Food', ru: 'Блюда' } },
+  { key: SectionType.DRINKS, icon: '🥤', name: { hy: 'Ըմպելիքներ', en: 'Drinks', ru: 'Напитки' } },
+  { key: SectionType.ALCOHOL, icon: '🍷', name: { hy: 'Ալկոհոլ', en: 'Alcohol', ru: 'Алкоголь' } },
+]
+
+/** Ensure the default sections exist (idempotent by name) → enum→sectionId map. */
+async function ensureSections(
+  restaurantId: string,
+  langs: { id: string; code: string }[],
+): Promise<Record<string, string>> {
+  const map: Record<string, string> = {}
+  for (const [i, def] of SECTION_DEFS.entries()) {
+    let section = await prisma.section.findFirst({
+      where: { restaurantId, deletedAt: null, translations: { some: { name: def.name.hy } } },
+    })
+    if (!section) {
+      section = await prisma.section.create({
+        data: {
+          restaurantId,
+          icon: def.icon,
+          sortOrder: i,
+          translations: { create: langs.map((l) => ({ languageId: l.id, name: def.name[l.code] ?? def.name.en })) },
+        },
+      })
+    }
+    map[def.key] = section.id
+  }
+  return map
+}
+
+/** Backfill: point any legacy categories (section enum, no sectionId) at a Section. */
+async function backfillCategorySections(restaurantId: string, enumToSectionId: Record<string, string>) {
+  const cats = await prisma.category.findMany({ where: { restaurantId, sectionId: null, deletedAt: null } })
+  for (const c of cats) {
+    const sid = (c.section && enumToSectionId[c.section]) || enumToSectionId[SectionType.FOOD]
+    if (sid) await prisma.category.update({ where: { id: c.id }, data: { sectionId: sid } })
+  }
+}
+
 /** Seed a full menu for a tenant — idempotent (skips if it already has data). */
 async function seedMenu(
   restaurantId: string,
   langs: { id: string; code: string }[],
   badgeIdByKey: Map<string, string>,
   menu: SeedCategory[],
+  sectionMap: Record<string, string>,
 ) {
   const existing = await prisma.category.count({ where: { restaurantId } })
   if (existing > 0) return
   for (const [i, cat] of menu.entries()) {
-    await seedCategoryWithProducts(restaurantId, langs, badgeIdByKey, cat, i)
+    const sectionId = sectionMap[cat.section] ?? sectionMap[SectionType.FOOD]
+    await seedCategoryWithProducts(restaurantId, langs, badgeIdByKey, cat, i, sectionId)
   }
 }
 
@@ -273,7 +311,6 @@ const TENANTS: (RestaurantInfo & { menu: SeedCategory[] })[] = [
     themeKey: 'aria',
     defaultLang: 'hy',
     email: 'info@tun-lahmajo.am',
-    phone: '+374 99 230696',
     address: 'Աբովյան 12, Երևան',
     currency: 'AMD',
     timezone: 'Asia/Yerevan',
@@ -281,7 +318,6 @@ const TENANTS: (RestaurantInfo & { menu: SeedCategory[] })[] = [
     rating: 4.8,
     tagline: { hy: 'Ավանդական հայկական համեր', en: 'Traditional Armenian flavors', ru: 'Традиционные армянские вкусы' },
     coverImageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=1200',
-    social: { instagram: 'https://instagram.com/tunlahmajo', facebook: 'https://facebook.com/tunlahmajo', website: 'https://tun-lahmajo.am' },
     colors: { primaryColor: '#3E2723', accentColor: '#C69A5A' },
     menu: [
       {
@@ -313,7 +349,6 @@ const TENANTS: (RestaurantInfo & { menu: SeedCategory[] })[] = [
     themeKey: 'maison',
     defaultLang: 'hy',
     email: 'info@yasaman.am',
-    phone: '+374 10 555 444',
     address: 'Սայաթ-Նովա 40, Երևան',
     currency: 'AMD',
     timezone: 'Asia/Yerevan',
@@ -321,7 +356,6 @@ const TENANTS: (RestaurantInfo & { menu: SeedCategory[] })[] = [
     rating: 4.6,
     tagline: { hy: 'Արևելյան հյուրընկալություն', en: 'Eastern hospitality', ru: 'Восточное гостеприимство' },
     coverImageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200',
-    social: { instagram: 'https://instagram.com/yasaman', facebook: 'https://facebook.com/yasaman', website: 'https://yasaman.am' },
     colors: { primaryColor: '#4A2C2A', accentColor: '#B58A5A' },
     menu: [
       {
@@ -346,7 +380,6 @@ const TENANTS: (RestaurantInfo & { menu: SeedCategory[] })[] = [
     themeKey: 'atelier',
     defaultLang: 'hy',
     email: 'info@karas.am',
-    phone: '+374 60 700 700',
     address: 'Թումանյան 8, Երևան',
     currency: 'AMD',
     timezone: 'Asia/Yerevan',
@@ -354,7 +387,6 @@ const TENANTS: (RestaurantInfo & { menu: SeedCategory[] })[] = [
     rating: 4.9,
     tagline: { hy: 'Հայկական խոհանոց՝ նոր շունչով', en: 'Armenian cuisine, reimagined', ru: 'Армянская кухня по-новому' },
     coverImageUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200',
-    social: { instagram: 'https://instagram.com/karas', facebook: 'https://facebook.com/karas', website: 'https://karas.am' },
     colors: { primaryColor: '#2B2B2B', accentColor: '#A8884C' },
     menu: [
       {
@@ -387,8 +419,24 @@ async function main() {
 
   for (const t of TENANTS) {
     const restaurant = await seedRestaurant({ ...t, langs })
-    await seedMenu(restaurant.id, langs, badgeIdByKey, t.menu)
+    const sectionMap = await ensureSections(restaurant.id, langs)
+    await backfillCategorySections(restaurant.id, sectionMap)
+    await seedMenu(restaurant.id, langs, badgeIdByKey, t.menu, sectionMap)
   }
+
+  // Platform super-admin — login with: superadmin@platform.test / password123
+  // Not tied to any restaurant (restaurantId null); can create restaurants.
+  const superHash = await bcrypt.hash(DEMO_PASSWORD, 10)
+  await prisma.user.upsert({
+    where: { email: 'superadmin@platform.test' },
+    update: { passwordHash: superHash, role: UserRole.SUPER_ADMIN, restaurantId: null },
+    create: {
+      email: 'superadmin@platform.test',
+      passwordHash: superHash,
+      role: UserRole.SUPER_ADMIN,
+      restaurantId: null,
+    },
+  })
 
   // silence unused import in the structure template
   void randomUUID

@@ -16,8 +16,4 @@ export class UpdateSettingsDto {
   @IsOptional() @IsBoolean() showFavorites?: boolean
   @IsOptional() @IsBoolean() showProductDescriptions?: boolean
   @IsOptional() @IsBoolean() animationsEnabled?: boolean
-
-  @IsOptional() @IsString() instagramUrl?: string
-  @IsOptional() @IsString() facebookUrl?: string
-  @IsOptional() @IsString() websiteUrl?: string
 }

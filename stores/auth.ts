@@ -92,11 +92,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function fetchMe(): Promise<void> {
     if (!accessToken.value) return
-    const res = await $fetch<Envelope<{ user: AuthUser }>>('/admin/me', {
+    // /admin/me returns the user object directly as `data`; tolerate both shapes.
+    const res = await $fetch<Envelope<AuthUser & { user?: AuthUser }>>('/admin/me', {
       baseURL: base(),
       headers: { Authorization: `Bearer ${accessToken.value}` },
     })
-    user.value = res.data.user
+    user.value = res.data.user ?? (res.data as AuthUser)
   }
 
   async function logout(): Promise<void> {

@@ -98,6 +98,7 @@ model Language {
   restaurantLanguages   RestaurantLanguage[]
   defaultForRestaurants Restaurant[]            @relation("RestaurantDefaultLanguage")
   restaurantTexts       RestaurantTranslation[]
+  sectionTexts          SectionTranslation[]
   categoryTexts         CategoryTranslation[]
   productTexts          ProductTranslation[]
   badgeTexts            BadgeTranslation[]
@@ -112,7 +113,6 @@ model Restaurant {
   slug          String    @unique
   name          String
   email         String?
-  phone         String?
   logoUrl       String?
   coverImageUrl String?
   address       String? // simple free-text address (v1; no maps/coordinates)
@@ -140,6 +140,7 @@ model Restaurant {
   domains      Domain[]
   languages    RestaurantLanguage[]
   workingHours RestaurantWorkingHour[]
+  sections     Section[]
   categories   Category[]
   products     Product[]
   badges       Badge[]
@@ -189,10 +190,6 @@ model RestaurantSettings {
   showFavorites           Boolean @default(true)
   showProductDescriptions Boolean @default(true)
   animationsEnabled       Boolean @default(true)
-
-  instagramUrl String?
-  facebookUrl  String?
-  websiteUrl   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -286,27 +283,62 @@ model Domain {
 
 // ─────────────────────────── Menu ────────────────────────────
 
+/// A top-level menu section (Food, Drinks, …) — now dynamic per restaurant.
+model Section {
+  id           String    @id @default(uuid()) @db.Uuid
+  restaurantId String    @db.Uuid
+  icon         String?
+  sortOrder    Int       @default(0)
+  isActive     Boolean   @default(true)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  restaurant   Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  translations SectionTranslation[]
+  categories   Category[]
+
+  @@index([restaurantId])
+  @@map("sections")
+}
+
+model SectionTranslation {
+  id         String @id @default(uuid()) @db.Uuid
+  sectionId  String @db.Uuid
+  languageId String @db.Uuid
+  name       String
+
+  section  Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, languageId])
+  @@index([languageId])
+  @@map("section_translations")
+}
+
 model Category {
-  id           String      @id @default(uuid()) @db.Uuid
-  restaurantId String      @db.Uuid
-  section      SectionType
+  id           String       @id @default(uuid()) @db.Uuid
+  restaurantId String       @db.Uuid
+  section      SectionType? // legacy enum — superseded by sectionId (kept during migration)
+  sectionId    String?      @db.Uuid
   icon         String?
   imageUrl     String?
-  sortOrder    Int         @default(0)
-  isActive     Boolean     @default(true)
+  sortOrder    Int          @default(0)
+  isActive     Boolean      @default(true)
   deletedAt    DateTime?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   parentId String?    @db.Uuid
   parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
   children Category[] @relation("CategoryTree")
 
   restaurant   Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  sectionRef   Section?              @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   translations CategoryTranslation[]
   products     Product[]
 
-  @@index([restaurantId, section])
+  @@index([restaurantId, sectionId])
   @@index([restaurantId, parentId])
   @@index([restaurantId, sortOrder])
   @@map("categories")

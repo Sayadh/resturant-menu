@@ -22,7 +22,7 @@ export class ProductsService {
     const where: Prisma.ProductWhereInput = { restaurantId, deletedAt: null }
     if (q.categoryId) where.categoryId = q.categoryId
     if (typeof q.isAvailable === 'boolean') where.isAvailable = q.isAvailable
-    if (q.section) where.category = { section: q.section }
+    if (q.sectionId) where.category = { sectionId: q.sectionId }
     if (q.search) {
       where.translations = { some: { name: { contains: q.search, mode: Prisma.QueryMode.insensitive } } }
     }

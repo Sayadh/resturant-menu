@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import { Prisma, SectionType } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { mapTranslations } from '../common/utils/translations'
 import { parseSort } from '../common/utils/sort'
@@ -21,7 +21,7 @@ export class CategoriesService {
 
   async list(restaurantId: string, q: CategoryListQueryDto) {
     const where: Prisma.CategoryWhereInput = { restaurantId, deletedAt: null }
-    if (q.section) where.section = q.section
+    if (q.sectionId) where.sectionId = q.sectionId
     if (typeof q.isActive === 'boolean') where.isActive = q.isActive
     if (q.search) {
       where.translations = { some: { name: { contains: q.search, mode: Prisma.QueryMode.insensitive } } }
@@ -56,24 +56,33 @@ export class CategoriesService {
     return cat
   }
 
-  private async validateParent(restaurantId: string, parentId: string | undefined, section: SectionType) {
+  /** Ensure a section belongs to this restaurant. */
+  private async ensureSection(restaurantId: string, sectionId: string) {
+    const section = await this.prisma.section.findFirst({
+      where: { id: sectionId, restaurantId, deletedAt: null },
+    })
+    if (!section) throw new BadRequestException('Section not found in this restaurant')
+  }
+
+  private async validateParent(restaurantId: string, parentId: string | undefined, sectionId: string | null) {
     if (!parentId) return
     const parent = await this.prisma.category.findFirst({
       where: { id: parentId, restaurantId, deletedAt: null },
     })
     if (!parent) throw new BadRequestException('Parent category not found')
-    if (parent.section !== section) {
+    if (parent.sectionId !== sectionId) {
       throw new BadRequestException('Child category must have the same section as its parent')
     }
   }
 
   async create(restaurantId: string, dto: CreateCategoryDto) {
-    await this.validateParent(restaurantId, dto.parentId, dto.section)
+    await this.ensureSection(restaurantId, dto.sectionId)
+    await this.validateParent(restaurantId, dto.parentId, dto.sectionId)
     const translations = await mapTranslations(this.prisma, dto.translations)
     return this.prisma.category.create({
       data: {
         restaurantId,
-        section: dto.section,
+        sectionId: dto.sectionId,
         parentId: dto.parentId,
         icon: dto.icon,
         imageUrl: dto.imageUrl,
@@ -87,13 +96,14 @@ export class CategoriesService {
 
   async update(restaurantId: string, id: string, dto: UpdateCategoryDto) {
     const cat = await this.ensureOwn(restaurantId, id)
+    if (dto.sectionId) await this.ensureSection(restaurantId, dto.sectionId)
     if (dto.parentId !== undefined) {
-      await this.validateParent(restaurantId, dto.parentId, dto.section ?? cat.section)
+      await this.validateParent(restaurantId, dto.parentId, dto.sectionId ?? cat.sectionId)
     }
     await this.prisma.category.update({
       where: { id },
       data: {
-        section: dto.section,
+        sectionId: dto.sectionId,
         parentId: dto.parentId,
         icon: dto.icon,
         imageUrl: dto.imageUrl,

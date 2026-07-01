@@ -20,9 +20,10 @@ const apply = () => {
   menu.setTenant(props.restaurant.id, { levels: props.levels, categories: props.categories })
 }
 
-// Apply immediately (SSR + client) and whenever the tenant changes.
+// Apply immediately, and whenever the tenant OR the menu data changes (e.g. a
+// language refetch produces a new set of categories).
 apply()
-watch(() => props.restaurant.id, apply)
+watch([() => props.restaurant.id, () => props.categories], apply)
 
 const ThemeComponent = computed(() => getThemeComponent(props.restaurant.themeId))
 </script>

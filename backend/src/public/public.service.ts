@@ -6,7 +6,7 @@ import { PrismaService } from '../prisma/prisma.service'
 interface TranslationRow {
   language: { code: string }
   name: string
-  description: string | null
+  description?: string | null
 }
 
 @Injectable()
@@ -59,6 +59,23 @@ export class PublicService {
     throw new NotFoundException('Restaurant not found')
   }
 
+  /** All active restaurants (for the platform landing). */
+  async listRestaurants() {
+    const rows = await this.prisma.restaurant.findMany({
+      where: { isActive: true, deletedAt: null },
+      orderBy: { name: 'asc' },
+      include: { theme: true, translations: { include: { language: true } } },
+    })
+    return rows.map((r) => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      logoUrl: r.logoUrl,
+      theme: r.theme ? { id: r.theme.id, key: r.theme.key } : null,
+      translations: r.translations.map((t) => ({ tagline: t.tagline, language: { code: t.language.code } })),
+    }))
+  }
+
   /** Public profile + settings + active languages. */
   async getRestaurantBySlug(slug: string) {
     const r = await this.prisma.restaurant.findFirst({
@@ -81,7 +98,6 @@ export class PublicService {
         logoUrl: r.logoUrl,
         coverImageUrl: r.coverImageUrl,
         address: r.address,
-        phone: r.phone,
         workingHoursText: r.workingHoursText,
         rating: r.rating,
         currency: r.currency,
@@ -117,7 +133,12 @@ export class PublicService {
     const fallback = restaurant.defaultLanguage?.code ?? 'hy'
     const lang = langParam || fallback
 
-    const [cats, prods] = await Promise.all([
+    const [sections, cats, prods] = await Promise.all([
+      this.prisma.section.findMany({
+        where: { restaurantId, isActive: true, deletedAt: null },
+        orderBy: { sortOrder: 'asc' },
+        include: { translations: { include: { language: true } } },
+      }),
       this.prisma.category.findMany({
         where: { restaurantId, isActive: true, deletedAt: null },
         orderBy: { sortOrder: 'asc' },
@@ -134,7 +155,7 @@ export class PublicService {
       }),
     ])
 
-    const sectionByCat = new Map(cats.map((c) => [c.id, c.section]))
+    const sectionByCat = new Map(cats.map((c) => [c.id, c.sectionId]))
 
     return {
       restaurant: {
@@ -147,11 +168,15 @@ export class PublicService {
         currency: restaurant.currency,
       },
       language: lang,
+      sections: sections.map((s) => {
+        const t = this.pick(s.translations, lang, fallback)
+        return { id: s.id, icon: s.icon, sortOrder: s.sortOrder, name: t?.name ?? '' }
+      }),
       categories: cats.map((c) => {
         const t = this.pick(c.translations, lang, fallback)
         return {
           id: c.id,
-          section: c.section,
+          sectionId: c.sectionId,
           parentId: c.parentId,
           icon: c.icon,
           image: c.imageUrl,
@@ -166,7 +191,7 @@ export class PublicService {
         return {
           id: p.id,
           categoryId: p.categoryId,
-          section: sectionByCat.get(p.categoryId) ?? null,
+          sectionId: sectionByCat.get(p.categoryId) ?? null,
           price: p.price,
           oldPrice: p.oldPrice,
           isAvailable: p.isAvailable,

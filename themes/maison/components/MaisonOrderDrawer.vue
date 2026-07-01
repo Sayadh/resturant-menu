@@ -114,7 +114,6 @@ onBeforeUnmount(() => {
                       :src="row.image"
                       :alt="row.name"
                       class="h-full w-full object-cover"
-                      crossorigin="anonymous"
                     />
                     <div
                       v-else

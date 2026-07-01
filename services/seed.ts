@@ -5,46 +5,31 @@ import type {
   Theme,
 } from '~/models/types'
 
-// Default restaurant — mirrors the public site's current branding.
-export const seedRestaurant: Restaurant = {
-  id: 'tun-lahmajo',
-  name: 'TUN LAHMAJO',
-  slug: 'tun-lahmajo',
+// Neutral placeholder used as the store's initial value before the real tenant
+// is loaded from the API (never shown — ThemeRenderer/admin set the real one).
+export const emptyRestaurant: Restaurant = {
+  id: '',
+  name: '',
+  slug: '',
   themeId: 'aria',
   logo: '',
   coverImage: '',
-  tagline: {
-    hy: 'Ավանդական հայկական համեր',
-    en: 'Traditional Armenian flavors',
-    ru: 'Традиционные армянские вкусы',
-  },
-  phone: '+374 99 230696',
-  address: 'Աբովյան 12, Երևան',
-  workingHours: '09:00 – 23:00',
-  rating: 4.8,
-  social: {
-    instagram: 'https://instagram.com/',
-    facebook: 'https://facebook.com/',
-    website: 'https://tun-lahmajo.am',
-  },
+  tagline: { hy: '', en: '', ru: '' },
+  address: '',
+  workingHours: '',
+  rating: 0,
   defaultLanguage: 'hy',
   activeLanguages: ['hy', 'en', 'ru'],
 }
 
+// Default settings (config defaults, not tenant data). Settings aren't modelled
+// 1:1 in the backend yet, so the admin's Settings tab persists these locally.
 export const seedSettings: RestaurantSettings = {
   active: true,
-  subdomain: 'tun-lahmajo',
+  subdomain: '',
   customDomain: '',
-  seoTitle: {
-    hy: 'TUN LAHMAJO — Ճաշացանկ',
-    en: 'TUN LAHMAJO — Menu',
-    ru: 'TUN LAHMAJO — Меню',
-  },
-  seoDescription: {
-    hy: 'Ավանդական հայկական ճաշարան Երևանում',
-    en: 'Traditional Armenian restaurant in Yerevan',
-    ru: 'Традиционный армянский ресторан в Ереване',
-  },
+  seoTitle: { hy: '', en: '', ru: '' },
+  seoDescription: { hy: '', en: '', ru: '' },
   currency: 'AMD',
   servicePercent: 0,
 }

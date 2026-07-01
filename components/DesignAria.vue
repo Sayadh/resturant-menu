@@ -5,7 +5,6 @@
 import { ui, type MenuItem, type MenuCategory, type LocalizedText } from '~/data/menu'
 import {
   ariaBrand,
-  ariaAlcoholTitle,
   ariaSearchPlaceholder,
   ariaBasketLabel,
   ariaItemsWord,
@@ -20,8 +19,7 @@ const mono = computed(() => {
   return (i.length > 1 ? i : brand.name.value).slice(0, 2).toUpperCase()
 })
 
-// Three top tabs derived from the data structure (no data change):
-// Food → level food · Drinks → level drinks/soft · Alcohol → level drinks/alcohol.
+// Top tabs are the restaurant's dynamic sections (one tab per section).
 interface View {
   key: string
   icon: string
@@ -29,20 +27,11 @@ interface View {
   level: string
   group?: 'soft' | 'alcohol'
 }
-const views = computed<View[]>(() => {
-  const out: View[] = []
-  for (const lv of store.levels) {
-    if (lv.id === 'drinks') {
-      out.push({ key: 'drinks-soft', icon: '🥤', title: lv.title, level: lv.id, group: 'soft' })
-      out.push({ key: 'drinks-alcohol', icon: '🍷', title: ariaAlcoholTitle, level: lv.id, group: 'alcohol' })
-    } else {
-      out.push({ key: lv.id, icon: '🍽️', title: lv.title, level: lv.id })
-    }
-  }
-  return out
-})
+const views = computed<View[]>(() =>
+  store.levels.map((lv) => ({ key: lv.id, icon: lv.icon || '🍽️', title: lv.title, level: lv.id })),
+)
 
-const activeKey = ref(views.value[0]?.key ?? 'food')
+const activeKey = ref(views.value[0]?.key ?? '')
 const activeView = computed(() => views.value.find((v) => v.key === activeKey.value) ?? views.value[0])
 
 const search = ref('')
@@ -151,7 +140,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="aria min-h-screen bg-[#F5EFE2] pb-28 text-[#3E2723]">
+  <div class="aria min-h-screen overflow-x-hidden bg-[#F5EFE2] pb-28 text-[#3E2723]">
     <!-- ───────── HERO HEADER ───────── -->
     <header class="relative overflow-hidden">
       <!-- warm wash + faint motif -->
@@ -223,15 +212,17 @@ onBeforeUnmount(() => {
     <!-- ───────── STICKY: TABS + SEARCH + CATEGORY RAIL ───────── -->
     <div data-nav class="sticky top-0 z-30 border-b border-[#E4D6C2] bg-[#F5EFE2]/92 backdrop-blur-md">
       <div class="mx-auto max-w-5xl px-4 py-3">
-        <!-- Tabs -->
-        <div class="flex gap-2" role="tablist">
+        <!-- Tabs — single row: centered when they fit, horizontal scroll when
+             there are many sections (never wrap, never break the layout). -->
+        <div class="-mx-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div class="mx-auto flex w-max gap-2" role="tablist">
           <button
             v-for="v in views"
             :key="v.key"
             type="button"
             role="tab"
             :aria-selected="activeKey === v.key"
-            class="group relative flex flex-1 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-2xl border px-2 py-2.5 text-sm font-bold tracking-wide transition-all duration-300"
+            class="group relative flex shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-2xl border px-4 py-2.5 text-sm font-bold tracking-wide transition-all duration-300"
             :class="
               activeKey === v.key
                 ? 'border-[#C69A5A] bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] text-white shadow-[0_10px_22px_-8px_rgba(198,154,90,0.75)]'
@@ -241,7 +232,7 @@ onBeforeUnmount(() => {
           >
             <span class="flex items-center gap-1.5">
               <span class="text-base" aria-hidden="true">{{ v.icon }}</span>
-              <span class="hidden xs:inline sm:inline">{{ t(v.title) }}</span>
+              <span>{{ t(v.title) }}</span>
             </span>
             <!-- active bottom indicator -->
             <span
@@ -250,6 +241,7 @@ onBeforeUnmount(() => {
               aria-hidden="true"
             />
           </button>
+          </div>
         </div>
 
         <!-- Search -->

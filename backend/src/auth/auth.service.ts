@@ -84,7 +84,8 @@ export class AuthService {
       where: { id: existing.id },
       data: { revokedAt: new Date() },
     })
-    return this.issueTokens(existing.user, ctx)
+    const tokens = await this.issueTokens(existing.user, ctx)
+    return { ...tokens, user: this.sanitize(existing.user) }
   }
 
   async logout(rawToken: string) {
