@@ -13,8 +13,9 @@ export default defineNuxtConfig({
       // enough (no CORS, no second URL). Override with NUXT_PUBLIC_API_BASE only
       // for a real deploy where the API lives on a different domain.
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api/v1',
-      // 'true' → use the real NestJS API; anything else → mock/localStorage layer.
-      useApi: process.env.NUXT_PUBLIC_USE_API === 'true',
+      // App is API-only now — default ON. Set NUXT_PUBLIC_USE_API=false only to
+      // explicitly disable (legacy/mock). This keeps the admin login gate active.
+      useApi: process.env.NUXT_PUBLIC_USE_API !== 'false',
       // Default tenant slug used by the admin demo / landing.
       defaultSlug: process.env.NUXT_PUBLIC_DEFAULT_SLUG || 'tun-lahmajo',
     },
