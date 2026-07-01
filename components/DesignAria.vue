@@ -109,15 +109,17 @@ const setupObserver = async () => {
   })
 }
 
-// Keep the active category chip in view inside the horizontal rail.
+// Keep the active category chip centered in the rail — scroll ONLY the
+// horizontal rail, never the window (scrollIntoView would yank the page up).
 watch(activeId, async (id) => {
   if (!id) return
   await nextTick()
-  document.querySelector<HTMLElement>(`[data-chip="${id}"]`)?.scrollIntoView({
-    behavior: 'smooth',
-    inline: 'center',
-    block: 'nearest',
-  })
+  const chip = document.querySelector<HTMLElement>(`[data-chip="${id}"]`)
+  const rail = chip?.closest<HTMLElement>('nav')
+  if (!chip || !rail) return
+  const c = chip.getBoundingClientRect()
+  const r = rail.getBoundingClientRect()
+  rail.scrollTo({ left: rail.scrollLeft + (c.left - r.left) - r.width / 2 + c.width / 2, behavior: 'smooth' })
 })
 
 onMounted(() => {

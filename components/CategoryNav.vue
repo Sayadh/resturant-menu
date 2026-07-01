@@ -17,13 +17,18 @@ const emit = defineEmits<{
 
 const { t } = useLanguage()
 
-// Keep the active chip visible inside the horizontally scrolling nav.
+// Keep the active chip centered inside the horizontally scrolling nav — scroll
+// ONLY the rail, never the window (scrollIntoView would yank the page vertically).
 const navRef = ref<HTMLElement | null>(null)
 watch(
   () => props.activeId,
   (id) => {
-    const el = navRef.value?.querySelector<HTMLElement>(`[data-cat="${id}"]`)
-    el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    const rail = navRef.value
+    const el = rail?.querySelector<HTMLElement>(`[data-cat="${id}"]`)
+    if (!rail || !el) return
+    const c = el.getBoundingClientRect()
+    const r = rail.getBoundingClientRect()
+    rail.scrollTo({ left: rail.scrollLeft + (c.left - r.left) - r.width / 2 + c.width / 2, behavior: 'smooth' })
   },
 )
 </script>
