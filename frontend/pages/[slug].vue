@@ -46,9 +46,23 @@ const displayRestaurant = computed(() =>
     : restaurant.value,
 )
 
-useHead(() => ({
-  title: restaurant.value ? `${restaurant.value.name} — Menu` : 'Menu',
-}))
+useHead(() => {
+  const r = restaurant.value
+  const title = r ? `${r.name} — Մենյու` : 'Մենյու'
+  const desc = r ? r.tagline?.hy || r.tagline?.en || `${r.name} — թվային մենյու` : 'Թվային մենյու'
+  return {
+    title,
+    meta: [
+      { name: 'description', content: desc },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: desc },
+      { name: 'twitter:card', content: 'summary' },
+      { name: 'twitter:title', content: title },
+      { name: 'twitter:description', content: desc },
+    ],
+  }
+})
 </script>
 
 <template>

@@ -19,7 +19,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'TUN LAHMAJO — Ավանդական հայկական համեր',
+      title: 'QR Menu Platform — Ձեր թվային մենյուն',
       htmlAttrs: { lang: 'hy' },
       meta: [
         { charset: 'utf-8' },
@@ -27,9 +27,24 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'TUN LAHMAJO — ավանդական հայկական ճաշարան Երևանում: Թարմ բաղադրիչներ, տնական համեր և ջերմ հյուրընկալություն:',
+            'Ստեղծեք ձեր թվային QR մենյուն՝ գեղեցիկ, բազմալեզու և հեշտ կառավարվող։ Պրեմիում թեմաներ, ակնթարթային թարմացումներ, QR կոդ։',
         },
-        { name: 'theme-color', content: '#F5EFE2' },
+        { name: 'theme-color', content: '#0B1020' },
+        // Open Graph / link previews (Telegram, Messenger, etc.)
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'QR Menu Platform' },
+        { property: 'og:title', content: 'QR Menu Platform — Ձեր թվային մենյուն' },
+        {
+          property: 'og:description',
+          content:
+            'Ստեղծեք ձեր թվային QR մենյուն՝ գեղեցիկ, բազմալեզու և հեշտ կառավարվող։',
+        },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: 'QR Menu Platform — Ձեր թվային մենյուն' },
+        {
+          name: 'twitter:description',
+          content: 'Ստեղծեք ձեր թվային QR մենյուն՝ գեղեցիկ, բազմալեզու և հեշտ կառավարվող։',
+        },
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },

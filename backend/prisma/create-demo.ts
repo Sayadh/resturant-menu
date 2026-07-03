@@ -5,7 +5,7 @@
  *
  * It has the SAME menu as tun-lahmajo (cloned: sections + categories + products
  * with all translations, images, badges) but a generic, brand-neutral name
- * ("Ձեր ռեստորանը" / "Ваш ресторан" / "Your Restaurant") — so the demo doesn't
+ * ("Ձեր մենյուն" / "Ваш ресторан" / "Your Restaurant") — so the demo doesn't
  * advertise a specific restaurant. Slug: `demo`  →  public URL: /demo
  * Idempotent: re-running wipes & re-clones the demo menu.
  * ─────────────────────────────────────────────────────────────────────────── */
@@ -16,7 +16,7 @@ const prisma = new PrismaClient()
 
 const SOURCE_SLUG = process.env.CLONE_SOURCE || 'tun-lahmajo'
 const DEMO_SLUG = 'demo'
-const DEMO_NAME = 'Ձեր ռեստորանը'
+const DEMO_NAME = 'Ձեր մենյուն'
 const TAGLINE: Record<string, string> = {
   hy: 'Ձեր թվային մենյուն՝ այսպիսի տեսքով',
   ru: 'Ваше цифровое меню в таком виде',
