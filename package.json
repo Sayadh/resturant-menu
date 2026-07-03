@@ -1,25 +1,20 @@
 {
-  "name": "resturant-menu",
+  "name": "menus-monorepo",
+  "version": "1.0.0",
   "private": true,
-  "type": "module",
+  "description": "menus.am — QR Menu SaaS platform (frontend + backend monorepo)",
   "scripts": {
-    "dev": "ESBUILD_WORKER_THREADS=0 nuxt dev --no-fork",
-    "build": "ESBUILD_WORKER_THREADS=0 nuxt build",
-    "generate": "ESBUILD_WORKER_THREADS=0 nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
-  },
-  "dependencies": {
-    "nuxt": "^3.13.0",
-    "tailwindcss": "^3.4.0",
-    "vue": "^3.5.0",
-    "vue-router": "^4.4.0"
+    "dev": "npm-run-all --parallel dev:back dev:front",
+    "dev:front": "npm --prefix frontend run dev",
+    "dev:back": "npm --prefix backend run start:dev",
+    "build": "npm run build:back && npm run build:front",
+    "build:front": "npm --prefix frontend run build",
+    "build:back": "npm --prefix backend run build",
+    "start:front": "npm --prefix frontend run preview",
+    "start:back": "npm --prefix backend run start:prod",
+    "install:all": "npm --prefix backend install && npm --prefix frontend install"
   },
   "devDependencies": {
-    "@nuxtjs/tailwindcss": "^6.12.0",
-    "@pinia/nuxt": "^0.5.1",
-    "pinia": "^2.2.0",
-    "typescript": "^5.5.0",
-    "vue-tsc": "^2.0.0"
+    "npm-run-all": "^4.1.5"
   }
 }
