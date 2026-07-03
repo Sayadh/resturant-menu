@@ -21,8 +21,8 @@ async function bootstrap(): Promise<void> {
     }),
   )
 
-  // CORS: allow the configured origins exactly, plus any Vercel deployment of
-  // this project (preview URLs change on every deploy), plus no-origin (curl/SSR).
+  // CORS: allow the configured origins (prod domains) + localhost dev + no-origin
+  // (curl / same-origin SSR). Production is served same-origin behind nginx.
   const allowed = config.get<string[]>('corsOrigins') ?? []
   app.enableCors({
     origin: (origin, cb) => {
@@ -30,9 +30,7 @@ async function bootstrap(): Promise<void> {
       if (allowed.includes(origin)) return cb(null, true)
       try {
         const host = new URL(origin).hostname
-        if (host.endsWith('.vercel.app') && host.startsWith('resturant-menu')) {
-          return cb(null, true)
-        }
+        if (host === 'localhost' || host === '127.0.0.1') return cb(null, true)
       } catch {
         /* malformed origin → reject below */
       }

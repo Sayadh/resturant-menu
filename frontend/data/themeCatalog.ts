@@ -1,9 +1,4 @@
-import type {
-  Restaurant,
-  RestaurantSettings,
-  ThemeSettings,
-  Theme,
-} from '~/models/types'
+import type { Restaurant, Theme } from '~/models/types'
 
 // Neutral placeholder used as the store's initial value before the real tenant
 // is loaded from the API (never shown — ThemeRenderer/admin set the real one).
@@ -22,35 +17,7 @@ export const emptyRestaurant: Restaurant = {
   activeLanguages: ['hy', 'en', 'ru'],
 }
 
-// Default settings (config defaults, not tenant data). Settings aren't modelled
-// 1:1 in the backend yet, so the admin's Settings tab persists these locally.
-export const seedSettings: RestaurantSettings = {
-  active: true,
-  subdomain: '',
-  customDomain: '',
-  seoTitle: { hy: '', en: '', ru: '' },
-  seoDescription: { hy: '', en: '', ru: '' },
-  currency: 'AMD',
-  servicePercent: 0,
-}
-
-export const seedThemeSettings: ThemeSettings = {
-  themeId: 'aria',
-  primaryColor: '#3E2723',
-  secondaryColor: '#8A7868',
-  backgroundColor: '#F5EFE2',
-  accentColor: '#C69A5A',
-  fontStyle: 'modern',
-  logo: '',
-  coverImage: '',
-  cardRadius: 22,
-  showRating: true,
-  showOrderBasket: true,
-  showFavorites: true,
-  showProductDescriptions: true,
-}
-
-// Theme catalog presented in the Design section.
+// Theme catalog presented in the admin's Design section (static product data).
 export const THEMES: Theme[] = [
   {
     id: 'aria',

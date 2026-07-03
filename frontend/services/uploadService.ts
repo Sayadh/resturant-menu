@@ -1,5 +1,3 @@
-import { delay } from './db'
-
 /**
  * Image handling. Today: file → data URL, and link → og:image via the existing
  * server route. Future: POST multipart to /uploads returning a CDN URL.
@@ -16,7 +14,6 @@ export const uploadService = {
 
   /** Resolve a page / Google link to a direct image URL. */
   async resolveImage(link: string): Promise<{ url: string }> {
-    await delay(0)
     const r = await $fetch<{ image: string }>('/api/resolve-image', { params: { url: link } })
     return { url: r.image }
   },

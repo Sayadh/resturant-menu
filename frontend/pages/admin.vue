@@ -24,9 +24,7 @@ import { superAdminService, type AdminRestaurantRow } from '~/services/superAdmi
 const menuStore = useMenuStore()
 import type { Category, Product, Section, Badge, LangCode } from '~/models/types'
 
-// ── auth (only enforced when the real API is enabled) ───────────
-const cfg = useRuntimeConfig()
-const apiMode = computed(() => cfg.public.useApi as boolean)
+// ── auth ────────────────────────────────────────────────────────
 const auth = useAuthStore()
 const needsLogin = ref(false)
 const login = reactive({ email: '', password: '' })
@@ -36,7 +34,7 @@ const loggingIn = ref(false)
 useHead({ title: 'Admin · QR Menu' })
 
 const rs = useRestaurantStore()
-const { restaurant, settings, themeSettings, themes } = storeToRefs(rs)
+const { restaurant, themes } = storeToRefs(rs)
 
 // ── admin UI language (i18n) ────────────────────────────────────
 const { t, lang: adminLang, setLang: setAdminLang, langs: adminLangs } = useAdminI18n()
@@ -48,10 +46,8 @@ const NAV = [
   { id: 'menu', key: 'menuBuilder', icon: '🗂' },
   { id: 'products', key: 'products', icon: '🍽' },
   { id: 'design', key: 'design', icon: '🎨' },
-  { id: 'customize', key: 'customization', icon: '🎛' },
   { id: 'languages', key: 'languages', icon: '🌐' },
   { id: 'qr', key: 'qrCode', icon: '▣' },
-  { id: 'settings', key: 'settings', icon: '⚙' },
 ] as const
 // SUPER_ADMIN is a platform role with no tenant — it gets its own single tab
 // (Restaurants) instead of the per-restaurant panel.
@@ -203,7 +199,7 @@ const loadAll = async () => {
   } catch (e) {
     busy.value = false
     console.error('Failed to load restaurant', e)
-    if (apiMode.value) needsLogin.value = true
+    needsLogin.value = true
     return
   }
   // 2) Best-effort data loads — failures show a toast but must NOT block the UI.
@@ -251,12 +247,10 @@ const doLogout = async () => {
 }
 
 onMounted(async () => {
-  if (apiMode.value) {
-    await auth.init()
-    if (!auth.isAuthenticated) {
-      needsLogin.value = true
-      return
-    }
+  await auth.init()
+  if (!auth.isAuthenticated) {
+    needsLogin.value = true
+    return
   }
   await loadAll()
 })
@@ -276,9 +270,7 @@ const categoryName = (id: string) => {
   const c = categories.value.find((x) => x.id === id)
   return c ? trLabel(c.name) : '—'
 }
-const publicUrl = computed(
-  () => `https://${settings.value.subdomain || restaurant.value.slug}.yourdomain.am`,
-)
+const publicUrl = computed(() => `https://menus.am/${restaurant.value.slug}`)
 const qrImage = computed(
   () =>
     `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=${encodeURIComponent(publicUrl.value)}`,
@@ -568,7 +560,6 @@ const chooseTheme = async (id: string) => {
   try {
     await restaurantService.setTheme(restaurant.value.id, id as ThemeId)
     restaurant.value.themeId = id as ThemeId // reflect immediately in the admin
-    rs.saveTheme({ themeId: id as ThemeId }).catch(() => {}) // local color prefs (non-critical)
     flash('Թեման պահպանվեց')
   } catch (e) {
     flash((e as Error)?.message || 'Չհաջողվեց փոխել թեման')
@@ -609,8 +600,6 @@ const withBusy = async (fn: () => Promise<unknown>, ok = 'Պահպանված է'
   }
 }
 const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.value }))
-const saveSettings = () => withBusy(() => rs.saveSettings({ ...settings.value }))
-const saveCustomization = () => withBusy(() => rs.saveTheme({ ...themeSettings.value }))
 </script>
 
 <template>
@@ -682,7 +671,7 @@ const saveCustomization = () => withBusy(() => rs.saveTheme({ ...themeSettings.v
           {{ t('viewMenu') }} ↗
         </NuxtLink>
         <button
-          v-if="apiMode && auth.isAuthenticated"
+          v-if="auth.isAuthenticated"
           class="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100"
           @click="doLogout"
         >
@@ -991,38 +980,6 @@ const saveCustomization = () => withBusy(() => rs.saveTheme({ ...themeSettings.v
           </div>
         </section>
 
-        <!-- CUSTOMIZATION -->
-        <section v-else-if="active === 'customize'" class="max-w-2xl space-y-5">
-          <h1 class="text-xl font-bold text-slate-900">Theme Customization</h1>
-          <p class="text-sm text-slate-500">Controlled, theme-safe overrides. Saved per restaurant.</p>
-          <div class="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
-            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <label class="block"><span class="lbl">Primary</span><input v-model="themeSettings.primaryColor" type="color" class="h-10 w-full rounded-lg border border-slate-300" /></label>
-              <label class="block"><span class="lbl">Secondary</span><input v-model="themeSettings.secondaryColor" type="color" class="h-10 w-full rounded-lg border border-slate-300" /></label>
-              <label class="block"><span class="lbl">Background</span><input v-model="themeSettings.backgroundColor" type="color" class="h-10 w-full rounded-lg border border-slate-300" /></label>
-              <label class="block"><span class="lbl">Accent</span><input v-model="themeSettings.accentColor" type="color" class="h-10 w-full rounded-lg border border-slate-300" /></label>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <label class="block">
-                <span class="lbl">Font style</span>
-                <select v-model="themeSettings.fontStyle" class="inp">
-                  <option value="classic">Classic</option>
-                  <option value="modern">Modern</option>
-                  <option value="editorial">Editorial</option>
-                </select>
-              </label>
-              <label class="block"><span class="lbl">Card radius ({{ themeSettings.cardRadius }}px)</span><input v-model.number="themeSettings.cardRadius" type="range" min="0" max="32" class="mt-3 w-full" /></label>
-            </div>
-            <div class="space-y-2 border-t border-slate-100 pt-3">
-              <label class="flex items-center justify-between text-sm"><span>Show rating</span><input v-model="themeSettings.showRating" type="checkbox" class="h-4 w-4" /></label>
-              <label class="flex items-center justify-between text-sm"><span>Show order basket</span><input v-model="themeSettings.showOrderBasket" type="checkbox" class="h-4 w-4" /></label>
-              <label class="flex items-center justify-between text-sm"><span>Show favorites</span><input v-model="themeSettings.showFavorites" type="checkbox" class="h-4 w-4" /></label>
-              <label class="flex items-center justify-between text-sm"><span>Show product descriptions</span><input v-model="themeSettings.showProductDescriptions" type="checkbox" class="h-4 w-4" /></label>
-            </div>
-            <button class="btn-primary" :disabled="busy" @click="saveCustomization">{{ busy ? t('saving') : t('save') }}</button>
-          </div>
-        </section>
-
         <!-- LANGUAGES -->
         <section v-else-if="active === 'languages'" class="max-w-xl space-y-5">
           <h1 class="text-xl font-bold text-slate-900">Languages</h1>
@@ -1057,27 +1014,6 @@ const saveCustomization = () => withBusy(() => rs.saveTheme({ ...themeSettings.v
           </div>
         </section>
 
-        <!-- SETTINGS -->
-        <section v-else-if="active === 'settings'" class="max-w-2xl space-y-5">
-          <h1 class="text-xl font-bold text-slate-900">Settings</h1>
-          <div class="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
-            <label class="flex items-center justify-between text-sm">
-              <span>Restaurant status (active)</span>
-              <input v-model="settings.active" type="checkbox" class="h-4 w-4" />
-            </label>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label class="block"><span class="lbl">Subdomain</span><input v-model="settings.subdomain" class="inp" /></label>
-              <label class="block"><span class="lbl">Custom domain</span><input v-model="settings.customDomain" placeholder="menu.example.am" class="inp" /></label>
-            </div>
-            <label class="block"><span class="lbl">SEO title (HY)</span><input v-model="settings.seoTitle.hy" class="inp" /></label>
-            <label class="block"><span class="lbl">SEO description (HY)</span><input v-model="settings.seoDescription.hy" class="inp" /></label>
-            <div class="grid grid-cols-2 gap-4">
-              <label class="block"><span class="lbl">Currency</span><input v-model="settings.currency" class="inp" /></label>
-              <label class="block"><span class="lbl">Service %</span><input v-model.number="settings.servicePercent" type="number" class="inp" /></label>
-            </div>
-            <button class="btn-primary" :disabled="busy" @click="saveSettings">{{ busy ? t('saving') : t('save') }}</button>
-          </div>
-        </section>
       </main>
     </div>
 

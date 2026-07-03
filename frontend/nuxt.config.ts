@@ -5,32 +5,13 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt'],
   css: ['~/assets/css/tailwind.css'],
   runtimeConfig: {
-    // SSR-only: the server calls the backend directly (local, fast).
+    // SSR-only: the server calls the backend directly (localhost, fast).
     apiBaseServer: process.env.NUXT_API_BASE_SERVER || 'http://127.0.0.1:4000/api/v1',
     public: {
-      // Client: RELATIVE path → goes to the same origin and is proxied to the
-      // backend by Nitro (see nitro.devProxy). This means ONE tunnel/domain is
-      // enough (no CORS, no second URL). Override with NUXT_PUBLIC_API_BASE only
-      // for a real deploy where the API lives on a different domain.
+      // Client API base. Production: '/api/v1' (same-origin behind nginx).
+      // Local dev: full backend URL (see frontend/.env) since Nitro owns /api.
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api/v1',
-      // App is API-only now — default ON. Set NUXT_PUBLIC_USE_API=false only to
-      // explicitly disable (legacy/mock). This keeps the admin login gate active.
-      useApi: process.env.NUXT_PUBLIC_USE_API !== 'false',
-      // Default tenant slug used by the admin demo / landing.
-      defaultSlug: process.env.NUXT_PUBLIC_DEFAULT_SLUG || 'tun-lahmajo',
     },
-  },
-  // Proxy /api/* to the local NestJS backend so the whole app is served from a
-  // single origin (works through one Cloudflare tunnel, no CORS needed).
-  nitro: {
-    devProxy: {
-      '/api': { target: 'http://127.0.0.1:4000', changeOrigin: true },
-    },
-  },
-   vite: {
-    server: {
-      allowedHosts: true
-    }
   },
   typescript: {
     strict: true,
