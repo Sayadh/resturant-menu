@@ -5,9 +5,9 @@
 // modern Inter/dark theme so it never leaks into tenant/admin pages.
 // ─────────────────────────────────────────────────────────────────
 useHead({
-  title: 'QR Menu Platform — Ձեր ռեստորանի թվային մենյուն',
+  title: 'Menus.am — Ձեր թվային մենյուն',
   meta: [
-    { name: 'description', content: 'Ստեղծեք ձեր ռեստորանի թվային QR մենյուն՝ գեղեցիկ, բազմալեզու և հեշտ կառավարվող։' },
+    { name: 'description', content: 'Թվային QR մենյու սննդի և հյուրընկալության ոլորտի բոլոր բիզնեսների համար՝ ռեստորաններ, սրճարաններ, բարեր և ավելին։ Գեղեցիկ, բազմալեզու և հեշտ կառավարվող։' },
     { name: 'theme-color', content: '#0B1020' },
   ],
 })

@@ -15,7 +15,7 @@ const year = new Date().getFullYear()
             <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-black">QR</span>
             <span class="text-[15px] font-bold">QR MENU</span>
           </div>
-          <p class="mt-4 max-w-xs text-sm leading-relaxed">Ձեր ռեստորանի թվային մենյուն՝ գեղեցիկ, արագ և միշտ արդիական։</p>
+          <p class="mt-4 max-w-xs text-sm leading-relaxed">Ձեր թվային մենյուն՝ գեղեցիկ, արագ և միշտ արդիական։</p>
         </div>
 
         <div v-for="c in cols" :key="c.title">

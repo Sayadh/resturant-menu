@@ -13,14 +13,14 @@ const { openModal } = useLeadModal()
     <LandingReveal class="relative mx-auto max-w-3xl px-5 text-center sm:px-8">
       <span class="inline-flex items-center gap-2 rounded-full bg-white/5 px-3.5 py-1.5 text-xs font-medium text-indigo-200 ring-1 ring-white/10">
         <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-        Առաջին 30 ռեստորանի համար հատուկ գին
+        Առաջին 30 հաստատության համար հատուկ գին
       </span>
       <h2 class="mt-6 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
         Սկսեք այսօր, բարձրացրեք
         <span class="bg-gradient-to-r from-indigo-400 to-fuchsia-400 bg-clip-text text-transparent"> ցանկացած պահի</span>
       </h2>
       <p class="mx-auto mt-5 max-w-xl text-slate-300">
-        Ստեղծեք ձեր ռեստորանի թվային մենյուն րոպեների ընթացքում։ Առանց պարտավորությունների՝ ցանկացած պահ կարող եք փոխել կամ ընդլայնել ձեր պլանը։
+        Ստեղծեք ձեր թվային մենյուն րոպեների ընթացքում։ Առանց պարտավորությունների՝ ցանկացած պահ կարող եք փոխել կամ ընդլայնել ձեր պլանը։
       </p>
 
       <div class="mt-9 flex flex-wrap items-center justify-center gap-4">

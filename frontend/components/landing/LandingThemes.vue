@@ -14,7 +14,7 @@ const themes = [
         <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
           Գեղեցիկ <span class="text-indigo-600">թեմաներ</span> ձեր բրենդին համապատասխան
         </h2>
-        <p class="mt-4 text-slate-500">Ընտրեք պատրաստի պրեմիում թեմաներ՝ ձեր ռեստորանի ոճին համապատասխան։</p>
+        <p class="mt-4 text-slate-500">Ընտրեք պատրաստի պրեմիում թեմաներ՝ ձեր հաստատության ոճին համապատասխան։</p>
       </LandingReveal>
 
       <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

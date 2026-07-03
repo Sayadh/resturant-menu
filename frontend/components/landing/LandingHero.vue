@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { openModal } = useLeadModal()
 const stats = [
-  { value: '100+', label: 'ռեստորան' },
+  { value: '100+', label: 'գործընկեր' },
   { value: '1000+', label: 'ապրանք' },
   { value: '99.9%', label: 'uptime' },
   { value: '24/7', label: 'աջակցություն' },
@@ -22,15 +22,15 @@ const stats = [
       <div>
         <div class="inline-flex items-center gap-2 rounded-full bg-white/5 px-3.5 py-1.5 text-xs font-medium text-indigo-200 ring-1 ring-white/10">
           <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-          Ձեր ռեստորանի թվային մենյուն, ակնթարթորեն
+          Ձեր թվային մենյուն, ակնթարթորեն
         </div>
         <h1 class="mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-          Ձեր ռեստորանի մենյուն՝
+          Ձեր մենյուն՝
           <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent"> թվային, գեղեցիկ և միշտ արդիական</span>
         </h1>
         <p class="mt-6 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
-          QR Menu Platform-ը թույլ է տալիս ստեղծել ձեր ռեստորանի թվային մենյուն՝ վայրկյանների ընթացքում,
-          գեղեցիկ և հեշտ կառավարվող, առանց ծրագրավորման։
+          Ստեղծված ռեստորանների, սրճարանների, բարերի և սննդի ոլորտի բոլոր բիզնեսների համար։
+          Ստեղծեք ձեր թվային մենյուն վայրկյանների ընթացքում՝ գեղեցիկ և հեշտ կառավարվող, առանց ծրագրավորման։
         </p>
 
         <div class="mt-9 flex flex-wrap items-center gap-3.5">

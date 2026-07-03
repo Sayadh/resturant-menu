@@ -77,7 +77,7 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
           Պարզ և թափանցիկ գնացուցակ
         </span>
         <h2 class="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          Ընտրեք Ձեր ռեստորանի
+          Ընտրեք Ձեր
           <span class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">կատարյալ փաթեթը</span>
         </h2>
         <p class="mx-auto mt-5 max-w-xl text-slate-500">
@@ -116,7 +116,7 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
         <LandingReveal :delay="0" class="flex">
           <div class="group flex w-full flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-xl">
             <p class="text-sm font-bold uppercase tracking-wide text-slate-400">Starter</p>
-            <p class="mt-1 text-sm text-slate-500">Մեկանգամյա տեղադրման ծառայություն</p>
+            <p class="mt-1 text-sm text-slate-500">Սկսնակ բիզնեսների համար</p>
             <div class="mt-6 flex items-end gap-2">
               <span class="text-5xl font-extrabold tracking-tight text-slate-900">79 000</span>
               <span class="pb-1.5 text-lg font-semibold text-slate-400">֏</span>
@@ -146,7 +146,7 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
             </div>
 
             <p class="text-sm font-bold uppercase tracking-wide text-indigo-200">Professional</p>
-            <p class="mt-1 text-sm text-indigo-100/70">Ամենապահանջված ընտրությունը</p>
+            <p class="mt-1 text-sm text-indigo-100/70">Զարգացող բիզնեսների համար</p>
 
             <div class="mt-6">
               <Transition name="price" mode="out-in">
@@ -158,7 +158,7 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
                     </div>
                     <p class="mt-1 flex items-center gap-2 text-sm">
                       <span class="text-indigo-200/60 line-through">14 900 ֏</span>
-                      <span class="rounded-full bg-amber-400/90 px-2 py-0.5 text-[11px] font-bold text-amber-950">Առաջին 30 ռեստորանի համար</span>
+                      <span class="rounded-full bg-amber-400/90 px-2 py-0.5 text-[11px] font-bold text-amber-950">Առաջին 30 հաստատության համար</span>
                     </p>
                   </template>
                   <template v-else>
@@ -193,7 +193,7 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
         <LandingReveal :delay="180" class="flex">
           <div class="group flex w-full flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-xl">
             <p class="text-sm font-bold uppercase tracking-wide text-slate-400">Business</p>
-            <p class="mt-1 text-sm text-slate-500">Աճող ռեստորանների համար</p>
+            <p class="mt-1 text-sm text-slate-500">Մեծ բիզնեսների և ցանցերի համար</p>
 
             <div class="mt-6">
               <Transition name="price" mode="out-in">

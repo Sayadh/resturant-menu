@@ -7,7 +7,7 @@ type Dict = Record<string, Record<AdminLang, string>>
 const T: Dict = {
   // nav
   dashboard: { hy: 'Վահանակ', ru: 'Панель', en: 'Dashboard' },
-  restaurantInfo: { hy: 'Ռեստորանի տվյալներ', ru: 'О ресторане', en: 'Restaurant Info' },
+  restaurantInfo: { hy: 'Հաստատության մասին', ru: 'О заведении', en: 'About' },
   menuBuilder: { hy: 'Մենյուի կառուցում', ru: 'Конструктор меню', en: 'Menu Builder' },
   products: { hy: 'Ապրանքներ', ru: 'Товары', en: 'Products' },
   design: { hy: 'Դիզայն', ru: 'Дизайн', en: 'Design' },
@@ -83,13 +83,13 @@ const T: Dict = {
   createFailed: { hy: 'Չհաջողվեց ստեղծել', ru: 'Не удалось создать', en: 'Failed to create' },
 
   // super-admin · restaurants
-  restaurants: { hy: 'Ռեստորաններ', ru: 'Рестораны', en: 'Restaurants' },
+  restaurants: { hy: 'Հաստատություններ', ru: 'Заведения', en: 'Businesses' },
   restaurantsHint: {
-    hy: 'Կառավարիր հարթակի բոլոր ռեստորանները և ավելացրու նորերը',
-    ru: 'Управляйте всеми ресторанами платформы и добавляйте новые',
-    en: 'Manage every restaurant on the platform and add new ones',
+    hy: 'Կառավարեք հարթակի բոլոր հաստատությունները և ավելացրեք նորերը',
+    ru: 'Управляйте всеми заведениями платформы и добавляйте новые',
+    en: 'Manage all businesses on the platform and add new ones',
   },
-  addRestaurant: { hy: '+ Ավելացնել ռեստորան', ru: '+ Добавить ресторан', en: '+ Add restaurant' },
+  addRestaurant: { hy: '+ Ավելացնել հաստատություն', ru: '+ Добавить заведение', en: '+ Add business' },
   creating: { hy: 'Ստեղծվում է…', ru: 'Создание…', en: 'Creating…' },
   name: { hy: 'Անվանում', ru: 'Название', en: 'Name' },
   namePlaceholder: { hy: 'Իմ սրճարանը', ru: 'Моё кафе', en: 'My Cafe' },
@@ -104,20 +104,20 @@ const T: Dict = {
     en: 'Slug must be lowercase letters, numbers or dashes (2–40)',
   },
   nameRequired: { hy: 'Անվանումը պարտադիր է', ru: 'Название обязательно', en: 'Name is required' },
-  restaurantCreated: { hy: 'Ռեստորանը ստեղծված է', ru: 'Ресторан создан', en: 'Restaurant created' },
+  restaurantCreated: { hy: 'Հաստատությունը հաջողությամբ ստեղծվել է', ru: 'Заведение успешно создано', en: 'Business created successfully' },
   publicUrl: { hy: 'Հանրային հղում', ru: 'Публичная ссылка', en: 'Public URL' },
   ownerLogin: { hy: 'Մուտք', ru: 'Вход', en: 'Login' },
   sectionsCount: { hy: 'Բաժիններ', ru: 'Разделы', en: 'Sections' },
   productsCount: { hy: 'Ապրանքներ', ru: 'Товары', en: 'Products' },
   view: { hy: 'Դիտել', ru: 'Открыть', en: 'View' },
-  noRestaurants: { hy: 'Ռեստորան չկա', ru: 'Нет ресторанов', en: 'No restaurants yet' },
-  editRestaurant: { hy: 'Խմբագրել ռեստորանը', ru: 'Изменить ресторан', en: 'Edit restaurant' },
+  noRestaurants: { hy: 'Հաստատություններ դեռ չկան', ru: 'Пока нет заведений', en: 'No businesses yet' },
+  editRestaurant: { hy: 'Խմբագրել հաստատությունը', ru: 'Редактировать заведение', en: 'Edit business' },
   activeRestaurant: { hy: 'Ակտիվ (հասանելի է հանրության համար)', ru: 'Активен (виден публично)', en: 'Active (publicly visible)' },
-  deleteRestaurant: { hy: 'Ջնջե՞լ ռեստորանը', ru: 'Удалить ресторан?', en: 'Delete restaurant?' },
+  deleteRestaurant: { hy: 'Ջնջե՞լ հաստատությունը', ru: 'Удалить заведение?', en: 'Delete business?' },
   deleteRestaurantConfirm: {
-    hy: '«{name}» ռեստորանը և դրա ԲՈԼՈՐ բաժինները, կատեգորիաներն ու ապրանքները մշտապես կջնջվեն։ Այս գործողությունը հնարավոր չէ հետարկել։',
-    ru: 'Ресторан «{name}» и ВСЕ его разделы, категории и товары будут удалены навсегда. Это действие необратимо.',
-    en: 'Restaurant “{name}” and ALL its sections, categories and products will be permanently deleted. This cannot be undone.',
+    hy: '«{name}» հաստատությունը և դրա բոլոր բաժինները, կատեգորիաները, մենյուի տարրերը և հարակից տվյալները մշտապես կհեռացվեն։ Այս գործողությունը հնարավոր չէ հետարկել։',
+    ru: 'Заведение «{name}» и все его разделы, категории, позиции меню и связанные данные будут удалены навсегда. Это действие нельзя отменить.',
+    en: 'The business “{name}” and all of its sections, categories, menu items, and related data will be permanently deleted. This action cannot be undone.',
   },
 }
 

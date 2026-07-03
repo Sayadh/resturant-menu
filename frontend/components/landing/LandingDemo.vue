@@ -42,7 +42,7 @@ const style: Record<ThemeKey, {
 }
 const cur = computed(() => style[activeTheme.value])
 
-const restaurantName: Record<Lang, string> = { hy: 'Ձեր ռեստորանը', ru: 'Ваш ресторан', en: 'Your Restaurant' }
+const restaurantName: Record<Lang, string> = { hy: 'Ձեր հաստատությունը', ru: 'Ваше заведение', en: 'Your Venue' }
 const dishes: { price: string; name: Record<Lang, string>; sub: Record<Lang, string> }[] = [
   { price: '3 800', name: { hy: 'Խորոված', ru: 'Хоровац', en: 'Grilled meat' }, sub: { hy: 'Խնձորով', ru: 'С яблоком', en: 'With apple' } },
   { price: '1 500', name: { hy: 'Լահմաջո', ru: 'Лахмаджо', en: 'Lahmajo' }, sub: { hy: 'Ավանդական', ru: 'Традиционный', en: 'Traditional' } },
