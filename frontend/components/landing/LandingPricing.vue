@@ -17,16 +17,16 @@ const fmt = (n: number) => n.toLocaleString('fr-FR').replace(/ /g, ' ')
 // ── Plan pricing ─────────────────────────────────────────────────
 interface PriceRow { total: number; months: number; save?: number; note?: string }
 const pro: Record<Period, PriceRow> = {
-  monthly: { total: 14900, months: 1 },
-  quarterly: { total: 42000, months: 3, save: 2700 },
-  semi: { total: 79000, months: 6, save: 10400 },
-  yearly: { total: 149000, months: 12, note: '≈ 2 ամիս անվճար' },
+  monthly: { total: 19900, months: 1 },
+  quarterly: { total: 56000, months: 3, save: 3700 },
+  semi: { total: 105000, months: 6, save: 14400 },
+  yearly: { total: 199000, months: 12, note: '≈ 2 ամիս անվճար' },
 }
 const biz: Record<Period, PriceRow> = {
-  monthly: { total: 29900, months: 1 },
-  quarterly: { total: 84000, months: 3, save: 5700 },
-  semi: { total: 159000, months: 6, save: 20400 },
-  yearly: { total: 299000, months: 12, note: '≈ 2 ամիս անվճար' },
+  monthly: { total: 44000, months: 1 },
+  quarterly: { total: 124000, months: 3, save: 8000 },
+  semi: { total: 234000, months: 6, save: 30000 },
+  yearly: { total: 440000, months: 12, note: '≈ 2 ամիս անվճար' },
 }
 const proNow = computed(() => pro[period.value])
 const bizNow = computed(() => biz[period.value])
@@ -43,7 +43,8 @@ const proFeatures = [
   'QR մենյու', 'Ավտոմատ թարմացումներ', 'Տեխնիկական աջակցություն',
 ]
 const bizFeatures = [
-  'Professional-ի ամբողջ փաթեթը', 'Սեփական դոմեյն', 'Բազմաթիվ օգտատերեր (Owner/Manager/Employee)',
+  'Professional-ի ամբողջ փաթեթը', 'Օնլայն վճարում և պատվեր', 'Սեփական դոմեյն',
+  'Բազմաթիվ օգտատերեր (Owner/Manager/Employee)',
   'Պրեմիում թեմաներ', 'Վիճակագրություն', 'Անհատական կարգավորումներ',
 ]
 
@@ -55,6 +56,7 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
   { label: 'Թեմաների ընտրություն', s: '1', p: true, b: 'Պրեմիում' },
   { label: 'Ադմին վահանակ', s: false, p: true, b: true },
   { label: 'Ավտոմատ թարմացումներ', s: false, p: true, b: true },
+  { label: 'Օնլայն վճարում և պատվեր', s: false, p: false, b: true },
   { label: 'Սեփական դոմեյն', s: false, p: false, b: true },
   { label: 'Բազմաթիվ օգտատերեր', s: false, p: false, b: true },
   { label: 'Վիճակագրություն', s: false, p: false, b: true },
@@ -118,7 +120,7 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
             <p class="text-sm font-bold uppercase tracking-wide text-slate-400">Starter</p>
             <p class="mt-1 text-sm text-slate-500">Սկսնակ բիզնեսների համար</p>
             <div class="mt-6 flex items-end gap-2">
-              <span class="text-5xl font-extrabold tracking-tight text-slate-900">79 000</span>
+              <span class="text-5xl font-extrabold tracking-tight text-slate-900">119 000</span>
               <span class="pb-1.5 text-lg font-semibold text-slate-400">֏</span>
             </div>
             <p class="mt-1 text-sm font-medium text-slate-500">մեկանգամյա վճար</p>
@@ -141,7 +143,7 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
           <div class="pro-card group relative flex w-full flex-col rounded-3xl p-8 text-white shadow-2xl transition duration-300 hover:-translate-y-2 lg:-mt-4 lg:mb-4">
             <div class="pro-badge absolute -top-3.5 left-1/2 -translate-x-1/2">
               <span class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-4 py-1.5 text-xs font-bold text-amber-950 shadow-lg">
-                ⭐ Founding Partner
+                ⭐ Ամենապահանջված
               </span>
             </div>
 
@@ -151,27 +153,15 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
             <div class="mt-6">
               <Transition name="price" mode="out-in">
                 <div :key="period">
-                  <template v-if="period === 'monthly'">
-                    <div class="flex items-end gap-2">
-                      <span class="text-5xl font-extrabold tracking-tight">9 900</span>
-                      <span class="pb-1.5 text-lg font-semibold text-indigo-200">֏{{ suffix }}</span>
-                    </div>
-                    <p class="mt-1 flex items-center gap-2 text-sm">
-                      <span class="text-indigo-200/60 line-through">14 900 ֏</span>
-                      <span class="rounded-full bg-amber-400/90 px-2 py-0.5 text-[11px] font-bold text-amber-950">Առաջին 30 հաստատության համար</span>
-                    </p>
-                  </template>
-                  <template v-else>
-                    <div class="flex items-end gap-2">
-                      <span class="text-5xl font-extrabold tracking-tight">{{ fmt(proNow.total) }}</span>
-                      <span class="pb-1.5 text-lg font-semibold text-indigo-200">֏{{ suffix }}</span>
-                    </div>
-                    <p class="mt-1 flex items-center gap-2 text-sm text-indigo-100/80">
-                      ≈ {{ fmt(Math.round(proNow.total / proNow.months)) }} ֏/ամիս
-                      <span v-if="proNow.save" class="rounded-full bg-emerald-400/90 px-2 py-0.5 text-[11px] font-bold text-emerald-950">Խնայեք {{ fmt(proNow.save) }} ֏</span>
-                      <span v-else-if="proNow.note" class="rounded-full bg-amber-400/90 px-2 py-0.5 text-[11px] font-bold text-amber-950">{{ proNow.note }}</span>
-                    </p>
-                  </template>
+                  <div class="flex items-end gap-2">
+                    <span class="text-5xl font-extrabold tracking-tight">{{ fmt(proNow.total) }}</span>
+                    <span class="pb-1.5 text-lg font-semibold text-indigo-200">֏{{ suffix }}</span>
+                  </div>
+                  <p v-if="period !== 'monthly'" class="mt-1 flex items-center gap-2 text-sm text-indigo-100/80">
+                    ≈ {{ fmt(Math.round(proNow.total / proNow.months)) }} ֏/ամիս
+                    <span v-if="proNow.save" class="rounded-full bg-emerald-400/90 px-2 py-0.5 text-[11px] font-bold text-emerald-950">Խնայեք {{ fmt(proNow.save) }} ֏</span>
+                    <span v-else-if="proNow.note" class="rounded-full bg-amber-400/90 px-2 py-0.5 text-[11px] font-bold text-amber-950">{{ proNow.note }}</span>
+                  </p>
                 </div>
               </Transition>
             </div>

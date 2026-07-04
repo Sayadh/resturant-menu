@@ -19,7 +19,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'QR Menu Platform — Ձեր թվային մենյուն',
+      title: 'Menus.am — Ձեր թվային մենյուն',
       htmlAttrs: { lang: 'hy' },
       meta: [
         { charset: 'utf-8' },
@@ -27,26 +27,38 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'Ստեղծեք ձեր թվային QR մենյուն՝ գեղեցիկ, բազմալեզու և հեշտ կառավարվող։ Պրեմիում թեմաներ, ակնթարթային թարմացումներ, QR կոդ։',
+            'Menus.am — թվային QR մենյու սննդի և հյուրընկալության ոլորտի բոլոր բիզնեսների համար՝ ռեստորաններ, սրճարաններ, բարեր և ավելին։ Գեղեցիկ, բազմալեզու, պրոֆեսիոնալ։',
         },
         { name: 'theme-color', content: '#0B1020' },
-        // Open Graph / link previews (Telegram, Messenger, etc.)
+        // Open Graph / link previews (Telegram, Messenger, Facebook, etc.)
         { property: 'og:type', content: 'website' },
-        { property: 'og:site_name', content: 'QR Menu Platform' },
-        { property: 'og:title', content: 'QR Menu Platform — Ձեր թվային մենյուն' },
+        { property: 'og:site_name', content: 'Menus.am' },
+        { property: 'og:url', content: 'https://menus.am' },
+        { property: 'og:title', content: 'Menus.am — Ձեր թվային մենյուն՝ գեղեցիկ և պրոֆեսիոնալ' },
         {
           property: 'og:description',
           content:
-            'Ստեղծեք ձեր թվային QR մենյուն՝ գեղեցիկ, բազմալեզու և հեշտ կառավարվող։',
+            'Թվային QR մենյու սննդի և հյուրընկալության ոլորտի բոլոր բիզնեսների համար։ Գեղեցիկ, բազմալեզու, ակնթարթային թարմացումներ։',
         },
+        { property: 'og:image', content: 'https://menus.am/og-image.png' },
+        { property: 'og:image:secure_url', content: 'https://menus.am/og-image.png' },
+        { property: 'og:image:type', content: 'image/png' },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:image:alt', content: 'Menus.am — թվային QR մենյու հարթակ' },
+        { property: 'og:locale', content: 'hy_AM' },
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:title', content: 'QR Menu Platform — Ձեր թվային մենյուն' },
+        { name: 'twitter:title', content: 'Menus.am — Ձեր թվային մենյուն՝ գեղեցիկ և պրոֆեսիոնալ' },
         {
           name: 'twitter:description',
-          content: 'Ստեղծեք ձեր թվային QR մենյուն՝ գեղեցիկ, բազմալեզու և հեշտ կառավարվող։',
+          content: 'Թվային QR մենյու սննդի և հյուրընկալության ոլորտի բոլոր բիզնեսների համար։',
         },
+        { name: 'twitter:image', content: 'https://menus.am/og-image.png' },
       ],
       link: [
+        // Brand favicon (replaces the default browser globe)
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'apple-touch-icon', href: '/favicon.svg' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {

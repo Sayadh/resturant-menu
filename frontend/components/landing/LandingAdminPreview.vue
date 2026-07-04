@@ -37,8 +37,13 @@ const rows = [
             <!-- sidebar -->
             <div class="hidden w-44 shrink-0 bg-[#0E1428] p-3 sm:block">
               <div class="mb-4 flex items-center gap-2 px-2 py-1 text-white">
-                <span class="grid h-7 w-7 place-items-center rounded-lg bg-indigo-500 text-[10px] font-black">QR</span>
-                <span class="text-xs font-bold">QR MENU</span>
+                <span class="grid h-7 w-7 place-items-center rounded-lg bg-indigo-500">
+                  <svg width="17" height="17" viewBox="0 0 32 32" fill="none">
+                    <path d="M7.5 23V10.6c0-.9 1.1-1.3 1.7-.6l6.8 7.7 6.8-7.7c.6-.7 1.7-.3 1.7.6V23" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="16" cy="23.5" r="1.6" fill="#FBBF24" />
+                  </svg>
+                </span>
+                <span class="text-xs font-bold">Menus</span>
               </div>
               <button
                 v-for="(n, i) in nav"

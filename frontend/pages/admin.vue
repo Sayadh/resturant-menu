@@ -651,7 +651,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
       <div class="flex items-center gap-3">
         <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden" @click="sidebarOpen = !sidebarOpen">☰</button>
         <div>
-          <p class="text-sm font-bold text-slate-900">{{ isSuperAdmin ? 'QR Menu Platform' : restaurant.name }}</p>
+          <p class="text-sm font-bold text-slate-900">{{ isSuperAdmin ? 'Menus.am' : restaurant.name }}</p>
           <p class="text-xs text-slate-500">{{ isSuperAdmin ? 'SUPER ADMIN' : t('adminSubtitle') }}</p>
         </div>
       </div>

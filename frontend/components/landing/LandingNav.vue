@@ -2,10 +2,10 @@
 const links = [
   { href: '#hero', label: 'Գլխավոր' },
   { href: '#features', label: 'Հնարավորություններ' },
+  { href: '#demo', label: 'Դեմո' },
   { href: '#themes', label: 'Թեմաներ' },
   { href: '#pricing', label: 'Գնացուցակ' },
   { href: '#about', label: 'Մեր մասին' },
-  { href: '#faq', label: 'Հաճախ տրվող' },
 ]
 
 const { openModal } = useLeadModal()
@@ -27,8 +27,13 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   >
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
       <a href="#hero" class="flex items-center gap-2.5 text-white">
-        <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-black shadow-lg shadow-indigo-500/30">QR</span>
-        <span class="text-[15px] font-bold tracking-tight">QR MENU</span>
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+            <path d="M7.5 23V10.6c0-.9 1.1-1.3 1.7-.6l6.8 7.7 6.8-7.7c.6-.7 1.7-.3 1.7.6V23" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="16" cy="23.5" r="1.6" fill="#FBBF24" />
+          </svg>
+        </span>
+        <span class="text-[15px] font-bold tracking-tight">Menus</span>
       </a>
 
       <div class="hidden items-center gap-1 lg:flex">
