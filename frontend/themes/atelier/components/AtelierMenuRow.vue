@@ -2,6 +2,7 @@
 // Editorial menu row — a printed-menu line rather than a card. Name and price
 // joined by a dotted leader, a small plated thumbnail, and a quiet add control.
 import { ui, badgeLabels, type MenuItem } from '~/data/menu'
+import { atelierAdd } from '~/themes/atelier/config'
 
 const props = defineProps<{
   item: MenuItem
@@ -78,19 +79,8 @@ const soldOut = computed(() => props.item.available === false)
           {{ t(ui.soldOut) }}
         </span>
 
-        <button
-          type="button"
-          class="ml-auto flex items-center gap-1.5 text-[#857B6C] transition-colors hover:text-[#A1502E]"
-          :aria-label="order.isFav(item.id) ? 'Հեռացնել ընտրանուց' : 'Ավելացնել ընտրանի'"
-          @click="order.toggleFav(item.id)"
-        >
-          <svg viewBox="0 0 24 24" class="h-4 w-4" :fill="order.isFav(item.id) ? '#A1502E' : 'none'" :stroke="order.isFav(item.id) ? '#A1502E' : 'currentColor'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-          </svg>
-        </button>
-
         <!-- Add / stepper -->
-        <div v-if="order.qtyOf(item.id) > 0" class="flex items-center gap-3">
+        <div v-if="order.qtyOf(item.id) > 0" class="ml-auto flex items-center gap-3">
           <button type="button" class="flex h-7 w-7 items-center justify-center rounded-full border border-[#16130F]/30 font-display text-base text-[#16130F] transition hover:border-[#A1502E] hover:text-[#A1502E]" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
           <span class="w-4 text-center font-serif text-base font-semibold text-[#16130F]">{{ order.qtyOf(item.id) }}</span>
           <button type="button" class="flex h-7 w-7 items-center justify-center rounded-full bg-[#16130F] font-display text-base text-[#F6F2EA] transition hover:bg-[#A1502E]" aria-label="Ավելացնել" @click="order.add(item.id)">+</button>
@@ -101,7 +91,7 @@ const soldOut = computed(() => props.item.available === false)
           class="flex items-center gap-2 border-b border-[#16130F] pb-0.5 font-display text-[10px] uppercase tracking-[0.22em] text-[#16130F] transition-colors hover:border-[#A1502E] hover:text-[#A1502E]"
           @click="order.add(item.id)"
         >
-          Add
+          {{ t(atelierAdd) }}
           <span class="text-sm leading-none">+</span>
         </button>
       </div>

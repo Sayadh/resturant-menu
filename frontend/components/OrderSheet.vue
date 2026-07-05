@@ -100,17 +100,10 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
             <div class="flex gap-2">
               <button
                 type="button"
-                class="rounded-full border border-[#E4D6C2] px-4 py-2.5 font-serif text-sm font-semibold text-[#3E2723] transition hover:bg-[#F5EFE2]"
+                class="flex-1 rounded-full border border-[#E4D6C2] px-4 py-2.5 font-serif text-sm font-semibold text-[#3E2723] transition hover:bg-[#F5EFE2]"
                 @click="order.clear()"
               >
                 {{ t(ui.clearOrder) }}
-              </button>
-              <button
-                type="button"
-                class="flex-1 rounded-full bg-[#3E2723] px-4 py-2.5 font-serif text-sm font-bold text-[#FFF9EF] shadow-md transition hover:bg-[#5A4038]"
-                @click="emit('close')"
-              >
-                {{ t(ui.showWaiter) }}
               </button>
             </div>
           </div>

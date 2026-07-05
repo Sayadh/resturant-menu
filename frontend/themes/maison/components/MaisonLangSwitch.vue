@@ -18,8 +18,8 @@ withDefaults(defineProps<{ tone?: 'light' | 'dark' }>(), { tone: 'dark' })
       type="button"
       class="relative px-1.5 py-1 transition-colors duration-300"
       :class="[
-        tone === 'light' ? 'text-[#FBF8F1]/55 hover:text-[#FBF8F1]' : 'text-[#8C8276] hover:text-[#241B14]',
-        lang === l && (tone === 'light' ? '!text-[#FBF8F1]' : '!text-[#241B14]'),
+        tone === 'light' ? 'text-[#FCF8F0]/55 hover:text-[#FCF8F0]' : 'text-[#8A7C6B] hover:text-[#4A3B2E]',
+        lang === l && (tone === 'light' ? '!text-[#FCF8F0]' : '!text-[#4A3B2E]'),
       ]"
       :aria-pressed="lang === l"
       @click="setLang(l)"
@@ -27,7 +27,7 @@ withDefaults(defineProps<{ tone?: 'light' | 'dark' }>(), { tone: 'dark' })
       {{ l }}
       <span
         v-if="lang === l"
-        class="absolute -bottom-0.5 left-1/2 h-px w-3 -translate-x-1/2 bg-[#B08A4F]"
+        class="absolute -bottom-0.5 left-1/2 h-px w-3 -translate-x-1/2 bg-[#C4693F]"
         aria-hidden="true"
       />
     </button>

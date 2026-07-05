@@ -27,10 +27,27 @@ const emit = defineEmits<{
 const { t } = useLanguage()
 
 const pad = (n: number) => String(n + 1).padStart(2, '0')
+
+// Elevate the bar with a soft shadow once it becomes stuck at the top —
+// gives depth while pinned, disappears smoothly when scrolled back up.
+const navEl = ref<HTMLElement | null>(null)
+const stuck = ref(false)
+const onScroll = () => {
+  if (navEl.value) stuck.value = navEl.value.getBoundingClientRect().top <= 0
+}
+onMounted(() => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
+onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <template>
-  <div class="sticky top-0 z-30 border-y border-[#16130F] bg-[#EAE3D6]/95 backdrop-blur">
+  <div
+    ref="navEl"
+    class="sticky top-0 z-30 border-y border-[#16130F] bg-[#EAE3D6]/95 backdrop-blur transition-shadow duration-300"
+    :class="stuck ? 'shadow-[0_16px_36px_-22px_rgba(22,19,15,0.6)]' : 'shadow-none'"
+  >
     <div class="mx-auto max-w-6xl px-5 sm:px-8">
       <!-- Tabs + search -->
       <div class="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:justify-between">

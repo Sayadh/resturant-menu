@@ -23,6 +23,13 @@
   section[id] {
     scroll-margin-top: calc(var(--nav-h, 160px) + 14px);
   }
+
+  /* No focus outline on buttons (app-wide). */
+  button:focus,
+  button:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
 }
 
 @layer components {

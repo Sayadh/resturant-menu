@@ -17,16 +17,17 @@ import type { LocalizedText } from '~/data/menu'
 export const maisonThemeId = 'maison' as const
 
 /** Warm ivory / chocolate / soft-gold palette — intentionally unlike Aria & Atelier. */
+// Organic-family palette: warm cream, sage-green accent, natural walnut wood.
 export const maisonColors = {
-  ivory: '#F4EEE2', // page background (warm ivory)
+  ivory: '#F4EEE2', // page background (warm cream)
   warmWhite: '#FBF8F1', // elevated light surfaces
-  chocolate: '#241B14', // near-black espresso — dark sections & text
-  espresso: '#3B2C20', // softer dark
-  gold: '#B08A4F', // soft gold accent
-  goldSoft: '#C9AC7C', // lighter gold
-  olive: '#6E6B4B', // natural olive secondary accent
-  warmGray: '#8C8276', // muted text
-  line: '#DFD5C4', // hairlines
+  chocolate: '#3A322A', // warm bark — body text
+  espresso: '#4A3A29', // walnut wood — dark bands/surfaces
+  gold: '#7E8C57', // sage green — botanical accent
+  goldSoft: '#A7B37B', // light sage
+  olive: '#7E8C57', // sage
+  warmGray: '#877E70', // muted text
+  line: '#E4DDCC', // hairlines
 } as const
 
 /** Restaurant branding shown across the Maison experience. */
@@ -106,7 +107,7 @@ export const maisonCategories = {
     RU: 'Изучите нашу коллекцию',
   } satisfies LocalizedText,
   explore: { AM: 'Բացել', EN: 'Explore', RU: 'Открыть' } satisfies LocalizedText,
-  dishesWord: { AM: 'ուտեստ', EN: 'dishes', RU: 'блюд' } satisfies LocalizedText,
+  dishesWord: { AM: 'ապրանք', EN: 'items', RU: 'товаров' } satisfies LocalizedText,
   back: { AM: 'Բոլոր բաժինները', EN: 'All sections', RU: 'Все разделы' } satisfies LocalizedText,
 } as const
 
@@ -133,7 +134,7 @@ export const maisonOrder = {
     EN: 'Your selection is still empty. Browse the menu and add your favorites.',
     RU: 'Ваш выбор пока пуст. Пролистайте меню и добавьте любимые блюда.',
   } satisfies LocalizedText,
-  itemsWord: { AM: 'ուտեստ', EN: 'items', RU: 'блюд' } satisfies LocalizedText,
+  itemsWord: { AM: 'ապրանք', EN: 'items', RU: 'товаров' } satisfies LocalizedText,
   view: { AM: 'Ընտրություն', EN: 'Selection', RU: 'Выбор' } satisfies LocalizedText,
   add: { AM: 'Ավելացնել', EN: 'Add to selection', RU: 'Добавить' } satisfies LocalizedText,
 } as const

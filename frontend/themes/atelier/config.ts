@@ -102,7 +102,7 @@ export const atelierBill = {
     RU: 'Ваш стол пока пуст. Выберите блюдо из меню.',
   } satisfies LocalizedText,
   label: { AM: 'Սեղան', EN: 'Table', RU: 'Стол' } satisfies LocalizedText,
-  itemsWord: { AM: 'ուտեստ', EN: 'dishes', RU: 'блюд' } satisfies LocalizedText,
+  itemsWord: { AM: 'ապրանք', EN: 'items', RU: 'товаров' } satisfies LocalizedText,
   view: { AM: 'Դիտել սեղանը', EN: 'View table', RU: 'Открыть стол' } satisfies LocalizedText,
 } as const
 
@@ -112,3 +112,14 @@ export const atelierFooterNote: LocalizedText = {
   EN: 'Handcrafted daily, with intention',
   RU: 'Готовится вручную, каждый день',
 }
+
+/** Editorial hero meta labels (Rating / Hours / Location). */
+export const atelierMeta = {
+  rating: { AM: 'Գնահատական', EN: 'Rating', RU: 'Рейтинг' } satisfies LocalizedText,
+  hours: { AM: 'Ժամեր', EN: 'Hours', RU: 'Часы' } satisfies LocalizedText,
+  location: { AM: 'Հասցե', EN: 'Location', RU: 'Адрес' } satisfies LocalizedText,
+}
+
+/** Add-to-order controls (theme uses a "table" metaphor). */
+export const atelierAdd: LocalizedText = { AM: 'Ավելացնել', EN: 'Add', RU: 'Добавить' }
+export const atelierAddToTable: LocalizedText = { AM: 'Ավելացնել սեղանին', EN: 'Add to table', RU: 'Добавить на стол' }

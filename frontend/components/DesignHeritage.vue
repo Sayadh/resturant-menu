@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="min-h-screen">
+  <div class="flex min-h-screen flex-col">
     <TheHeader />
 
     <CategoryNav
@@ -129,7 +129,7 @@ onBeforeUnmount(() => {
       @select-group="selectGroup"
     />
 
-    <main class="relative mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-5 sm:pt-10">
+    <main class="relative mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-6 sm:px-5 sm:pt-10">
       <IconWheat class="pointer-events-none absolute right-1 top-20 hidden h-28 w-28 rotate-12 text-caramel opacity-[0.07] lg:block" />
       <DecorSprig class="pointer-events-none absolute -left-3 top-1/3 hidden h-28 w-28 -rotate-12 scale-x-[-1] text-herb opacity-[0.07] lg:block" />
       <IconWheat class="pointer-events-none absolute -left-2 bottom-24 hidden h-24 w-24 -rotate-[20deg] scale-x-[-1] text-caramel opacity-[0.06] lg:block" />
@@ -162,12 +162,6 @@ onBeforeUnmount(() => {
         </div>
         <p class="font-serif text-base italic text-brown-soft">{{ t(ui.footerNote) }}</p>
         <p class="font-serif text-sm text-brown/70">{{ brand.address }} · {{ t(ui.hours) }}</p>
-        <NuxtLink
-          to="/admin"
-          class="mt-1 font-serif text-xs uppercase tracking-widest text-brown/40 transition-colors hover:text-caramel"
-        >
-          Admin
-        </NuxtLink>
       </div>
     </footer>
 

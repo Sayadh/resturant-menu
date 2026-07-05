@@ -177,7 +177,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div id="top" class="maison-theme relative min-h-screen overflow-x-hidden font-sans">
+  <div id="top" class="maison-theme relative flex min-h-screen flex-col overflow-x-clip font-sans">
     <!-- First-load veil -->
     <Transition name="ms-veil">
       <MaisonLoading v-if="!ready" />
@@ -201,12 +201,12 @@ onBeforeUnmount(() => {
 
     <!-- When searching, collapse the editorial chapters and show results. -->
     <template v-if="!isSearching">
-      <!-- Chef's Selection (dark band) -->
-      <section v-if="chefSelection.length" class="bg-[#241B14] py-20 sm:py-28">
+      <!-- Chef's Selection (warm beige band) -->
+      <section v-if="chefSelection.length" class="bg-[#EFE3D0] py-20 sm:py-28">
         <div class="mx-auto max-w-6xl px-5 sm:px-8">
           <header v-reveal class="mb-16 text-center">
-            <p class="ms-eyebrow font-sans text-[11px] text-[#C9AC7C]">{{ t(maisonChefSelection.kicker) }}</p>
-            <h2 class="mt-5 text-balance font-serif text-4xl text-[#FBF8F1] sm:text-5xl">
+            <p class="ms-eyebrow font-sans text-[11px] font-semibold text-[#C4693F]">{{ t(maisonChefSelection.kicker) }}</p>
+            <h2 class="mt-5 text-balance font-serif text-4xl font-semibold text-[#3E3125] sm:text-5xl">
               {{ t(maisonChefSelection.title) }}
             </h2>
             <div class="ms-rule mx-auto mt-8 w-32" aria-hidden="true" />
@@ -217,7 +217,7 @@ onBeforeUnmount(() => {
               v-for="(dish, i) in chefSelection"
               :key="dish.id"
               :item="dish"
-              tone="dark"
+              tone="light"
               :reversed="i % 2 === 1"
               :index="i"
             />
@@ -228,38 +228,40 @@ onBeforeUnmount(() => {
 
     <!-- 5 · Categories + 6 · Products -->
     <section id="ms-collection" class="bg-[#F4EEE2] pt-20 sm:pt-28">
-      <!-- Collection intro + chapter selector -->
+      <!-- Collection intro -->
       <div class="mx-auto max-w-6xl px-5 text-center sm:px-8">
-        <p v-reveal class="ms-eyebrow font-sans text-[11px] text-[#B08A4F]">{{ t(maisonCategories.kicker) }}</p>
-        <h2 v-reveal="1" class="mt-5 text-balance font-serif text-4xl text-[#241B14] sm:text-5xl">
+        <p v-reveal class="ms-eyebrow font-sans text-[11px] font-semibold text-[#C4693F]">{{ t(maisonCategories.kicker) }}</p>
+        <h2 v-reveal="1" class="mt-5 text-balance font-serif text-4xl font-semibold text-[#3E3125] sm:text-5xl">
           {{ t(maisonCategories.title) }}
         </h2>
+      </div>
 
-        <div v-reveal="2" class="mt-9 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+      <!-- Sticky chapter selector — stays pinned so guests can always switch -->
+      <div class="sticky top-[64px] z-30 mt-8 border-y border-[#E7DDCB]/70 bg-[#F6F0E4]/85 backdrop-blur-md sm:top-[72px]">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-7 gap-y-1.5 px-5 py-3.5 sm:gap-x-9 sm:px-8">
           <button
             v-for="view in views"
             :key="view.key"
             type="button"
-            class="relative pb-1 font-serif text-xl transition-colors duration-300 sm:text-2xl"
-            :class="activeKey === view.key ? 'text-[#241B14]' : 'text-[#B6AC9C] hover:text-[#5B5145]'"
+            class="relative pb-1 font-serif text-lg transition-colors duration-300 sm:text-xl"
+            :class="activeKey === view.key ? 'text-[#3E3125]' : 'text-[#B6AC9C] hover:text-[#6E6152]'"
             @click="selectView(view.key)"
           >
             {{ t(view.title) }}
             <span
               v-if="activeKey === view.key"
-              class="absolute -bottom-0.5 left-1/2 h-px w-8 -translate-x-1/2 bg-[#B08A4F]"
+              class="absolute -bottom-0.5 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#C4693F]"
               aria-hidden="true"
             />
           </button>
         </div>
-        <div class="ms-rule mx-auto mt-10 w-full max-w-3xl" aria-hidden="true" />
       </div>
 
       <!-- Search results -->
       <div v-if="isSearching" class="mx-auto max-w-6xl px-5 pb-24 pt-16 sm:px-8">
         <template v-if="hasResults">
           <div v-for="cat in filteredCategories" :key="cat.id" class="mb-20">
-            <h3 class="mb-10 text-center font-serif text-3xl text-[#241B14]">{{ t(cat.title) }}</h3>
+            <h3 class="mb-10 text-center font-serif text-3xl text-[#4A3B2E]">{{ t(cat.title) }}</h3>
             <MaisonProductLayout :category="cat" />
           </div>
         </template>
@@ -282,7 +284,9 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <MaisonFooter />
+    <div class="mt-auto">
+      <MaisonFooter />
+    </div>
 
     <!-- Overlays -->
     <MaisonBasket @open="orderOpen = true" />

@@ -28,13 +28,6 @@ const mono = computed(() => {
           <span class="h-1 w-1 rounded-full bg-[#A1502E]" aria-hidden="true" />
           <span>{{ brand.hours }}</span>
         </div>
-
-        <NuxtLink
-          to="/admin"
-          class="mt-10 atl-eyebrow font-display text-[9px] text-[#F6F2EA]/35 transition hover:text-[#A1502E]"
-        >
-          Admin
-        </NuxtLink>
       </div>
     </div>
   </footer>

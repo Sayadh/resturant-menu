@@ -112,14 +112,7 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
           <div class="mt-5 flex gap-3">
             <button
               type="button"
-              class="flex-1 bg-[#16130F] py-3.5 font-display text-[11px] uppercase tracking-[0.24em] text-[#F6F2EA] transition hover:bg-[#A1502E]"
-              @click="emit('close')"
-            >
-              {{ t(ui.showWaiter) }}
-            </button>
-            <button
-              type="button"
-              class="border border-[#16130F]/30 px-5 font-display text-[11px] uppercase tracking-[0.18em] text-[#16130F] transition hover:border-[#A1502E] hover:text-[#A1502E]"
+              class="flex-1 border border-[#16130F]/30 py-3.5 font-display text-[11px] uppercase tracking-[0.18em] text-[#16130F] transition hover:border-[#A1502E] hover:text-[#A1502E]"
               @click="order.clear()"
             >
               {{ t(ui.clearOrder) }}

@@ -88,7 +88,7 @@ export const ui = {
     EN: '320 reviews',
     RU: '320 отзывов',
   },
-  dishCount: { AM: 'ուտեստ', EN: 'items', RU: 'блюд' },
+  dishCount: { AM: 'ապրանք', EN: 'items', RU: 'товаров' },
   soldOut: { AM: 'Սպառված է', EN: 'Sold out', RU: 'Распродано' },
   searchPlaceholder: {
     AM: 'Որոնել ուտեստ',

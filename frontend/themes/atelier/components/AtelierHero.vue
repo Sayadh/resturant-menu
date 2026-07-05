@@ -2,7 +2,7 @@
 // Editorial hero — asymmetric magazine cover: oversized serif headline and
 // editorial meta on the left, a tall framed signature photograph on the right.
 import { ui } from '~/data/menu'
-import { atelierBrand } from '~/themes/atelier/config'
+import { atelierBrand, atelierMeta } from '~/themes/atelier/config'
 
 const { t } = useLanguage()
 const brand = useBrand()
@@ -29,7 +29,7 @@ const brand = useBrand()
         <!-- Editorial meta row -->
         <dl class="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
           <div class="flex flex-col">
-            <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">Rating</dt>
+            <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">{{ t(atelierMeta.rating) }}</dt>
             <dd class="mt-1 flex items-baseline gap-1.5 font-serif text-[#16130F]">
               <span class="text-2xl font-semibold">{{ brand.rating }}</span>
               <span class="text-sm text-[#857B6C]">/ 5 · {{ t(atelierBrand.reviews) }}</span>
@@ -37,7 +37,7 @@ const brand = useBrand()
           </div>
           <span class="hidden h-9 w-px bg-[#D4C9B8] sm:block" aria-hidden="true" />
           <div class="flex flex-col">
-            <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">Hours</dt>
+            <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">{{ t(atelierMeta.hours) }}</dt>
             <dd class="mt-1 flex items-center gap-2 font-serif text-[#16130F]">
               <span class="atl-pulse h-1.5 w-1.5 rounded-full bg-[#A1502E]" aria-hidden="true" />
               <span class="text-base">{{ brand.hours }}</span>
@@ -46,7 +46,7 @@ const brand = useBrand()
           </div>
           <span class="hidden h-9 w-px bg-[#D4C9B8] sm:block" aria-hidden="true" />
           <div class="flex flex-col">
-            <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">Location</dt>
+            <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">{{ t(atelierMeta.location) }}</dt>
             <dd class="mt-1 font-serif text-base text-[#16130F]">{{ brand.address }}</dd>
           </div>
         </dl>

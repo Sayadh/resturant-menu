@@ -1,8 +1,9 @@
 <script setup lang="ts">
 // ─────────────────────────────────────────────────────────────────────────
-// MaisonHero — full-screen cinematic welcome.
-// Large cover photography, soft gradient overlay, logo, tagline, rating,
-// location and hours. Sets the emotional tone before any food is shown.
+// MaisonHero — Warm & Family welcome.
+// An inviting, airy split hero on warm cream: brand name + tagline + meta and
+// a terracotta call-to-action on the left, a soft rounded, framed cover photo
+// on the right. Cozy, friendly, premium — never dark or cinematic.
 // ─────────────────────────────────────────────────────────────────────────
 import { ui } from '~/data/menu'
 import { maisonBrand, maisonHero } from '~/themes/maison/config'
@@ -11,90 +12,114 @@ defineEmits<{ (e: 'enter'): void }>()
 
 const { t } = useLanguage()
 const brand = useBrand()
+const menu = useMenuStore()
+
+// Hero photo: the restaurant's cover if set, otherwise the first real dish
+// photo from the menu (so the hero always shows appetising, on-brand food).
+const heroImage = computed(
+  () => brand.cover.value || menu.categories.flatMap((c) => c.items).find((i) => i.image)?.image || '',
+)
 </script>
 
 <template>
-  <section class="relative h-[100svh] min-h-[600px] w-full overflow-hidden">
-    <!-- Warm base (always present, so there's never a broken hero) -->
-    <div class="absolute inset-0" style="background: radial-gradient(circle at 50% 30%, #3B2C20, #241B14)" aria-hidden="true" />
-    <!-- Cover photography (only if the restaurant has one) with a slow drift -->
-    <div
-      v-if="brand.cover"
-      class="ms-kenburns absolute inset-0 bg-cover bg-center"
-      :style="{ backgroundImage: `url(${brand.cover})` }"
-      aria-hidden="true"
-    />
-    <!-- Soft gradient overlays for legibility -->
-    <div
-      class="absolute inset-0"
-      style="background: linear-gradient(180deg, rgba(36,27,20,0.55) 0%, rgba(36,27,20,0.2) 35%, rgba(36,27,20,0.35) 65%, rgba(36,27,20,0.82) 100%)"
-      aria-hidden="true"
-    />
-
-    <!-- Top bar: established + language -->
-    <div class="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 py-6 sm:px-10">
-      <span class="ms-eyebrow-sm font-sans text-[10px] text-[#FBF8F1]/70">
-        {{ maisonBrand.established }}
-      </span>
-      <MaisonLangSwitch tone="light" />
+  <section class="relative overflow-hidden bg-[#F6F0E4] pt-24 pb-16 sm:pt-28 sm:pb-24">
+    <!-- soft warm glows -->
+    <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div class="absolute -left-20 top-6 h-72 w-72 rounded-full bg-[#E0B27C]/35 blur-3xl" />
+      <div class="absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-[#C4693F]/15 blur-3xl" />
     </div>
 
-    <!-- Centerpiece -->
-    <div class="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center text-[#FBF8F1]">
-      <p class="ms-eyebrow mb-6 font-sans text-[11px] text-[#C9AC7C]">
-        {{ t(maisonHero.welcome) }}
-      </p>
-
-      <!-- Wordmark -->
-      <h1 class="font-display text-5xl font-light leading-[0.95] tracking-wide sm:text-7xl lg:text-8xl">
-        {{ brand.name }}
-      </h1>
-
-      <!-- Gold rule + kicker -->
-      <div class="mt-7 flex items-center gap-4">
-        <span class="h-px w-10 bg-[#C9AC7C]/60" aria-hidden="true" />
-        <span class="font-serif text-lg italic text-[#FBF8F1]/85 sm:text-xl">{{ t(maisonBrand.kicker) }}</span>
-        <span class="h-px w-10 bg-[#C9AC7C]/60" aria-hidden="true" />
-      </div>
-
-      <p class="mt-6 max-w-md text-balance font-serif text-lg leading-relaxed text-[#FBF8F1]/75 sm:text-xl">
-        {{ t(brand.tagline) }}
-      </p>
-
-      <!-- Meta row: rating · location · hours -->
-      <div class="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 font-sans text-[12px] tracking-[0.12em] text-[#FBF8F1]/80">
-        <span class="flex items-center gap-1.5">
-          <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 fill-[#C9AC7C]" aria-hidden="true">
-            <path d="M12 2l2.9 6.1 6.7.9-4.9 4.6 1.2 6.6L12 18.6 6.1 20.8l1.2-6.6L2.4 9.6l6.7-.9z" />
-          </svg>
-          {{ brand.rating }} · {{ t(maisonBrand.reviews) }}
-        </span>
-        <span class="hidden h-3 w-px bg-[#FBF8F1]/30 sm:block" aria-hidden="true" />
-        <span>{{ brand.address }}</span>
-        <span class="hidden h-3 w-px bg-[#FBF8F1]/30 sm:block" aria-hidden="true" />
-        <span class="flex items-center gap-1.5">
-          <span class="ms-pulse inline-block h-1.5 w-1.5 rounded-full bg-[#A7BE7C]" aria-hidden="true" />
-          {{ t(ui.openNow) }} · {{ brand.hours }}
-        </span>
-      </div>
-
-      <!-- Enter -->
-      <button
-        type="button"
-        class="group mt-11 inline-flex items-center gap-3 border border-[#FBF8F1]/40 px-8 py-3.5 font-sans text-[11px] tracking-[0.28em] text-[#FBF8F1] transition-colors duration-500 hover:border-[#C9AC7C] hover:bg-[#C9AC7C] hover:text-[#241B14]"
-        @click="$emit('enter')"
-      >
-        {{ t(maisonHero.enter).toUpperCase() }}
-        <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 transition-transform duration-500 group-hover:translate-y-0.5" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-          <path d="M12 5v14M6 13l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
+    <!-- top bar: established + language -->
+    <div class="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 py-5 sm:px-10">
+      <span class="ms-eyebrow-sm font-sans text-[10px] text-[#8A7C6B]">{{ maisonBrand.established }}</span>
+      <MaisonLangSwitch tone="dark" />
     </div>
 
-    <!-- Scroll cue -->
-    <div class="absolute inset-x-0 bottom-7 z-10 flex flex-col items-center gap-2 text-[#FBF8F1]/70">
+    <div class="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-2 lg:gap-14">
+      <!-- copy -->
+      <div class="text-center lg:text-left">
+        <p class="ms-eyebrow font-sans text-[11px] font-semibold text-[#8A9466]">{{ t(maisonHero.welcome) }}</p>
+
+        <img
+          v-if="brand.logo.value"
+          :src="brand.logo.value"
+          alt=""
+          class="mx-auto mt-5 h-20 w-20 rounded-full object-cover shadow-[0_16px_30px_-14px_rgba(90,68,51,0.5)] ring-4 ring-white/70 sm:h-24 sm:w-24 lg:mx-0"
+        />
+
+        <h1 class="mt-5 font-serif text-5xl font-semibold leading-[1.02] tracking-tight text-[#3E3125] sm:text-6xl lg:text-7xl">
+          {{ brand.name }}
+        </h1>
+
+        <p class="mx-auto mt-5 max-w-md font-serif text-lg italic leading-relaxed text-[#6E6152] sm:text-xl lg:mx-0">
+          {{ t(brand.tagline) }}
+        </p>
+
+        <!-- meta -->
+        <div class="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-sans text-[13px] text-[#6E6152] lg:justify-start">
+          <span class="flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" class="h-4 w-4 fill-[#E0A458]" aria-hidden="true">
+              <path d="M12 2l2.9 6.1 6.7.9-4.9 4.6 1.2 6.6L12 18.6 6.1 20.8l1.2-6.6L2.4 9.6l6.7-.9z" />
+            </svg>
+            {{ brand.rating }} · {{ t(maisonBrand.reviews) }}
+          </span>
+          <span class="hidden h-3 w-px bg-[#D8CBB4] sm:block" aria-hidden="true" />
+          <span class="flex items-center gap-1.5">
+            <span class="ms-pulse inline-block h-1.5 w-1.5 rounded-full bg-[#8A9466]" aria-hidden="true" />
+            {{ t(ui.openNow) }} · {{ brand.hours }}
+          </span>
+        </div>
+
+        <!-- CTAs -->
+        <div class="mt-9 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+          <button
+            type="button"
+            class="group inline-flex items-center gap-2.5 rounded-full bg-[#C4693F] px-7 py-3.5 font-sans text-sm font-semibold text-[#F6F0E4] shadow-[0_18px_34px_-16px_rgba(196,105,63,0.85)] transition hover:-translate-y-0.5 hover:bg-[#B0562F]"
+            @click="$emit('enter')"
+          >
+            {{ t(maisonHero.enter) }}
+            <svg viewBox="0 0 24 24" class="h-4 w-4 transition-transform duration-300 group-hover:translate-y-0.5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M12 5v14M6 13l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <span class="inline-flex items-center gap-2 rounded-full border border-[#E7DDCB] bg-[#FCF8F0] px-5 py-3.5 font-sans text-sm font-medium text-[#5A4433]">
+            <svg viewBox="0 0 24 24" class="h-4 w-4 text-[#C4693F]" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11z" stroke-linejoin="round" /><circle cx="12" cy="10" r="2.4" />
+            </svg>
+            {{ brand.address }}
+          </span>
+        </div>
+      </div>
+
+      <!-- framed cover photo -->
+      <div class="relative mx-auto w-full max-w-md lg:max-w-none">
+        <div class="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] shadow-[0_44px_84px_-42px_rgba(90,68,51,0.55)] ring-1 ring-white/50">
+          <img
+            v-if="heroImage"
+            :src="heroImage"
+            alt=""
+            class="ms-kenburns h-full w-full object-cover"
+          />
+          <div
+            v-else
+            class="h-full w-full"
+            style="background: radial-gradient(120% 90% at 70% 20%, #E8B98A, transparent 60%), radial-gradient(100% 90% at 20% 80%, #C98A5A, transparent 55%), linear-gradient(135deg, #D9A876, #B87A48)"
+            aria-hidden="true"
+          />
+          <!-- gentle warm vignette -->
+          <div class="pointer-events-none absolute inset-0" style="background: linear-gradient(180deg, transparent 55%, rgba(74,58,41,0.28) 100%)" aria-hidden="true" />
+        </div>
+        <!-- floating glass caption -->
+        <div class="absolute -bottom-4 left-5 flex items-center gap-2 rounded-2xl bg-[#FCF8F0]/90 px-4 py-2.5 font-sans text-[13px] font-semibold text-[#5A4433] shadow-[0_18px_34px_-18px_rgba(90,68,51,0.5)] backdrop-blur">
+          <span class="text-base">🍞</span> {{ t(brand.tagline) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- scroll cue -->
+    <div class="relative z-10 mt-14 flex flex-col items-center gap-2 text-[#8A7C6B]">
       <span class="ms-eyebrow-sm font-sans text-[9px]">{{ t(maisonHero.scroll) }}</span>
-      <span class="ms-bob inline-block h-7 w-px bg-[#FBF8F1]/50" aria-hidden="true" />
+      <span class="ms-bob inline-block h-7 w-px bg-[#C4693F]/50" aria-hidden="true" />
     </div>
   </section>
 </template>

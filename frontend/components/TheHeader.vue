@@ -2,6 +2,10 @@
 import { ui } from '~/data/menu'
 const { t } = useLanguage()
 const brand = useBrand()
+const mono = computed(() => {
+  const i = brand.name.value.split(/\s+/).map((w) => w[0]).join('')
+  return (i.length > 1 ? i : brand.name.value).slice(0, 2).toUpperCase()
+})
 </script>
 
 <template>
@@ -22,10 +26,11 @@ const brand = useBrand()
       <div class="mt-1 flex flex-col items-center text-center">
         <!-- Monogram crest -->
         <div
-          class="flex h-16 w-16 items-center justify-center rounded-full border-2 border-caramel bg-card font-display text-2xl font-bold text-brown shadow-gold sm:h-20 sm:w-20 sm:text-3xl"
+          class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-caramel bg-card font-display text-2xl font-bold text-brown shadow-gold sm:h-20 sm:w-20 sm:text-3xl"
           aria-hidden="true"
         >
-          TL
+          <img v-if="brand.logo.value" :src="brand.logo.value" alt="" class="h-full w-full rounded-full object-cover" />
+          <template v-else>{{ mono }}</template>
         </div>
 
         <h1

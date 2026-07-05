@@ -2,6 +2,7 @@
 // Editorial dish detail — a calm, magazine-style modal. Large plate on the
 // left, the dish "story" and add control on the right.
 import { ui, badgeLabels, type MenuItem } from '~/data/menu'
+import { atelierAddToTable } from '~/themes/atelier/config'
 
 const props = defineProps<{ item: MenuItem | null; categoryIcon: string }>()
 const emit = defineEmits<{ close: [] }>()
@@ -76,7 +77,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                     class="bg-[#16130F] px-6 py-3 font-display text-[11px] uppercase tracking-[0.24em] text-[#F6F2EA] transition hover:bg-[#A1502E]"
                     @click="order.add(item.id)"
                   >
-                    Add to table
+                    {{ t(atelierAddToTable) }}
                   </button>
                   <span v-else class="atl-eyebrow font-display text-[10px] text-[#857B6C]">{{ t(ui.soldOut) }}</span>
                 </div>

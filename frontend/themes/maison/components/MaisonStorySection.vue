@@ -14,19 +14,19 @@ const { t } = useLanguage()
     <div class="mx-auto grid max-w-6xl items-center gap-12 px-5 sm:px-8 lg:grid-cols-2 lg:gap-20">
       <!-- Prose -->
       <div class="max-w-xl">
-        <p v-reveal class="ms-eyebrow font-sans text-[11px] text-[#B08A4F]">
+        <p v-reveal class="ms-eyebrow font-sans text-[11px] text-[#C4693F]">
           {{ t(maisonStory.chapter) }}
         </p>
-        <h2 v-reveal="1" class="mt-5 text-balance font-serif text-4xl leading-[1.1] text-[#241B14] sm:text-5xl">
+        <h2 v-reveal="1" class="mt-5 text-balance font-serif text-4xl leading-[1.1] text-[#4A3B2E] sm:text-5xl">
           {{ t(maisonStory.title) }}
         </h2>
-        <div v-reveal="2" class="my-7 h-px w-16 bg-[#B08A4F]/60" aria-hidden="true" />
-        <p v-reveal="2" class="font-serif text-lg leading-relaxed text-[#5B5145] sm:text-xl">
+        <div v-reveal="2" class="my-7 h-px w-16 bg-[#C4693F]/60" aria-hidden="true" />
+        <p v-reveal="2" class="font-serif text-lg leading-relaxed text-[#6E6152] sm:text-xl">
           {{ t(maisonStory.body) }}
         </p>
-        <p v-reveal="3" class="mt-8 font-sans text-[11px] tracking-[0.22em] text-[#8C8276]">
+        <p v-reveal="3" class="mt-8 font-sans text-[11px] tracking-[0.22em] text-[#8A7C6B]">
           {{ t(maisonStory.signature).toUpperCase() }}
-          <span class="text-[#241B14]"> — Արամ Պետրոսյան</span>
+          <span class="text-[#4A3B2E]"> — Արամ Պետրոսյան</span>
         </p>
       </div>
     </div>

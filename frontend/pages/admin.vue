@@ -540,6 +540,24 @@ const onUpload = async (e: Event, target: { image: string }) => {
   const { url } = await uploadService.uploadImage(file)
   target.image = url
 }
+
+// Restaurant logo upload (same pipeline: file → hosted/data URL → restaurant.logo).
+const uploadingLogo = ref(false)
+const onLogoUpload = async (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  uploadingLogo.value = true
+  try {
+    const { url } = await uploadService.uploadImage(file)
+    restaurant.value.logo = url
+  } catch {
+    flash('Չհաջողվեց վերբեռնել լոգոն')
+  } finally {
+    uploadingLogo.value = false
+    input.value = '' // allow re-selecting the same file
+  }
+}
 const resolving = ref(false)
 const onResolve = async (target: { image: string }) => {
   if (!target.image.trim()) return
@@ -842,10 +860,25 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         <section v-else-if="active === 'restaurant'" class="max-w-2xl space-y-5">
           <h1 class="text-xl font-bold text-slate-900">{{ t('restaurantInfo') }}</h1>
           <div class="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label class="block"><span class="lbl">Name</span><input v-model="restaurant.name" class="inp" /></label>
-              <label class="block"><span class="lbl">Slug</span><input v-model="restaurant.slug" class="inp" /></label>
+            <!-- Logo -->
+            <div>
+              <span class="lbl">Լոգո</span>
+              <div class="mt-1.5 flex items-center gap-4">
+                <div class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                  <img v-if="restaurant.logo" :src="restaurant.logo" alt="logo" class="h-full w-full object-cover" />
+                  <span v-else class="text-xl font-bold text-slate-300">{{ (restaurant.name || '?').charAt(0) }}</span>
+                </div>
+                <div class="flex flex-col items-start gap-1.5">
+                  <label class="cursor-pointer rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50" :class="uploadingLogo && 'pointer-events-none opacity-60'">
+                    {{ uploadingLogo ? t('saving') : (restaurant.logo ? 'Փոխել լոգոն' : 'Վերբեռնել լոգո') }}
+                    <input type="file" accept="image/*" class="hidden" @change="onLogoUpload" />
+                  </label>
+                  <button v-if="restaurant.logo" type="button" class="text-xs font-medium text-rose-600 hover:text-rose-700" @click="restaurant.logo = ''">Հեռացնել</button>
+                  <p class="text-[11px] text-slate-400">PNG կամ JPG, քառակուսի՝ լավագույն արդյունքի համար</p>
+                </div>
+              </div>
             </div>
+            <label class="block"><span class="lbl">Name</span><input v-model="restaurant.name" class="inp" /></label>
             <label class="block"><span class="lbl">Tagline (HY)</span><input v-model="restaurant.tagline.hy" class="inp" /></label>
             <div class="grid grid-cols-2 gap-4">
               <label class="block"><span class="lbl">Tagline (EN)</span><input v-model="restaurant.tagline.en" class="inp" /></label>

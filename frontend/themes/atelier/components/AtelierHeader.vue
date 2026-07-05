@@ -15,10 +15,11 @@ const mono = computed(() => {
       <!-- Monogram + wordmark -->
       <div class="flex items-center gap-3">
         <span
-          class="flex h-9 w-9 items-center justify-center rounded-full border border-[#16130F] font-display text-[13px] font-semibold tracking-[0.08em] text-[#16130F]"
+          class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[#16130F] font-display text-[13px] font-semibold tracking-[0.08em] text-[#16130F]"
           aria-hidden="true"
         >
-          {{ mono }}
+          <img v-if="brand.logo.value" :src="brand.logo.value" alt="" class="h-full w-full object-cover" />
+          <template v-else>{{ mono }}</template>
         </span>
         <span class="font-display text-[15px] font-semibold tracking-[0.32em] text-[#16130F]">
           {{ brand.name }}

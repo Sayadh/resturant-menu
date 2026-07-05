@@ -39,7 +39,7 @@ const isDark = computed(() => props.tone === 'dark')
   >
     <!-- Image -->
     <div v-reveal class="relative">
-      <div class="ms-img-reveal overflow-hidden">
+      <div class="ms-img-reveal overflow-hidden rounded-[2rem]">
         <img
           v-if="item.image"
           v-parallax="22"
@@ -52,20 +52,20 @@ const isDark = computed(() => props.tone === 'dark')
           class="flex aspect-[5/4] w-full items-center justify-center"
           :style="{
             background: isDark
-              ? 'radial-gradient(circle at 50% 35%, #4A3829, #2A1F16)'
-              : 'radial-gradient(circle at 50% 35%, #EFE6D4, #E2D4BC)',
+              ? 'radial-gradient(circle at 50% 35%, #4A3829, #55402E)'
+              : 'radial-gradient(circle at 50% 35%, #F0E7D5, #E7D6BB)',
           }"
           aria-hidden="true"
         >
           <span
             class="font-display text-7xl"
-            :class="isDark ? 'text-[#C9AC7C]/45' : 'text-[#B08A4F]/40'"
+            :class="isDark ? 'text-[#E0B27C]/45' : 'text-[#C4693F]/40'"
           >{{ initial }}</span>
         </div>
       </div>
       <span
         class="pointer-events-none absolute inset-3 border"
-        :class="isDark ? 'border-[#C9AC7C]/25' : 'border-[#FBF8F1]/50'"
+        :class="isDark ? 'border-[#E0B27C]/25' : 'border-[#FCF8F0]/50'"
         aria-hidden="true"
       />
     </div>
@@ -73,13 +73,13 @@ const isDark = computed(() => props.tone === 'dark')
     <!-- Copy -->
     <div class="max-w-lg" :class="reversed ? 'lg:pl-4' : 'lg:pr-4'">
       <div v-reveal="1" class="flex items-center gap-3">
-        <p v-if="eyebrow" class="ms-eyebrow font-sans text-[11px]" :class="isDark ? 'text-[#C9AC7C]' : 'text-[#B08A4F]'">
+        <p v-if="eyebrow" class="ms-eyebrow font-sans text-[11px]" :class="isDark ? 'text-[#E0B27C]' : 'text-[#C4693F]'">
           {{ eyebrow }}
         </p>
         <span
           v-if="item.badge"
           class="ms-eyebrow-sm rounded-full border px-2.5 py-0.5 font-sans text-[9px]"
-          :class="isDark ? 'border-[#C9AC7C]/40 text-[#C9AC7C]' : 'border-[#B08A4F]/40 text-[#B08A4F]'"
+          :class="isDark ? 'border-[#E0B27C]/40 text-[#E0B27C]' : 'border-[#C4693F]/40 text-[#C4693F]'"
         >
           {{ t(badgeLabels[item.badge].text) }}
         </span>
@@ -88,7 +88,7 @@ const isDark = computed(() => props.tone === 'dark')
       <h3
         v-reveal="1"
         class="mt-4 text-balance font-serif text-4xl leading-[1.05] sm:text-5xl"
-        :class="isDark ? 'text-[#FBF8F1]' : 'text-[#241B14]'"
+        :class="isDark ? 'text-[#FCF8F0]' : 'text-[#4A3B2E]'"
       >
         {{ t(item.name) }}
       </h3>
@@ -96,18 +96,18 @@ const isDark = computed(() => props.tone === 'dark')
       <p
         v-reveal="2"
         class="mt-5 font-serif text-lg leading-relaxed"
-        :class="isDark ? 'text-[#FBF8F1]/70' : 'text-[#5B5145]'"
+        :class="isDark ? 'text-[#FCF8F0]/70' : 'text-[#6E6152]'"
       >
         {{ t(item.description) }}
       </p>
 
-      <p v-if="note" v-reveal="2" class="mt-4 font-sans text-[12px] italic" :class="isDark ? 'text-[#C9AC7C]/80' : 'text-[#8C8276]'">
+      <p v-if="note" v-reveal="2" class="mt-4 font-sans text-[12px] italic" :class="isDark ? 'text-[#E0B27C]/80' : 'text-[#8A7C6B]'">
         {{ note }}
       </p>
 
       <!-- Price + action -->
       <div v-reveal="3" class="mt-8 flex items-center gap-6">
-        <span class="font-serif text-3xl" :class="isDark ? 'text-[#C9AC7C]' : 'text-[#B08A4F]'">
+        <span class="font-serif text-3xl" :class="isDark ? 'text-[#E0B27C]' : 'text-[#C4693F]'">
           {{ price }}<span class="ml-1 text-xl">{{ ui.currency[lang] }}</span>
         </span>
 
@@ -118,20 +118,20 @@ const isDark = computed(() => props.tone === 'dark')
               v-if="qty > 0"
               key="stepper"
               class="flex items-center gap-4 border px-4 py-2.5"
-              :class="isDark ? 'border-[#C9AC7C]/40' : 'border-[#241B14]/20'"
+              :class="isDark ? 'border-[#E0B27C]/40' : 'border-[#55402E]/20'"
             >
               <button
                 type="button"
                 class="text-lg leading-none transition-opacity hover:opacity-60"
-                :class="isDark ? 'text-[#FBF8F1]' : 'text-[#241B14]'"
+                :class="isDark ? 'text-[#FCF8F0]' : 'text-[#4A3B2E]'"
                 aria-label="−"
                 @click="order.dec(item.id)"
               >−</button>
-              <span class="min-w-5 text-center font-serif text-lg" :class="isDark ? 'text-[#FBF8F1]' : 'text-[#241B14]'">{{ qty }}</span>
+              <span class="min-w-5 text-center font-serif text-lg" :class="isDark ? 'text-[#FCF8F0]' : 'text-[#4A3B2E]'">{{ qty }}</span>
               <button
                 type="button"
                 class="text-lg leading-none transition-opacity hover:opacity-60"
-                :class="isDark ? 'text-[#FBF8F1]' : 'text-[#241B14]'"
+                :class="isDark ? 'text-[#FCF8F0]' : 'text-[#4A3B2E]'"
                 aria-label="+"
                 @click="order.add(item.id)"
               >+</button>
@@ -142,8 +142,8 @@ const isDark = computed(() => props.tone === 'dark')
               type="button"
               class="group inline-flex items-center gap-3 px-7 py-3 font-sans text-[11px] tracking-[0.24em] transition-colors duration-400"
               :class="isDark
-                ? 'border border-[#C9AC7C] text-[#C9AC7C] hover:bg-[#C9AC7C] hover:text-[#241B14]'
-                : 'bg-[#241B14] text-[#FBF8F1] hover:bg-[#B08A4F]'"
+                ? 'border border-[#E0B27C] text-[#E0B27C] hover:bg-[#E0B27C] hover:text-[#4A3B2E]'
+                : 'bg-[#55402E] text-[#FCF8F0] hover:bg-[#C4693F]'"
               @click="order.add(item.id)"
             >
               {{ t(maisonOrder.add).toUpperCase() }}

@@ -23,19 +23,14 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
     <button
       v-if="order.count > 0"
       type="button"
-      class="fixed bottom-5 left-1/2 z-40 flex w-[calc(100%-2.5rem)] max-w-sm -translate-x-1/2 items-center gap-4 bg-[#16130F] px-5 py-3.5 text-[#F6F2EA] shadow-[0_24px_50px_-18px_rgba(22,19,15,0.75)] transition hover:bg-[#211c16]"
+      class="fixed bottom-5 left-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#16130F] text-[#F6F2EA] shadow-[0_24px_50px_-18px_rgba(22,19,15,0.75)] transition hover:bg-[#211c16] active:scale-95"
+      :aria-label="`${t(atelierBill.view)} · ${order.count}`"
       @click="emit('open')"
     >
-      <span class="flex items-center gap-2.5">
-        <span class="flex h-7 min-w-7 items-center justify-center rounded-full bg-[#A1502E] px-1.5 font-display text-[11px] font-semibold text-[#F6F2EA]">{{ order.count }}</span>
-        <span class="atl-eyebrow font-display text-[10px] text-[#F6F2EA]/70">{{ t(atelierBill.view) }}</span>
-      </span>
-      <span class="ml-auto flex items-center gap-3">
-        <span class="font-serif text-lg">{{ fmt(total) }}<span class="ml-0.5 text-[#A1502E]">֏</span></span>
-        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
-      </span>
+      <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" />
+      </svg>
+      <span class="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#A1502E] px-1 font-display text-[11px] font-semibold text-[#F6F2EA] ring-2 ring-[#16130F]">{{ order.count }}</span>
     </button>
   </Transition>
 </template>
