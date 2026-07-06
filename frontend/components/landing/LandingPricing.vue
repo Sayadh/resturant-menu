@@ -17,29 +17,28 @@ const fmt = (n: number) => n.toLocaleString('fr-FR').replace(/ /g, ' ')
 // ── Plan pricing ─────────────────────────────────────────────────
 interface PriceRow { total: number; months: number; save?: number; note?: string }
 const pro: Record<Period, PriceRow> = {
-  monthly: { total: 19900, months: 1 },
-  quarterly: { total: 56000, months: 3, save: 3700 },
-  semi: { total: 105000, months: 6, save: 14400 },
-  yearly: { total: 199000, months: 12, note: '≈ 2 ամիս անվճար' },
+  monthly: { total: 9900, months: 1 },
+  quarterly: { total: 28000, months: 3, save: 1700 },
+  semi: { total: 53000, months: 6, save: 6400 },
+  yearly: { total: 99000, months: 12, note: '≈ 2 ամիս անվճար' },
 }
-const biz: Record<Period, PriceRow> = {
-  monthly: { total: 44000, months: 1 },
-  quarterly: { total: 124000, months: 3, save: 8000 },
-  semi: { total: 234000, months: 6, save: 30000 },
-  yearly: { total: 440000, months: 12, note: '≈ 2 ամիս անվճար' },
-}
+// Business is a custom/enterprise plan — priced "from".
+const bizStart = 29900
 const proNow = computed(() => pro[period.value])
-const bizNow = computed(() => biz[period.value])
 const suffix = computed(() => periods[activeIndex.value].short)
 
 const starterFeatures = [
-  'Պրեմիում QR մենյու', 'Մենյուի սկզբնական տեղադրում', 'Մեկ պրեմիում թեմա', 'Մեկ լեզու',
-  'Անսահմանափակ ապրանքներ', 'QR կոդի գեներացում',
-  'Մեկ տարվա տեխնիկական սպասարկում', 'Մենյուի թարմացումները մեր թիմի կողմից',
+  '✨ AI նկարագրություններ — մինչև 350 / ամիս',
+  '🌍 AI թարգմանություն — մինչև 350 / ամիս',
+  'Ադմին վահանակ', 'Պրեմիում QR մենյու', '2 լեզու',
+  'Մինչև 250 ապրանք', 'Մինչև 10 կատեգորիա',
+  'QR կոդի գեներացում', 'Մեկ պրեմիում թեմա', 'Տեխնիկական սպասարկում',
 ]
 const proFeatures = [
+  '✨ AI նկարագրություններ — Անսահմանափակ',
+  '🌍 AI թարգմանություն — Անսահմանափակ',
   'Ադմին վահանակ', 'Անսահմանափակ ապրանքներ', 'Անսահմանափակ կատեգորիաներ', '3 լեզու',
-  'Թեմաների ընտրություն', 'Նկարների կառավարում', 'Հասանելիության վերահսկում',
+  'Բոլոր Theme-ները', 'Նկարների կառավարում', 'Հասանելիության վերահսկում',
   'QR մենյու', 'Ավտոմատ թարմացումներ', 'Տեխնիկական աջակցություն',
 ]
 const bizFeatures = [
@@ -51,10 +50,13 @@ const bizFeatures = [
 // ── Comparison matrix ────────────────────────────────────────────
 const compare: { label: string; s: boolean | string; p: boolean | string; b: boolean | string }[] = [
   { label: 'QR մենյու և հոսթինգ', s: true, p: true, b: true },
-  { label: 'Անսահմանափակ ապրանքներ', s: true, p: true, b: true },
-  { label: 'Լեզուներ', s: '1', p: '3', b: '3+' },
-  { label: 'Թեմաների ընտրություն', s: '1', p: true, b: 'Պրեմիում' },
-  { label: 'Ադմին վահանակ', s: false, p: true, b: true },
+  { label: '✨ AI նկարագրություններ', s: '350/ամիս', p: 'Անսահ.', b: 'Անսահ.' },
+  { label: '🌍 AI թարգմանություն', s: '350/ամիս', p: 'Անսահ.', b: 'Անսահ.' },
+  { label: 'Ապրանքներ', s: '250', p: 'Անսահ.', b: 'Անսահ.' },
+  { label: 'Կատեգորիաներ', s: '10', p: 'Անսահ.', b: 'Անսահ.' },
+  { label: 'Լեզուներ', s: '2', p: '3', b: '3+' },
+  { label: 'Ադմին վահանակ', s: true, p: true, b: true },
+  { label: 'Թեմաներ', s: '1', p: 'Բոլորը', b: 'Բոլորը' },
   { label: 'Ավտոմատ թարմացումներ', s: false, p: true, b: true },
   { label: 'Օնլայն վճարում և պատվեր', s: false, p: false, b: true },
   { label: 'Սեփական դոմեյն', s: false, p: false, b: true },
@@ -120,10 +122,10 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
             <p class="text-sm font-bold uppercase tracking-wide text-slate-400">Starter</p>
             <p class="mt-1 text-sm text-slate-500">Սկսնակ բիզնեսների համար</p>
             <div class="mt-6 flex items-end gap-2">
-              <span class="text-5xl font-extrabold tracking-tight text-slate-900">119 000</span>
+              <span class="text-5xl font-extrabold tracking-tight text-slate-900">49 000</span>
               <span class="pb-1.5 text-lg font-semibold text-slate-400">֏</span>
             </div>
-            <p class="mt-1 text-sm font-medium text-slate-500">մեկանգամյա վճար</p>
+            <p class="mt-1 text-sm font-medium text-slate-500">տարեկան</p>
 
             <button type="button" class="mt-6 rounded-2xl border border-slate-300 py-3 text-center text-sm font-semibold text-slate-800 transition hover:border-slate-900 hover:bg-slate-900 hover:text-white" @click="openModal('Starter')">
               Սկսել
@@ -186,19 +188,12 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
             <p class="mt-1 text-sm text-slate-500">Մեծ բիզնեսների և ցանցերի համար</p>
 
             <div class="mt-6">
-              <Transition name="price" mode="out-in">
-                <div :key="period">
-                  <div class="flex items-end gap-2">
-                    <span class="text-5xl font-extrabold tracking-tight text-slate-900">{{ fmt(bizNow.total) }}</span>
-                    <span class="pb-1.5 text-lg font-semibold text-slate-400">֏{{ suffix }}</span>
-                  </div>
-                  <p class="mt-1 flex items-center gap-2 text-sm text-slate-500">
-                    ≈ {{ fmt(Math.round(bizNow.total / bizNow.months)) }} ֏/ամիս
-                    <span v-if="bizNow.save" class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">Խնայեք {{ fmt(bizNow.save) }} ֏</span>
-                    <span v-else-if="bizNow.note" class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">{{ bizNow.note }}</span>
-                  </p>
-                </div>
-              </Transition>
+              <p class="text-sm font-medium text-slate-400">Սկսած</p>
+              <div class="mt-1 flex items-end gap-2">
+                <span class="text-5xl font-extrabold tracking-tight text-slate-900">{{ fmt(bizStart) }}</span>
+                <span class="pb-1.5 text-lg font-semibold text-slate-400">֏ /ամիս</span>
+              </div>
+              <p class="mt-1 text-sm text-slate-500">Անհատական՝ ըստ ձեր կարիքների</p>
             </div>
 
             <button type="button" class="mt-6 rounded-2xl border border-slate-300 py-3 text-center text-sm font-semibold text-slate-800 transition hover:border-slate-900 hover:bg-slate-900 hover:text-white" @click="openModal('Business')">
