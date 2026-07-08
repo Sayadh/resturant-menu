@@ -49,7 +49,8 @@ const dishes: { price: string; name: Record<Lang, string>; sub: Record<Lang, str
   { price: '2 900', name: { hy: 'Տոլմա', ru: 'Толма', en: 'Tolma' }, sub: { hy: 'Տնական', ru: 'Домашняя', en: 'Homemade' } },
 ]
 
-const bullets = ['Ընտրեք թեմա', 'Փորձեք լեզուն', 'Դիտեք իրական մենյու']
+const { L } = useLandingI18n()
+const bullets = computed(() => L.value.demo.bullets)
 
 // The demo link + QR follow the selected theme, so scanning/opening shows the
 // same theme picked in the preview (?theme= is a render-only override).
@@ -69,9 +70,9 @@ const qrSrc = computed(() =>
       <!-- copy -->
       <LandingReveal>
         <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-          Փորձեք մեր <span class="text-indigo-600">դեմոն</span> հենց հիմա
+          {{ L.demo.titleA }} <span class="text-indigo-600">{{ L.demo.highlight }}</span>
         </h2>
-        <p class="mt-4 max-w-md text-slate-500">Փոխեք թեման ու լեզուն ուղիղ այստեղ, կամ սկանավորեք QR-ը՝ կենդանի մենյուն ձեր հեռախոսում բացելու համար։</p>
+        <p class="mt-4 max-w-md text-slate-500">{{ L.demo.subtitle }}</p>
         <ul class="mt-7 space-y-3">
           <li v-for="b in bullets" :key="b" class="flex items-center gap-3 text-sm font-medium text-slate-700">
             <span class="grid h-6 w-6 place-items-center rounded-full bg-indigo-100 text-indigo-600">
@@ -81,7 +82,7 @@ const qrSrc = computed(() =>
           </li>
         </ul>
         <a :href="demoUrl" target="_blank" class="mt-8 inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-800">
-          Բացել ամբողջական դեմոն ↗
+          {{ L.demo.openFull }}
         </a>
       </LandingReveal>
 
@@ -138,11 +139,11 @@ const qrSrc = computed(() =>
           <!-- QR card -->
           <div class="w-full max-w-[220px] rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-lg">
             <div class="mx-auto grid h-40 w-40 place-items-center overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-100">
-              <img v-if="qrSrc" :src="qrSrc" alt="QR" width="160" height="160" class="h-40 w-40" />
+              <img v-if="qrSrc" :src="qrSrc" alt="QR Menu — QR Menu Resturant" width="160" height="160" class="h-40 w-40" />
               <div v-else class="h-40 w-40 animate-pulse bg-slate-200" />
             </div>
-            <p class="mt-4 text-sm font-bold text-slate-900">Սկանավորեք հեռախոսով</p>
-            <p class="mt-1 text-xs leading-relaxed text-slate-400">Բացեք կենդանի մենյուն ձեր սարքում մեկ սկանավորմամբ։</p>
+            <p class="mt-4 text-sm font-bold text-slate-900">{{ L.demo.scanHint }}</p>
+            <p class="mt-1 text-xs leading-relaxed text-slate-400">{{ L.demo.subtitle }}</p>
           </div>
         </div>
       </LandingReveal>

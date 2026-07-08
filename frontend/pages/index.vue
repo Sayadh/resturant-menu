@@ -4,13 +4,19 @@
 // component under components/landing/. The `.landing` root scopes the
 // modern Inter/dark theme so it never leaks into tenant/admin pages.
 // ─────────────────────────────────────────────────────────────────
+import { websiteSchema, organizationSchema, softwareSchema, faqSchema, homeFaq } from '~/data/seo'
+
 useHead({
-  title: 'Menus.am — Ձեր թվային մենյուն',
+  title: 'QR Menu & Online Menu Platform | menus.am',
   meta: [
-    { name: 'description', content: 'Թվային QR մենյու սննդի և հյուրընկալության ոլորտի բոլոր բիզնեսների համար՝ ռեստորաններ, սրճարաններ, բարեր և ավելին։ Գեղեցիկ, բազմալեզու և հեշտ կառավարվող։' },
+    { name: 'description', content: 'Ստեղծեք ժամանակակից QR Menu ձեզ համար։ Թվային մենյու, 3 լեզու, AI թարգմանություն, հեշտ կառավարում, Online Menu և QR Code Menu՝ menus.am-ում։' },
     { name: 'theme-color', content: '#0B1020' },
   ],
+  link: [{ rel: 'canonical', href: 'https://menus.am' }],
 })
+
+// Structured data — helps Google understand the platform (rich results).
+useJsonLd([websiteSchema, organizationSchema, softwareSchema, faqSchema(homeFaq)])
 </script>
 
 <template>

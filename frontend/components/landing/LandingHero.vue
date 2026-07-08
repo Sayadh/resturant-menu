@@ -1,11 +1,12 @@
 <script setup lang="ts">
 const { openModal } = useLeadModal()
-const stats = [
-  { value: '20+', label: 'գործընկեր' },
-  { value: '1000+', label: 'ապրանք' },
-  { value: '99.9%', label: 'Մշտական հասանելիություն' },
-  { value: '24/7', label: 'աջակցություն' },
-]
+const { L } = useLandingI18n()
+const stats = computed(() => [
+  { value: '20+', label: L.value.hero.stats.partners },
+  { value: '1000+', label: L.value.hero.stats.products },
+  { value: '99.9%', label: L.value.hero.stats.uptime },
+  { value: '24/7', label: L.value.hero.stats.support },
+])
 </script>
 
 <template>
@@ -22,25 +23,24 @@ const stats = [
       <div>
         <div class="inline-flex items-center gap-2 rounded-full bg-white/5 px-3.5 py-1.5 text-xs font-medium text-indigo-200 ring-1 ring-white/10">
           <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-          Ձեր թվային մենյուն, ակնթարթորեն
+          {{ L.hero.badge }}
         </div>
         <h1 class="mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-          Ձեր մենյուն՝
-          <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent"> թվային, գեղեցիկ և միշտ արդիական</span>
+          {{ L.hero.titleA }}
+          <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent"> {{ L.hero.titleB }}</span>
         </h1>
         <p class="mt-6 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
-          Ստեղծված ռեստորանների, սրճարանների, բարերի և սննդի ոլորտի բոլոր բիզնեսների համար։
-          Ստեղծեք ձեր թվային մենյուն վայրկյանների ընթացքում՝ գեղեցիկ և հեշտ կառավարվող, առանց ծրագրավորման։
+          {{ L.hero.subtitle }}
         </p>
 
         <div class="mt-9 flex flex-wrap items-center gap-3.5">
           <button type="button" class="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 px-6 py-3.5 text-sm font-semibold shadow-xl shadow-indigo-600/30 transition hover:-translate-y-0.5 hover:shadow-indigo-500/50" @click="openModal()">
-            <span class="relative z-10">Սկսել հիմա</span>
+            <span class="relative z-10">{{ L.hero.start }}</span>
             <span class="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-500 group-hover:translate-x-full" />
           </button>
           <a href="#demo" class="inline-flex items-center gap-2 rounded-2xl bg-white/5 px-6 py-3.5 text-sm font-semibold text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-white/10">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-            Դիտել դեմո
+            {{ L.hero.watchDemo }}
           </a>
         </div>
 
@@ -91,7 +91,7 @@ const stats = [
             <div class="grid h-20 w-20 place-items-center rounded-lg bg-[#0B1020]">
               <svg width="52" height="52" viewBox="0 0 24 24" fill="#fff"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm0 4h3v4h-4v-2h1v-2zm-5 0h2v2h-2v-2zm0-4h2v2h-2v-2z" /></svg>
             </div>
-            <p class="mt-1.5 text-center text-[10px] font-semibold text-slate-700">Սկանավորեք</p>
+            <p class="mt-1.5 text-center text-[10px] font-semibold text-slate-700">{{ L.demo.scanShort }}</p>
           </div>
         </div>
       </LandingReveal>

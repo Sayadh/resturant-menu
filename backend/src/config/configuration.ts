@@ -21,4 +21,10 @@ export default () => ({
     botToken: process.env.TELEGRAM_BOT_TOKEN ?? '',
     chatId: process.env.TELEGRAM_CHAT_ID ?? '',
   },
+  // Supabase Storage for image uploads (server-side; secret key only in .env).
+  supabase: {
+    url: process.env.SUPABASE_URL ?? '',
+    secretKey: process.env.SUPABASE_SECRET_KEY ?? '',
+    bucket: process.env.SUPABASE_BUCKET ?? 'menu-images',
+  },
 })

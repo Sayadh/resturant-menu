@@ -1,13 +1,8 @@
 <script setup lang="ts">
-const paragraphs = [
-  'Մեր նպատակն է օգնել սննդի և հյուրընկալության ոլորտի բիզնեսներին անցնել ժամանակակից թվային լուծումների՝ պարզեցնելով կառավարման գործընթացները և բարելավելով հաճախորդների փորձառությունը։',
-  'Menus.am-ը ժամանակակից SaaS հարթակ է, որը ստեղծվել է սննդի և հյուրընկալության ոլորտի բիզնեսներին օգնելու թվայնացնել իրենց աշխատանքը։ Մեր առաքելությունն է պարզեցնել ամենօրյա գործընթացները, խնայել ժամանակը և ապահովել արագ, գեղեցիկ ու պրոֆեսիոնալ թվային փորձառություն։ Մեկ հարթակում դուք կարող եք կառավարել ձեր թվային մենյունը, ակնթարթորեն թարմացնել բովանդակությունը և ներկայացնել ձեր բրենդը ժամանակակից ու վստահելի կերպով՝ առանց ավելորդ բարդությունների։',
-]
-const values = [
-  { icon: '✦', title: 'Որակ', desc: 'Ամեն արտադրանք կառուցում ենք բարձր ստանդարտներով։' },
-  { icon: '◇', title: 'Պարզություն', desc: 'Հեշտ, ինտուիտիվ լուծումներ՝ առանց ավելորդ բարդության։' },
-  { icon: '➤', title: 'Նորարարություն', desc: 'Անընդհատ զարգանում ենք թվային աշխարհի հետ միասին։' },
-]
+const { L } = useLandingI18n()
+const icons = ['✦', '◇', '➤']
+const paragraphs = computed(() => L.value.about.paragraphs)
+const values = computed(() => L.value.about.values.map((v, i) => ({ ...v, icon: icons[i] })))
 </script>
 
 <template>
@@ -20,13 +15,13 @@ const values = [
     <div class="relative mx-auto max-w-4xl px-5 sm:px-8">
       <LandingReveal class="text-center">
         <span class="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white px-3.5 py-1.5 text-xs font-semibold text-indigo-600 shadow-sm">
-          Մեր մասին
+          {{ L.about.badge }}
         </span>
         <h2 class="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          Rosami <span class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">ՍՊԸ</span>
+          {{ L.about.company }} <span class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">{{ L.about.suffix }}</span>
         </h2>
         <p class="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-slate-600">
-          Rosami ՍՊԸ-ն հայկական տեխնոլոգիական ընկերություն է, որը ստեղծում է ժամանակակից թվային լուծումներ բիզնեսների համար։
+          {{ L.about.lead }}
         </p>
       </LandingReveal>
 
@@ -38,9 +33,9 @@ const values = [
       <LandingReveal :delay="120" class="mt-12">
         <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-700 p-8 text-white shadow-xl sm:p-10">
           <span class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
-          <p class="relative text-sm font-semibold uppercase tracking-wide text-indigo-200">Սակայն սա միայն սկիզբն է</p>
+          <p class="relative text-sm font-semibold uppercase tracking-wide text-indigo-200">{{ L.about.visionEyebrow }}</p>
           <p class="relative mt-4 text-xl font-medium leading-relaxed sm:text-2xl">
-            Մեր տեսլականն է ստեղծել թվային լուծումների ամբողջական էկո համակարգ, որը կօգնի տարբեր ոլորտների բիզնեսներին աշխատել ավելի արդյունավետ, զարգանալ և մրցունակ մնալ թվային աշխարհում։
+            {{ L.about.vision }}
           </p>
         </div>
       </LandingReveal>
@@ -61,7 +56,7 @@ const values = [
 
       <LandingReveal :delay="80" class="mx-auto mt-12 max-w-2xl text-center">
         <p class="text-lg font-medium italic leading-relaxed text-slate-700">
-          Rosami ՍՊԸ-ում մենք հավատում ենք, որ յուրաքանչյուր գաղափար կարող է վերածվել հզոր թվային արտադրանքի, եթե այն կառուցվում է որակի, պարզության և նորարարության սկզբունքներով։
+          {{ L.about.closing }}
         </p>
       </LandingReveal>
     </div>

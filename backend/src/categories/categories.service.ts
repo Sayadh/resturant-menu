@@ -12,12 +12,16 @@ import { CreateCategoryDto } from './dto/create-category.dto'
 import { UpdateCategoryDto } from './dto/update-category.dto'
 import { CategoryListQueryDto } from './dto/category-list.query.dto'
 import { ReorderItemDto } from '../common/dto/reorder.dto'
+import { UploadsService } from '../uploads/uploads.service'
 
 const INCLUDE = { translations: { include: { language: true } } } satisfies Prisma.CategoryInclude
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploads: UploadsService,
+  ) {}
 
   async list(restaurantId: string, q: CategoryListQueryDto) {
     const where: Prisma.CategoryWhereInput = { restaurantId, deletedAt: null }
@@ -120,6 +124,10 @@ export class CategoriesService {
           create: { categoryId: id, languageId: t.languageId, name: t.name, description: t.description },
         })
       }
+    }
+    // Best-effort: if the image was replaced/cleared, drop the old storage object.
+    if (dto.imageUrl !== undefined && cat.imageUrl && cat.imageUrl !== dto.imageUrl) {
+      await this.uploads.removeByUrl(cat.imageUrl)
     }
     return this.get(restaurantId, id)
   }

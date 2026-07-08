@@ -13,4 +13,9 @@ export const envValidationSchema = Joi.object({
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('30d'),
   TELEGRAM_BOT_TOKEN: Joi.string().allow('').optional(),
   TELEGRAM_CHAT_ID: Joi.string().allow('').optional(),
+  // Supabase Storage (image uploads). Optional so the app still boots without
+  // it; the uploads endpoint returns a clear error until it's configured.
+  SUPABASE_URL: Joi.string().uri().allow('').optional(),
+  SUPABASE_SECRET_KEY: Joi.string().allow('').optional(),
+  SUPABASE_BUCKET: Joi.string().default('menu-images'),
 })

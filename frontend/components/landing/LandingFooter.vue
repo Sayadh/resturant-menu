@@ -1,15 +1,17 @@
 <script setup lang="ts">
-const cols = [
-  { title: 'Ապրանք', links: [{ t: 'Հնարավորություններ', h: '#features' }, { t: 'Թեմաներ', h: '#themes' }, { t: 'Գնացուցակ', h: '#pricing' }, { t: 'Դեմո', h: '#demo' }] },
-  { title: 'Ընկերություն', links: [{ t: 'Մեր մասին', h: '#about' }, { t: 'Հաճախ տրվող հարցեր', h: '#faq' }] },
-]
+const { L } = useLandingI18n()
+const cols = computed(() => [
+  { title: L.value.footer.product, links: [{ t: L.value.footer.links.features, h: '/#features' }, { t: L.value.footer.links.themes, h: '/#themes' }, { t: L.value.footer.links.pricing, h: '/#pricing' }, { t: L.value.footer.links.demo, h: '/#demo' }] },
+  { title: L.value.footer.guides, links: [{ t: 'QR Menu', h: '/qr-menu' }, { t: 'Online Menu', h: '/online-menu' }, { t: 'Restaurant Menu', h: '/restaurant-menu' }, { t: L.value.footer.links.blog, h: '/blog' }] },
+  { title: L.value.footer.company, links: [{ t: L.value.footer.links.about, h: '/#about' }, { t: L.value.footer.links.faq, h: '/#faq' }] },
+])
 const year = new Date().getFullYear()
 </script>
 
 <template>
   <footer class="bg-[#080B16] pt-16 pb-8 text-slate-400">
     <div class="mx-auto max-w-7xl px-5 sm:px-8">
-      <div class="grid gap-10 lg:grid-cols-[1.6fr_1fr_1fr_1.2fr]">
+      <div class="grid gap-10 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1.2fr]">
         <div>
           <div class="flex items-center gap-2.5 text-white">
             <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600">
@@ -20,7 +22,7 @@ const year = new Date().getFullYear()
             </span>
             <span class="text-[15px] font-bold">Menus</span>
           </div>
-          <p class="mt-4 max-w-xs text-sm leading-relaxed">Ձեր թվային մենյուն՝ գեղեցիկ, արագ և միշտ արդիական։</p>
+          <p class="mt-4 max-w-xs text-sm leading-relaxed">{{ L.footer.tagline }}</p>
         </div>
 
         <div v-for="c in cols" :key="c.title">
@@ -31,18 +33,18 @@ const year = new Date().getFullYear()
         </div>
 
         <div>
-          <p class="text-sm font-semibold text-white">Կապ</p>
+          <p class="text-sm font-semibold text-white">{{ L.footer.contact }}</p>
           <ul class="mt-4 space-y-2.5 text-sm">
             <li><a href="tel:+37493632003" class="transition hover:text-white">+374 93 632 003</a></li>
             <li><a href="mailto:info@menus.am" class="transition hover:text-white">info@menus.am</a></li>
-            <li>Երևան, Հայաստան</li>
+            <li>{{ L.footer.city }}</li>
           </ul>
         </div>
       </div>
 
       <div class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs sm:flex-row">
-        <p>© {{ year }} Menus.am։ Բոլոր իրավունքները պաշտպանված են։</p>
-        <p>Ստեղծված է ❤ Հայաստանում</p>
+        <p>© {{ year }} Menus.am։ {{ L.footer.rights }}</p>
+        <p>{{ L.footer.madeIn }}</p>
       </div>
     </div>
   </footer>

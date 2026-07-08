@@ -1,12 +1,13 @@
 <script setup lang="ts">
-const links = [
-  { href: '#hero', label: 'Գլխավոր' },
-  { href: '#features', label: 'Հնարավորություններ' },
-  { href: '#demo', label: 'Դեմո' },
-  { href: '#themes', label: 'Թեմաներ' },
-  { href: '#pricing', label: 'Գնացուցակ' },
-  { href: '#about', label: 'Մեր մասին' },
-]
+const { L } = useLandingI18n()
+const links = computed(() => [
+  { href: '/#features', label: L.value.nav.features },
+  { href: '/#demo', label: L.value.nav.demo },
+  { href: '/#themes', label: L.value.nav.themes },
+  { href: '/#pricing', label: L.value.nav.pricing },
+  { href: '/blog', label: L.value.nav.blog },
+  { href: '/#about', label: L.value.nav.about },
+])
 
 const { openModal } = useLeadModal()
 const scrolled = ref(false)
@@ -26,7 +27,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
     :class="scrolled ? 'border-b border-white/10 bg-[#0B1020]/80 backdrop-blur-xl' : 'bg-transparent'"
   >
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-      <a href="#hero" class="flex items-center gap-2.5 text-white">
+      <a href="/" class="flex items-center gap-2.5 text-white">
         <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30">
           <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
             <path d="M7.5 23V10.6c0-.9 1.1-1.3 1.7-.6l6.8 7.7 6.8-7.7c.6-.7 1.7-.3 1.7.6V23" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
@@ -46,9 +47,10 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
       </div>
 
       <div class="hidden items-center gap-2.5 lg:flex">
-        <NuxtLink to="/admin" class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-200 ring-1 ring-white/15 transition hover:bg-white/5 hover:text-white">Մուտք</NuxtLink>
+        <LandingLangSwitch />
+        <NuxtLink to="/admin" class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-200 ring-1 ring-white/15 transition hover:bg-white/5 hover:text-white">{{ L.nav.login }}</NuxtLink>
         <button type="button" class="group relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 transition hover:shadow-indigo-500/50" @click="openModal()">
-          <span class="relative z-10">Սկսել հիմա</span>
+          <span class="relative z-10">{{ L.nav.start }}</span>
           <span class="absolute inset-0 -translate-x-full bg-white/20 transition-transform duration-500 group-hover:translate-x-full" />
         </button>
       </div>
@@ -61,9 +63,10 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
     <Transition name="drop">
       <div v-if="open" class="border-t border-white/10 bg-[#0B1020]/95 px-5 py-4 backdrop-blur-xl lg:hidden">
         <a v-for="l in links" :key="l.href" :href="l.href" class="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-200 hover:bg-white/5" @click="open = false">{{ l.label }}</a>
+        <div class="mt-3 flex justify-center"><LandingLangSwitch /></div>
         <div class="mt-3 flex gap-2.5">
-          <NuxtLink to="/admin" class="flex-1 rounded-xl px-4 py-2.5 text-center text-sm font-semibold text-slate-200 ring-1 ring-white/15">Մուտք</NuxtLink>
-          <button type="button" class="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-4 py-2.5 text-center text-sm font-semibold text-white" @click="open = false; openModal()">Սկսել հիմա</button>
+          <NuxtLink to="/admin" class="flex-1 rounded-xl px-4 py-2.5 text-center text-sm font-semibold text-slate-200 ring-1 ring-white/15">{{ L.nav.login }}</NuxtLink>
+          <button type="button" class="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-4 py-2.5 text-center text-sm font-semibold text-white" @click="open = false; openModal()">{{ L.nav.start }}</button>
         </div>
       </div>
     </Transition>

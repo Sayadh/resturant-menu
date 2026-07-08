@@ -1,12 +1,6 @@
 <script setup lang="ts">
-const faqs = [
-  { q: 'Կարո՞ղ եմ հետո բարձրացնել փաթեթը', a: 'Այո։ Ցանկացած պահի կարող եք անցնել ավելի բարձր փաթեթի՝ առանց տվյալների կորստի։ Ձեր մենյուն, թեմաներն ու կարգավորումները մնում են անփոփոխ։' },
-  { q: 'Կարո՞ղ եմ չեղարկել ցանկացած պահի', a: 'Այո, բաժանորդագրությունը կարող եք չեղարկել ցանկացած պահի։ Ընթացիկ ժամանակահատվածի ավարտից հետո վճարումներ չեն գանձվի։' },
-  { q: 'Կկորցնե՞մ իմ մենյուն', a: 'Ոչ։ Ձեր բոլոր տվյալները պահվում են ապահով և կրկնօրինակվում են։ Պլան փոխելիս կամ չեղարկելիս մենյուն մնում է անվնաս։' },
-  { q: 'Կարո՞ղ եմ հետո փոխել թեման', a: 'Այո, ցանկացած պահի կարող եք փոխել թեման ադմին վահանակից՝ մեկ սեղմումով, առանց մենյուն վերստեղծելու։' },
-  { q: 'Կարո՞ղ եմ միացնել իմ սեփական դոմեյնը', a: 'Այո, Business պլանը թույլ է տալիս միացնել Ձեր սեփական դոմեյնը (օր․՝ menu.yourrestaurant.am)։' },
-  { q: 'Կարո՞ղ եմ ավելացնել լեզուներ', a: 'Professional և Business պլանները ներառում են մինչև 3 լեզու (հայերեն, ռուսերեն, անգլերեն)՝ ավտոմատ լեզվի փոխարկումով։' },
-]
+const { L } = useLandingI18n()
+const faqs = computed(() => L.value.faq.items)
 const open = ref<number | null>(0)
 const toggle = (i: number) => (open.value = open.value === i ? null : i)
 </script>
@@ -16,9 +10,9 @@ const toggle = (i: number) => (open.value = open.value === i ? null : i)
     <div class="mx-auto max-w-3xl px-5 sm:px-8">
       <LandingReveal class="text-center">
         <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-          Հաճախ տրվող <span class="text-indigo-600">հարցեր</span>
+          {{ L.faq.titleA }} <span class="text-indigo-600">{{ L.faq.highlight }}</span>
         </h2>
-        <p class="mt-4 text-slate-500">Այն ամենն, ինչ պետք է իմանաք գնացուցակի և ծառայությունների մասին։</p>
+        <p class="mt-4 text-slate-500">{{ L.faq.subtitle }}</p>
       </LandingReveal>
 
       <div class="mt-12 space-y-3">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { openModal } = useLeadModal()
+const { L } = useLandingI18n()
 </script>
 
 <template>
@@ -13,23 +14,23 @@ const { openModal } = useLeadModal()
     <LandingReveal class="relative mx-auto max-w-3xl px-5 text-center sm:px-8">
       <span class="inline-flex items-center gap-2 rounded-full bg-white/5 px-3.5 py-1.5 text-xs font-medium text-indigo-200 ring-1 ring-white/10">
         <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-        Պարզ և թափանցիկ գնացուցակ՝ առանց թաքնված վճարների
+        {{ L.cta.badge }}
       </span>
       <h2 class="mt-6 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-        Սկսեք այսօր, բարձրացրեք
-        <span class="bg-gradient-to-r from-indigo-400 to-fuchsia-400 bg-clip-text text-transparent"> ցանկացած պահի</span>
+        {{ L.cta.titleA }}
+        <span class="bg-gradient-to-r from-indigo-400 to-fuchsia-400 bg-clip-text text-transparent"> {{ L.cta.highlight }}</span>
       </h2>
       <p class="mx-auto mt-5 max-w-xl text-slate-300">
-        Ստեղծեք ձեր թվային մենյուն րոպեների ընթացքում։ Առանց պարտավորությունների՝ ցանկացած պահ կարող եք փոխել կամ ընդլայնել ձեր պլանը։
+        {{ L.cta.subtitle }}
       </p>
 
       <div class="mt-9 flex flex-wrap items-center justify-center gap-4">
         <button type="button" class="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 px-7 py-4 text-sm font-bold shadow-xl shadow-indigo-600/30 transition hover:-translate-y-0.5 hover:shadow-indigo-500/50" @click="openModal()">
-          <span class="relative z-10">Սկսել հիմա</span>
+          <span class="relative z-10">{{ L.cta.start }}</span>
           <span class="absolute inset-0 -translate-x-full bg-white/25 transition-transform duration-500 group-hover:translate-x-full" />
         </button>
         <a href="#demo" class="rounded-2xl bg-white/5 px-7 py-4 text-sm font-bold text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-white/10">
-          Ամրագրել դեմո
+          {{ L.hero.watchDemo }}
         </a>
       </div>
     </LandingReveal>

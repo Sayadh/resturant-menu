@@ -1,10 +1,11 @@
 <script setup lang="ts">
-const themes = [
-  { name: 'Aria', desc: 'Ժամանակակից և պարզ', bg: 'from-indigo-50 to-violet-100', dot: 'bg-indigo-500' },
-  { name: 'Maison', desc: 'Էլեգանտ և մուգ', bg: 'from-stone-800 to-neutral-900', dot: 'bg-amber-400', dark: true },
-  { name: 'Atelier', desc: 'Ջերմ և բնական', bg: 'from-emerald-50 to-teal-100', dot: 'bg-emerald-500' },
-  { name: 'Heritage', desc: 'Դասական և ավանդական', bg: 'from-amber-50 to-orange-100', dot: 'bg-orange-500' },
-]
+const { L } = useLandingI18n()
+const themes = computed(() => [
+  { name: 'Aria', desc: L.value.themes.descs[0], bg: 'from-indigo-50 to-violet-100', dot: 'bg-indigo-500' },
+  { name: 'Maison', desc: L.value.themes.descs[1], bg: 'from-stone-800 to-neutral-900', dot: 'bg-amber-400', dark: true },
+  { name: 'Atelier', desc: L.value.themes.descs[2], bg: 'from-emerald-50 to-teal-100', dot: 'bg-emerald-500' },
+  { name: 'Heritage', desc: L.value.themes.descs[3], bg: 'from-amber-50 to-orange-100', dot: 'bg-orange-500' },
+])
 </script>
 
 <template>
@@ -12,9 +13,9 @@ const themes = [
     <div class="mx-auto max-w-7xl px-5 sm:px-8">
       <LandingReveal class="mx-auto max-w-2xl text-center">
         <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-          Գեղեցիկ <span class="text-indigo-600">թեմաներ</span> ձեր բրենդին համապատասխան
+          {{ L.themes.titleA }} <span class="text-indigo-600">{{ L.themes.highlight }}</span> {{ L.themes.titleC }}
         </h2>
-        <p class="mt-4 text-slate-500">Ընտրեք պատրաստի պրեմիում թեմաներ՝ ձեր հաստատության ոճին համապատասխան։</p>
+        <p class="mt-4 text-slate-500">{{ L.themes.subtitle }}</p>
       </LandingReveal>
 
       <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

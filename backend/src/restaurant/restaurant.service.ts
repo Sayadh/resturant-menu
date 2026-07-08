@@ -2,10 +2,14 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service'
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto'
 import { UpdateSettingsDto } from './dto/update-settings.dto'
+import { UploadsService } from '../uploads/uploads.service'
 
 @Injectable()
 export class RestaurantService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploads: UploadsService,
+  ) {}
 
   private readonly include = {
     settings: true,
@@ -23,7 +27,7 @@ export class RestaurantService {
   }
 
   async updateInfo(restaurantId: string, dto: UpdateRestaurantDto) {
-    await this.getOwn(restaurantId) // ensures it exists & is live
+    const before = await this.getOwn(restaurantId) // ensures it exists & is live
 
     // tagline is trilingual → RestaurantTranslation. workingHours maps to the
     // scalar `workingHoursText` (the `workingHours` name is a relation).
@@ -47,11 +51,22 @@ export class RestaurantService {
       }
     }
 
-    return this.prisma.restaurant.update({
+    const updated = await this.prisma.restaurant.update({
       where: { id: restaurantId },
       data,
       include: this.include,
     })
+
+    // Best-effort: if logo/cover was replaced or cleared, drop the old objects.
+    const b = before as unknown as { logoUrl?: string | null; coverImageUrl?: string | null }
+    if (dto.logoUrl !== undefined && b.logoUrl && b.logoUrl !== dto.logoUrl) {
+      await this.uploads.removeByUrl(b.logoUrl)
+    }
+    if (dto.coverImageUrl !== undefined && b.coverImageUrl && b.coverImageUrl !== dto.coverImageUrl) {
+      await this.uploads.removeByUrl(b.coverImageUrl)
+    }
+
+    return updated
   }
 
   async updateSettings(restaurantId: string, dto: UpdateSettingsDto) {

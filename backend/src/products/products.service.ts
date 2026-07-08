@@ -7,6 +7,7 @@ import { CreateProductDto } from './dto/create-product.dto'
 import { UpdateProductDto } from './dto/update-product.dto'
 import { ProductListQueryDto } from './dto/product-list.query.dto'
 import { ReorderItemDto } from '../common/dto/reorder.dto'
+import { UploadsService } from '../uploads/uploads.service'
 
 const INCLUDE = {
   translations: { include: { language: true } },
@@ -16,7 +17,10 @@ const INCLUDE = {
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploads: UploadsService,
+  ) {}
 
   async list(restaurantId: string, q: ProductListQueryDto) {
     const where: Prisma.ProductWhereInput = { restaurantId, deletedAt: null }
@@ -146,6 +150,10 @@ export class ProductsService {
     }
 
     if (dto.images) {
+      const old = await this.prisma.productImage.findMany({
+        where: { productId: id },
+        select: { url: true },
+      })
       await this.prisma.$transaction([
         this.prisma.productImage.deleteMany({ where: { productId: id } }),
         ...dto.images.map((im, i) =>
@@ -154,6 +162,9 @@ export class ProductsService {
           }),
         ),
       ])
+      // Best-effort: drop storage objects for images no longer referenced.
+      const keep = new Set(dto.images.map((im) => im.url))
+      await this.uploads.removeManyByUrl(old.filter((o) => !keep.has(o.url)).map((o) => o.url))
     }
 
     return this.get(restaurantId, id)

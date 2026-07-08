@@ -14,6 +14,7 @@ import { SectionsModule } from './sections/sections.module'
 import { CategoriesModule } from './categories/categories.module'
 import { ProductsModule } from './products/products.module'
 import { SuperAdminModule } from './super-admin/super-admin.module'
+import { UploadsModule } from './uploads/uploads.module'
 
 import { RequestContextMiddleware } from './common/context/request-context.middleware'
 import { ResponseInterceptor } from './common/interceptors/response.interceptor'
@@ -45,7 +46,8 @@ import { RolesGuard } from './common/guards/roles.guard'
     CategoriesModule,
     ProductsModule,
     SuperAdminModule,
-    // Step 6+: Uploads, audit, analytics ...
+    UploadsModule,
+    // Step 6+: audit, analytics ...
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },

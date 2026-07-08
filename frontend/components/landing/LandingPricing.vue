@@ -1,94 +1,52 @@
 <script setup lang="ts">
 const { openModal } = useLeadModal()
+const { L } = useLandingI18n()
 
 // ── Billing periods ──────────────────────────────────────────────
 type Period = 'monthly' | 'quarterly' | 'semi' | 'yearly'
-const periods: { id: Period; label: string; short: string }[] = [
-  { id: 'monthly', label: 'Ամսական', short: '/ամիս' },
-  { id: 'quarterly', label: 'Եռամսյակ', short: '/3 ամիս' },
-  { id: 'semi', label: 'Կիսամյակ', short: '/6 ամիս' },
-  { id: 'yearly', label: 'Տարեկան', short: '/տարի' },
-]
+const periods = computed<{ id: Period; label: string; short: string }[]>(() => [
+  { id: 'monthly', label: L.value.pricing.periods.monthly, short: L.value.pricing.periodsShort.monthly },
+  { id: 'quarterly', label: L.value.pricing.periods.quarterly, short: L.value.pricing.periodsShort.quarterly },
+  { id: 'semi', label: L.value.pricing.periods.semi, short: L.value.pricing.periodsShort.semi },
+  { id: 'yearly', label: L.value.pricing.periods.yearly, short: L.value.pricing.periodsShort.yearly },
+])
 const period = ref<Period>('yearly')
-const activeIndex = computed(() => periods.findIndex((p) => p.id === period.value))
+const activeIndex = computed(() => periods.value.findIndex((p) => p.id === period.value))
 
 const fmt = (n: number) => n.toLocaleString('fr-FR').replace(/ /g, ' ')
 
 // ── Plan pricing ─────────────────────────────────────────────────
-interface PriceRow { total: number; months: number; save?: number; note?: string }
+interface PriceRow { total: number; months: number; save?: number; free?: boolean }
 const starter: Record<Period, PriceRow> = {
   monthly: { total: 4900, months: 1 },
   quarterly: { total: 13900, months: 3, save: 800 },
   semi: { total: 26000, months: 6, save: 3400 },
-  yearly: { total: 49000, months: 12, note: '≈ 2 ամիս անվճար' },
+  yearly: { total: 49000, months: 12, free: true },
 }
 const pro: Record<Period, PriceRow> = {
   monthly: { total: 9900, months: 1 },
   quarterly: { total: 28000, months: 3, save: 1700 },
   semi: { total: 53000, months: 6, save: 6400 },
-  yearly: { total: 99000, months: 12, note: '≈ 2 ամիս անվճար' },
+  yearly: { total: 99000, months: 12, free: true },
 }
 // Business — custom/enterprise, priced "from" per billing period.
 const biz: Record<Period, PriceRow> = {
   monthly: { total: 29900, months: 1 },
   quarterly: { total: 85000, months: 3, save: 4700 },
   semi: { total: 159000, months: 6, save: 20400 },
-  yearly: { total: 299000, months: 12, note: '≈ 2 ամիս անվճար' },
+  yearly: { total: 299000, months: 12, free: true },
 }
 const starterNow = computed(() => starter[period.value])
 const proNow = computed(() => pro[period.value])
 const bizNow = computed(() => biz[period.value])
-const suffix = computed(() => periods[activeIndex.value].short)
+const suffix = computed(() => periods.value[activeIndex.value].short)
 
-const starterFeatures = [
-  '⚙️ Անձնական կառավարման վահանակ',
-  '📋 Մինչև 250 ուտեստ',
-  '🗂️ Մինչև 10 կատեգորիաւ',
-  '🌍 2 լեզու',
-  '🎨 1 դիզայն',
-  '📷 Մինչև 250 լուսանկար',
-  '🛠️ Տեխնիկական աջակցություն',
-]
-const proFeatures = [
-  '✨ AI նկարագրություններ',
-  '🌍 AI թարգմանություն',
-  '⚙️ Անձնական կառավարման վահանակ',
-  '📋 Անսահմանափակ ապրանքներ',
-  '🗂️ Անսահմանափակ կատեգորիաներ',
-  '🌍 3 լեզու',
-  '🎨 Բոլոր դիզայնները',
-  '📷 Անսահմանափակ լուսանկարներ',
-  '👁️ Առկա է / Առկա չէ կարգավիճակ',
-  '⚡ Մենյուի ակնթարթային թարմացում',
-  '🛠️ Տեխնիկական աջակցություն',
-]
-const bizFeatures = [
-  '✅ Ներառում է Professional փաթեթի բոլոր հնարավորությունները',
-  '🌐 Ձեր սեփական դոմենը',
-  '👥 Բազմաթիվ օգտատերեր',
-  '📊 Ընդլայնված վիճակագրություն',
-  '🎨 Անհատական դիզայն',
-  '🍽️ Սեղանից պատվեր և մատուցողի կանչ',
-  '🚀 Առաջնահերթ աջակցություն',
-]
+const starterFeatures = computed(() => L.value.pricing.starterFeatures)
+const proFeatures = computed(() => L.value.pricing.proFeatures)
+const bizFeatures = computed(() => L.value.pricing.bizFeatures)
 
 // ── Comparison matrix ────────────────────────────────────────────
-const compare: { label: string; s: boolean | string; p: boolean | string; b: boolean | string }[] = [
-  { label: 'QR մենյու և հոսթինգ', s: true, p: true, b: true },
-  { label: '✨ AI նկարագրություններ', s: false, p: 'Անսահ.', b: 'Անսահ.' },
-  { label: '🌍 AI թարգմանություն', s: false, p: 'Անսահ.', b: 'Անսահ.' },
-  { label: 'Ապրանքներ', s: '250', p: 'Անսահ.', b: 'Անսահ.' },
-  { label: 'Կատեգորիաներ', s: '10', p: 'Անսահ.', b: 'Անսահ.' },
-  { label: 'Լեզուներ', s: '2', p: '3', b: '3+' },
-  { label: 'Ադմին վահանակ', s: true, p: true, b: true },
-  { label: 'Թեմաներ', s: '1', p: 'Բոլորը', b: 'Բոլորը' },
-  { label: 'Ավտոմատ թարմացումներ', s: false, p: true, b: true },
-  { label: 'Օնլայն վճարում և պատվեր', s: false, p: false, b: true },
-  { label: 'Սեփական դոմեյն', s: false, p: false, b: true },
-  { label: 'Բազմաթիվ օգտատերեր', s: false, p: false, b: true },
-  { label: 'Վիճակագրություն', s: false, p: false, b: true },
-  { label: 'Առաջնահերթ աջակցություն', s: true, p: true, b: true },
-]
+const compare = computed(() => L.value.pricing.compare)
 </script>
 
 <template>
@@ -103,14 +61,14 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
       <!-- header -->
       <LandingReveal class="mx-auto max-w-2xl text-center">
         <span class="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3.5 py-1.5 text-xs font-semibold text-indigo-600">
-          Պարզ և թափանցիկ գնացուցակ
+          {{ L.pricing.badge }}
         </span>
         <h2 class="mt-5 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-          Ընտրեք Ձեր
-          <span class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">կատարյալ փաթեթը</span>
+          {{ L.pricing.titleA }}
+          <span class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">{{ L.pricing.highlight }}</span>
         </h2>
         <p class="mx-auto mt-5 max-w-xl text-slate-500">
-          Սկսեք Ձեր կարիքներին համապատասխան փաթեթով և բարձրացրեք ցանկացած պահի՝ առանց տվյալների կորստի։
+          {{ L.pricing.subtitle }}
         </p>
       </LandingReveal>
 
@@ -144,8 +102,8 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
         <!-- Starter -->
         <LandingReveal :delay="0" class="flex">
           <div class="group flex w-full flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-xl">
-            <p class="text-sm font-bold uppercase tracking-wide text-slate-400">Starter</p>
-            <p class="mt-1 text-sm text-slate-500">Սկսնակ բիզնեսների համար</p>
+            <p class="text-sm font-bold uppercase tracking-wide text-slate-400">{{ L.pricing.starter }}</p>
+            <p class="mt-1 text-sm text-slate-500">{{ L.pricing.starterHint }}</p>
             <div class="mt-6">
               <Transition name="price" mode="out-in">
                 <div :key="period">
@@ -154,16 +112,16 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
                     <span class="pb-1.5 text-lg font-semibold text-slate-400">֏{{ suffix }}</span>
                   </div>
                   <p class="mt-1 flex items-center gap-2 text-sm text-slate-500">
-                    ≈ {{ fmt(Math.round(starterNow.total / starterNow.months)) }} ֏/ամիս
-                    <span v-if="starterNow.save" class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">Խնայեք {{ fmt(starterNow.save) }} ֏</span>
-                    <span v-else-if="starterNow.note" class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">{{ starterNow.note }}</span>
+                    ≈ {{ fmt(Math.round(starterNow.total / starterNow.months)) }} {{ L.pricing.perMonth }}
+                    <span v-if="starterNow.save" class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">{{ L.pricing.save }} {{ fmt(starterNow.save) }} ֏</span>
+                    <span v-else-if="starterNow.free" class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">{{ L.pricing.freeMonths }}</span>
                   </p>
                 </div>
               </Transition>
             </div>
 
             <button type="button" class="mt-6 rounded-2xl border border-slate-300 py-3 text-center text-sm font-semibold text-slate-800 transition hover:border-slate-900 hover:bg-slate-900 hover:text-white" @click="openModal('Starter')">
-              Սկսել
+              {{ L.pricing.startBtn }}
             </button>
 
             <ul class="mt-7 space-y-3 text-sm">
@@ -180,12 +138,12 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
           <div class="pro-card group relative flex w-full flex-col rounded-3xl p-8 text-white shadow-2xl transition duration-300 hover:-translate-y-2 lg:-mt-4 lg:mb-4">
             <div class="pro-badge absolute -top-3.5 left-1/2 -translate-x-1/2">
               <span class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-4 py-1.5 text-xs font-bold text-amber-950 shadow-lg">
-                ⭐ Ամենապահանջված
+                ⭐ {{ L.pricing.popular }}
               </span>
             </div>
 
-            <p class="text-sm font-bold uppercase tracking-wide text-indigo-200">Professional</p>
-            <p class="mt-1 text-sm text-indigo-100/70">Զարգացող բիզնեսների համար</p>
+            <p class="text-sm font-bold uppercase tracking-wide text-indigo-200">{{ L.pricing.professional }}</p>
+            <p class="mt-1 text-sm text-indigo-100/70">{{ L.pricing.proHint }}</p>
 
             <div class="mt-6">
               <Transition name="price" mode="out-in">
@@ -195,16 +153,16 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
                     <span class="pb-1.5 text-lg font-semibold text-indigo-200">֏{{ suffix }}</span>
                   </div>
                   <p v-if="period !== 'monthly'" class="mt-1 flex items-center gap-2 text-sm text-indigo-100/80">
-                    ≈ {{ fmt(Math.round(proNow.total / proNow.months)) }} ֏/ամիս
-                    <span v-if="proNow.save" class="rounded-full bg-emerald-400/90 px-2 py-0.5 text-[11px] font-bold text-emerald-950">Խնայեք {{ fmt(proNow.save) }} ֏</span>
-                    <span v-else-if="proNow.note" class="rounded-full bg-amber-400/90 px-2 py-0.5 text-[11px] font-bold text-amber-950">{{ proNow.note }}</span>
+                    ≈ {{ fmt(Math.round(proNow.total / proNow.months)) }} {{ L.pricing.perMonth }}
+                    <span v-if="proNow.save" class="rounded-full bg-emerald-400/90 px-2 py-0.5 text-[11px] font-bold text-emerald-950">{{ L.pricing.save }} {{ fmt(proNow.save) }} ֏</span>
+                    <span v-else-if="proNow.free" class="rounded-full bg-amber-400/90 px-2 py-0.5 text-[11px] font-bold text-amber-950">{{ L.pricing.freeMonths }}</span>
                   </p>
                 </div>
               </Transition>
             </div>
 
             <button type="button" class="mt-6 rounded-2xl bg-white py-3 text-center text-sm font-bold text-indigo-700 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl" @click="openModal('Professional')">
-              Ընտրել Professional
+              {{ L.pricing.choosePro }}
             </button>
 
             <ul class="mt-7 space-y-3 text-sm">
@@ -219,11 +177,11 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
         <!-- Business -->
         <LandingReveal :delay="180" class="flex">
           <div class="group flex w-full flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-xl">
-            <p class="text-sm font-bold uppercase tracking-wide text-slate-400">Business</p>
-            <p class="mt-1 text-sm text-slate-500">Մեծ բիզնեսների և ցանցերի համար</p>
+            <p class="text-sm font-bold uppercase tracking-wide text-slate-400">{{ L.pricing.business }}</p>
+            <p class="mt-1 text-sm text-slate-500">{{ L.pricing.bizHint }}</p>
 
             <div class="mt-6">
-              <p class="text-sm font-medium text-slate-400">Սկսած</p>
+              <p class="text-sm font-medium text-slate-400">{{ L.pricing.from }}</p>
               <Transition name="price" mode="out-in">
                 <div :key="period">
                   <div class="flex items-end gap-2">
@@ -231,14 +189,14 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
                     <span class="pb-1.5 text-lg font-semibold text-slate-400">֏{{ suffix }}</span>
                   </div>
                   <p class="mt-1 flex items-center gap-2 text-sm text-slate-500">
-                    ≈ {{ fmt(Math.round(bizNow.total / bizNow.months)) }} ֏/ամիս · անհատական
+                    ≈ {{ fmt(Math.round(bizNow.total / bizNow.months)) }} {{ L.pricing.perMonth }} · {{ L.pricing.customShort }}
                   </p>
                 </div>
               </Transition>
             </div>
 
             <button type="button" class="mt-6 rounded-2xl border border-slate-300 py-3 text-center text-sm font-semibold text-slate-800 transition hover:border-slate-900 hover:bg-slate-900 hover:text-white" @click="openModal('Business')">
-              Ընտրել Business
+              {{ L.pricing.chooseBiz }}
             </button>
 
             <ul class="mt-7 space-y-3 text-sm">
@@ -253,13 +211,13 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
 
       <!-- comparison -->
       <LandingReveal :delay="60" class="mt-20">
-        <h3 class="text-center text-2xl font-extrabold tracking-tight text-slate-900">Համեմատեք փաթեթները</h3>
+        <h3 class="text-center text-2xl font-extrabold tracking-tight text-slate-900">{{ L.pricing.compareTitle }}</h3>
         <div class="mx-auto mt-8 max-w-4xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
           <div class="grid grid-cols-[1.6fr_1fr_1fr_1fr] bg-slate-50 px-5 py-4 text-xs font-bold uppercase tracking-wide text-slate-500 sm:text-sm">
-            <span>Հնարավորություն</span>
-            <span class="text-center">Starter</span>
-            <span class="text-center text-indigo-600">Professional</span>
-            <span class="text-center">Business</span>
+            <span>{{ L.pricing.compareCols.feature }}</span>
+            <span class="text-center">{{ L.pricing.starter }}</span>
+            <span class="text-center text-indigo-600">{{ L.pricing.professional }}</span>
+            <span class="text-center">{{ L.pricing.business }}</span>
           </div>
           <div
             v-for="(row, i) in compare"
