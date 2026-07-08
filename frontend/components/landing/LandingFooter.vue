@@ -33,8 +33,8 @@ const year = new Date().getFullYear()
         <div>
           <p class="text-sm font-semibold text-white">Կապ</p>
           <ul class="mt-4 space-y-2.5 text-sm">
-            <li>+374 93 632 003</li>
-            <li>info@menus.am</li>
+            <li><a href="tel:+37493632003" class="transition hover:text-white">+374 93 632 003</a></li>
+            <li><a href="mailto:info@menus.am" class="transition hover:text-white">info@menus.am</a></li>
             <li>Երևան, Հայաստան</li>
           </ul>
         </div>

@@ -40,7 +40,7 @@ const values = [
           <span class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
           <p class="relative text-sm font-semibold uppercase tracking-wide text-indigo-200">Սակայն սա միայն սկիզբն է</p>
           <p class="relative mt-4 text-xl font-medium leading-relaxed sm:text-2xl">
-            Մեր տեսլականն է ստեղծել թվային լուծումների ամբողջական էկոհամակարգ, որը կօգնի տարբեր ոլորտների բիզնեսներին աշխատել ավելի արդյունավետ, զարգանալ և մրցունակ մնալ թվային աշխարհում։
+            Մեր տեսլականն է ստեղծել թվային լուծումների ամբողջական էկո համակարգ, որը կօգնի տարբեր ոլորտների բիզնեսներին աշխատել ավելի արդյունավետ, զարգանալ և մրցունակ մնալ թվային աշխարհում։
           </p>
         </div>
       </LandingReveal>

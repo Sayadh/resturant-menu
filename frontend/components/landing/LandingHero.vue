@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const { openModal } = useLeadModal()
 const stats = [
-  { value: '100+', label: 'գործընկեր' },
+  { value: '20+', label: 'գործընկեր' },
   { value: '1000+', label: 'ապրանք' },
-  { value: '99.9%', label: 'uptime' },
+  { value: '99.9%', label: 'Մշտական հասանելիություն' },
   { value: '24/7', label: 'աջակցություն' },
 ]
 </script>

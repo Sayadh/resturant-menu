@@ -16,42 +16,67 @@ const fmt = (n: number) => n.toLocaleString('fr-FR').replace(/ /g, ' ')
 
 // ── Plan pricing ─────────────────────────────────────────────────
 interface PriceRow { total: number; months: number; save?: number; note?: string }
+const starter: Record<Period, PriceRow> = {
+  monthly: { total: 4900, months: 1 },
+  quarterly: { total: 13900, months: 3, save: 800 },
+  semi: { total: 26000, months: 6, save: 3400 },
+  yearly: { total: 49000, months: 12, note: '≈ 2 ամիս անվճար' },
+}
 const pro: Record<Period, PriceRow> = {
   monthly: { total: 9900, months: 1 },
   quarterly: { total: 28000, months: 3, save: 1700 },
   semi: { total: 53000, months: 6, save: 6400 },
   yearly: { total: 99000, months: 12, note: '≈ 2 ամիս անվճար' },
 }
-// Business is a custom/enterprise plan — priced "from".
-const bizStart = 29900
+// Business — custom/enterprise, priced "from" per billing period.
+const biz: Record<Period, PriceRow> = {
+  monthly: { total: 29900, months: 1 },
+  quarterly: { total: 85000, months: 3, save: 4700 },
+  semi: { total: 159000, months: 6, save: 20400 },
+  yearly: { total: 299000, months: 12, note: '≈ 2 ամիս անվճար' },
+}
+const starterNow = computed(() => starter[period.value])
 const proNow = computed(() => pro[period.value])
+const bizNow = computed(() => biz[period.value])
 const suffix = computed(() => periods[activeIndex.value].short)
 
 const starterFeatures = [
-  '✨ AI նկարագրություններ — մինչև 350 / ամիս',
-  '🌍 AI թարգմանություն — մինչև 350 / ամիս',
-  'Ադմին վահանակ', 'Պրեմիում QR մենյու', '2 լեզու',
-  'Մինչև 250 ապրանք', 'Մինչև 10 կատեգորիա',
-  'QR կոդի գեներացում', 'Մեկ պրեմիում թեմա', 'Տեխնիկական սպասարկում',
+  '⚙️ Անձնական կառավարման վահանակ',
+  '📋 Մինչև 250 ուտեստ',
+  '🗂️ Մինչև 10 կատեգորիաւ',
+  '🌍 2 լեզու',
+  '🎨 1 դիզայն',
+  '📷 Մինչև 250 լուսանկար',
+  '🛠️ Տեխնիկական աջակցություն',
 ]
 const proFeatures = [
-  '✨ AI նկարագրություններ — Անսահմանափակ',
-  '🌍 AI թարգմանություն — Անսահմանափակ',
-  'Ադմին վահանակ', 'Անսահմանափակ ապրանքներ', 'Անսահմանափակ կատեգորիաներ', '3 լեզու',
-  'Բոլոր Theme-ները', 'Նկարների կառավարում', 'Հասանելիության վերահսկում',
-  'QR մենյու', 'Ավտոմատ թարմացումներ', 'Տեխնիկական աջակցություն',
+  '✨ AI նկարագրություններ',
+  '🌍 AI թարգմանություն',
+  '⚙️ Անձնական կառավարման վահանակ',
+  '📋 Անսահմանափակ ապրանքներ',
+  '🗂️ Անսահմանափակ կատեգորիաներ',
+  '🌍 3 լեզու',
+  '🎨 Բոլոր դիզայնները',
+  '📷 Անսահմանափակ լուսանկարներ',
+  '👁️ Առկա է / Առկա չէ կարգավիճակ',
+  '⚡ Մենյուի ակնթարթային թարմացում',
+  '🛠️ Տեխնիկական աջակցություն',
 ]
 const bizFeatures = [
-  'Professional-ի ամբողջ փաթեթը', 'Օնլայն վճարում և պատվեր', 'Սեփական դոմեյն',
-  'Բազմաթիվ օգտատերեր (Owner/Manager/Employee)',
-  'Պրեմիում թեմաներ', 'Վիճակագրություն', 'Անհատական կարգավորումներ',
+  '✅ Ներառում է Professional փաթեթի բոլոր հնարավորությունները',
+  '🌐 Ձեր սեփական դոմենը',
+  '👥 Բազմաթիվ օգտատերեր',
+  '📊 Ընդլայնված վիճակագրություն',
+  '🎨 Անհատական դիզայն',
+  '🍽️ Սեղանից պատվեր և մատուցողի կանչ',
+  '🚀 Առաջնահերթ աջակցություն',
 ]
 
 // ── Comparison matrix ────────────────────────────────────────────
 const compare: { label: string; s: boolean | string; p: boolean | string; b: boolean | string }[] = [
   { label: 'QR մենյու և հոսթինգ', s: true, p: true, b: true },
-  { label: '✨ AI նկարագրություններ', s: '350/ամիս', p: 'Անսահ.', b: 'Անսահ.' },
-  { label: '🌍 AI թարգմանություն', s: '350/ամիս', p: 'Անսահ.', b: 'Անսահ.' },
+  { label: '✨ AI նկարագրություններ', s: false, p: 'Անսահ.', b: 'Անսահ.' },
+  { label: '🌍 AI թարգմանություն', s: false, p: 'Անսահ.', b: 'Անսահ.' },
   { label: 'Ապրանքներ', s: '250', p: 'Անսահ.', b: 'Անսահ.' },
   { label: 'Կատեգորիաներ', s: '10', p: 'Անսահ.', b: 'Անսահ.' },
   { label: 'Լեզուներ', s: '2', p: '3', b: '3+' },
@@ -121,11 +146,21 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
           <div class="group flex w-full flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-xl">
             <p class="text-sm font-bold uppercase tracking-wide text-slate-400">Starter</p>
             <p class="mt-1 text-sm text-slate-500">Սկսնակ բիզնեսների համար</p>
-            <div class="mt-6 flex items-end gap-2">
-              <span class="text-5xl font-extrabold tracking-tight text-slate-900">49 000</span>
-              <span class="pb-1.5 text-lg font-semibold text-slate-400">֏</span>
+            <div class="mt-6">
+              <Transition name="price" mode="out-in">
+                <div :key="period">
+                  <div class="flex items-end gap-2">
+                    <span class="text-5xl font-extrabold tracking-tight text-slate-900">{{ fmt(starterNow.total) }}</span>
+                    <span class="pb-1.5 text-lg font-semibold text-slate-400">֏{{ suffix }}</span>
+                  </div>
+                  <p class="mt-1 flex items-center gap-2 text-sm text-slate-500">
+                    ≈ {{ fmt(Math.round(starterNow.total / starterNow.months)) }} ֏/ամիս
+                    <span v-if="starterNow.save" class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-700">Խնայեք {{ fmt(starterNow.save) }} ֏</span>
+                    <span v-else-if="starterNow.note" class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">{{ starterNow.note }}</span>
+                  </p>
+                </div>
+              </Transition>
             </div>
-            <p class="mt-1 text-sm font-medium text-slate-500">տարեկան</p>
 
             <button type="button" class="mt-6 rounded-2xl border border-slate-300 py-3 text-center text-sm font-semibold text-slate-800 transition hover:border-slate-900 hover:bg-slate-900 hover:text-white" @click="openModal('Starter')">
               Սկսել
@@ -189,11 +224,17 @@ const compare: { label: string; s: boolean | string; p: boolean | string; b: boo
 
             <div class="mt-6">
               <p class="text-sm font-medium text-slate-400">Սկսած</p>
-              <div class="mt-1 flex items-end gap-2">
-                <span class="text-5xl font-extrabold tracking-tight text-slate-900">{{ fmt(bizStart) }}</span>
-                <span class="pb-1.5 text-lg font-semibold text-slate-400">֏ /ամիս</span>
-              </div>
-              <p class="mt-1 text-sm text-slate-500">Անհատական՝ ըստ ձեր կարիքների</p>
+              <Transition name="price" mode="out-in">
+                <div :key="period">
+                  <div class="flex items-end gap-2">
+                    <span class="text-5xl font-extrabold tracking-tight text-slate-900">{{ fmt(bizNow.total) }}</span>
+                    <span class="pb-1.5 text-lg font-semibold text-slate-400">֏{{ suffix }}</span>
+                  </div>
+                  <p class="mt-1 flex items-center gap-2 text-sm text-slate-500">
+                    ≈ {{ fmt(Math.round(bizNow.total / bizNow.months)) }} ֏/ամիս · անհատական
+                  </p>
+                </div>
+              </Transition>
             </div>
 
             <button type="button" class="mt-6 rounded-2xl border border-slate-300 py-3 text-center text-sm font-semibold text-slate-800 transition hover:border-slate-900 hover:bg-slate-900 hover:text-white" @click="openModal('Business')">
