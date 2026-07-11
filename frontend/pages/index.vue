@@ -4,8 +4,7 @@
 // component under components/landing/. The `.landing` root scopes the
 // modern Inter/dark theme so it never leaks into tenant/admin pages.
 // ─────────────────────────────────────────────────────────────────
-import { websiteSchema, organizationSchema, softwareSchema, faqSchema, homeFaq } from '~/data/seo'
-
+import { websiteSchema, organizationSchema } from '~/data/seo'
 useHead({
   title: 'QR Menu & Online Menu Platform | menus.am',
   meta: [
@@ -16,7 +15,35 @@ useHead({
 })
 
 // Structured data — helps Google understand the platform (rich results).
-useJsonLd([websiteSchema, organizationSchema, softwareSchema, faqSchema(homeFaq)])
+useJsonLd([websiteSchema, organizationSchema])
+
+const { L } = useLandingI18n()
+
+// Generate dynamic schemas based on our landing translations
+const faqItems = computed(() => L.value.faq.items)
+
+const pricingPlans = computed(() => [
+  {
+    name: L.value.pricing.starter || 'Starter',
+    price: 4900,
+    description: L.value.pricing.starterHint || 'Սկսնակ փաթեթ փոքր սննդի բիզնեսների համար։',
+  },
+  {
+    name: L.value.pricing.professional || 'Professional',
+    price: 9900,
+    description: L.value.pricing.proHint || 'Մասնագիտական փաթեթ՝ ընդլայնված հնարավորություններով և մինչև 3 լեզվով։',
+  },
+  {
+    name: L.value.pricing.business || 'Business',
+    price: 29900,
+    description: L.value.pricing.bizHint || 'Բիզնես փաթեթ՝ սեփական դոմեյնի և ամբողջական հնարավորությունների համար։',
+  },
+])
+
+useHomeStructuredData({
+  faqItems: faqItems.value,
+  pricingPlans: pricingPlans.value,
+})
 </script>
 
 <template>
