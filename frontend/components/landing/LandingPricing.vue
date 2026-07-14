@@ -10,7 +10,7 @@ const periods = computed<{ id: Period; label: string; short: string }[]>(() => [
   { id: 'semi', label: L.value.pricing.periods.semi, short: L.value.pricing.periodsShort.semi },
   { id: 'yearly', label: L.value.pricing.periods.yearly, short: L.value.pricing.periodsShort.yearly },
 ])
-const period = ref<Period>('yearly')
+const period = ref<Period>('monthly')
 const activeIndex = computed(() => periods.value.findIndex((p) => p.id === period.value))
 
 const fmt = (n: number) => n.toLocaleString('fr-FR').replace(/ /g, ' ')
@@ -136,8 +136,8 @@ const compare = computed(() => L.value.pricing.compare)
         <!-- Professional (highlighted) -->
         <LandingReveal :delay="90" class="flex">
           <div class="pro-card group relative flex w-full flex-col rounded-3xl p-8 text-white shadow-2xl transition duration-300 hover:-translate-y-2 lg:-mt-4 lg:mb-4">
-            <div class="pro-badge absolute -top-3.5 left-1/2 -translate-x-1/2">
-              <span class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-4 py-1.5 text-xs font-bold text-amber-950 shadow-lg">
+            <div class="pro-badge absolute -top-3.5 left-1/2 -translate-x-1/2 w-max max-w-full px-2">
+              <span class="inline-flex whitespace-nowrap items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 px-3 py-1.5 text-[11px] sm:text-xs font-bold text-amber-950 shadow-lg">
                 ⭐ {{ L.pricing.popular }}
               </span>
             </div>

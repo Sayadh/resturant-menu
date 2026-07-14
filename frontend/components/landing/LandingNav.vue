@@ -55,13 +55,13 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
         </button>
       </div>
 
-      <button class="rounded-lg p-2 text-white ring-1 ring-white/15 lg:hidden" aria-label="Menu" @click="open = !open">
+      <button class="rounded-lg p-2 text-white ring-1 ring-white/15 lg:hidden touch-manipulation" aria-label="Menu" @click="open = !open">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" /></svg>
       </button>
     </nav>
 
     <Transition name="drop">
-      <div v-if="open" class="border-t border-white/10 bg-[#0B1020]/95 px-5 py-4 backdrop-blur-xl lg:hidden">
+      <div v-show="open" class="border-t border-white/10 bg-[#0B1020]/95 px-5 py-4 backdrop-blur-xl lg:hidden">
         <a v-for="l in links" :key="l.href" :href="l.href" class="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-200 hover:bg-white/5" @click="open = false">{{ l.label }}</a>
         <div class="mt-3 flex justify-center"><LandingLangSwitch /></div>
         <div class="mt-3 flex gap-2.5">

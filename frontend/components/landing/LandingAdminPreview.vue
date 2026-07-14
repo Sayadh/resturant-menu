@@ -82,7 +82,7 @@ const rows = computed(() => L.value.admin.dishes.map((d) => ({
                   </span>
                   <span class="truncate">{{ r.cat }}</span>
                   <span>{{ r.price }} ֏</span>
-                  <span class="text-right"><span class="rounded-full px-2 py-0.5 text-[9px] font-semibold" :class="r.s">{{ r.status }}</span></span>
+                  <span class="text-right"><span class="whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-semibold" :class="r.s">{{ r.status }}</span></span>
                 </div>
               </div>
             </div>
