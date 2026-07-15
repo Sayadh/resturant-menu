@@ -65,7 +65,10 @@ watch(
           "
           @click="emit('select', cat.id)"
         >
-          <span class="text-base leading-none" aria-hidden="true">{{ cat.icon }}</span>
+          <span v-if="cat.iconImage" class="grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-full" aria-hidden="true">
+            <img :src="cat.iconImage" alt="" class="h-full w-full object-cover" />
+          </span>
+          <span v-else class="text-base leading-none" aria-hidden="true">{{ cat.icon }}</span>
           {{ t(cat.title) }}
         </button>
       </nav>

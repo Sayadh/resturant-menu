@@ -26,4 +26,9 @@ export const categoryService = {
   async deleteCategory(id: string): Promise<void> {
     await useApiClient().del(`/admin/categories/${id}`, { cascade: true })
   },
+
+  /** Persist a new order: [{ id, sortOrder }, …]. */
+  async reorder(items: { id: string; sortOrder: number }[]): Promise<void> {
+    await useApiClient().patch('/admin/categories/reorder', { items })
+  },
 }

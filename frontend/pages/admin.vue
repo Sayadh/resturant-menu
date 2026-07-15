@@ -9,6 +9,7 @@ import {
   productService,
   sectionService,
   uploadService,
+  aiService,
   menuService,
   restaurantService,
   type CategoryDraft,
@@ -103,7 +104,7 @@ const loadSuperAdmin = async () => {
 }
 
 // Edit an existing restaurant (name / theme / language / active).
-const saEdit = reactive({ open: false, id: '', name: '', themeKey: 'aria', defaultLang: 'hy', isActive: true })
+const saEdit = reactive({ open: false, id: '', name: '', themeKey: 'aria', defaultLang: 'hy', isActive: true, planKey: 'free' as 'free' | 'pro' | 'business' })
 const saSaving = ref(false)
 const saEditError = ref('')
 
@@ -116,6 +117,7 @@ const openEditRestaurant = (r: AdminRestaurantRow) => {
     themeKey: r.themeKey || 'aria',
     defaultLang: 'hy',
     isActive: r.isActive,
+    planKey: r.planKey || 'free',
   })
 }
 
@@ -129,6 +131,7 @@ const saSave = async () => {
       themeKey: saEdit.themeKey,
       defaultLang: saEdit.defaultLang,
       isActive: saEdit.isActive,
+      planKey: saEdit.planKey,
     })
     saEdit.open = false
     await loadSuperAdmin()
@@ -309,7 +312,9 @@ const catDraft = reactive<CategoryDraft>({
   name: blankTr(),
   description: blankTr(),
   icon: '🍽',
+  iconImage: '',
   image: '',
+  mobileImage: '',
   sortOrder: 0,
   active: true,
 })
@@ -323,7 +328,9 @@ const openAddCategory = () => {
     name: blankTr(),
     description: blankTr(),
     icon: '🍽',
+    iconImage: '',
     image: '',
+    mobileImage: '',
     sortOrder: visibleCategories.value.length,
     active: true,
   })
@@ -335,7 +342,9 @@ const openEditCategory = (c: Category) => {
     name: { ...c.name },
     description: { ...c.description },
     icon: c.icon,
+    iconImage: c.iconImage,
     image: c.image,
+    mobileImage: c.mobileImage,
     sortOrder: c.sortOrder,
     active: c.active,
   })
@@ -397,13 +406,13 @@ const removeCategory = (c: Category) =>
 
 // ── sections (dynamic top-level tabs) ───────────────────────────
 const secModal = reactive({ open: false, mode: 'add' as 'add' | 'edit', id: '' })
-const secDraft = reactive<SectionDraft>({ name: blankTr(), icon: '🍽', sortOrder: 0, active: true })
+const secDraft = reactive<SectionDraft>({ name: blankTr(), icon: '🍽', image: '', sortOrder: 0, active: true })
 const openAddSection = () => {
-  Object.assign(secDraft, { name: blankTr(), icon: '🍽', sortOrder: sections.value.length, active: true })
+  Object.assign(secDraft, { name: blankTr(), icon: '🍽', image: '', sortOrder: sections.value.length, active: true })
   Object.assign(secModal, { open: true, mode: 'add', id: '' })
 }
 const openEditSection = (s: Section) => {
-  Object.assign(secDraft, { name: { ...s.name }, icon: s.icon, sortOrder: s.sortOrder, active: s.active })
+  Object.assign(secDraft, { name: { ...s.name }, icon: s.icon, image: s.image, sortOrder: s.sortOrder, active: s.active })
   Object.assign(secModal, { open: true, mode: 'edit', id: s.id })
 }
 const submitSection = async () => {
@@ -518,6 +527,87 @@ const submitProduct = async () => {
     busy.value = false
   }
 }
+// ── AI (Professional/Business — enforced by backend) ────────────
+const aiBusy = ref(false)
+// Show AI controls only on paid plans (backend also enforces this).
+const aiEnabled = computed(() => ['pro', 'business'].includes(restaurant.value?.planKey ?? 'free'))
+const firstFilled = (tr: { hy: string; ru: string; en: string }): 'hy' | 'ru' | 'en' | null => {
+  for (const l of ['hy', 'ru', 'en'] as const) if (tr[l]?.trim()) return l
+  return null
+}
+const aiTranslateField = async (field: 'name' | 'description') => {
+  const tr = prodDraft[field]
+  const src = firstFilled(tr)
+  if (!src) {
+    flash(t('aiNeedText'))
+    return
+  }
+  const targets = (['hy', 'ru', 'en'] as const).filter((l) => l !== src)
+  aiBusy.value = true
+  try {
+    const out = await aiService.translate(tr[src], src, [...targets])
+    for (const l of targets) if (out[l]) tr[l] = out[l]
+    flash(t('aiDone'))
+  } catch (e) {
+    flash((e as Error)?.message || t('aiFailed'))
+  } finally {
+    aiBusy.value = false
+  }
+}
+const aiTranslateName = () => aiTranslateField('name')
+const aiTranslateDesc = () => aiTranslateField('description')
+const aiDescribe = async () => {
+  const src = firstFilled(prodDraft.name)
+  if (!src) {
+    flash(t('aiNeedName'))
+    return
+  }
+  aiBusy.value = true
+  try {
+    const out = await aiService.describe(prodDraft.name[src], ['hy', 'ru', 'en'])
+    for (const l of ['hy', 'ru', 'en'] as const) if (out[l]) prodDraft.description[l] = out[l]
+    flash(t('aiDone'))
+  } catch (e) {
+    flash((e as Error)?.message || t('aiFailed'))
+  } finally {
+    aiBusy.value = false
+  }
+}
+
+// ── ordering (drag-free: up/down; persists sortOrder) ───────────
+const reordering = ref(false)
+async function persistOrder<T extends { id: string }>(
+  ordered: T[],
+  persist: (items: { id: string; sortOrder: number }[]) => Promise<void>,
+) {
+  reordering.value = true
+  try {
+    await persist(ordered.map((x, i) => ({ id: x.id, sortOrder: i })))
+    await refresh().catch(() => {})
+  } catch (e) {
+    flash((e as Error)?.message || 'Չհաջողվեց փոխել հերթականությունը')
+  } finally {
+    reordering.value = false
+  }
+}
+const swapMove = <T,>(list: T[], index: number, dir: -1 | 1): T[] | null => {
+  const j = index + dir
+  if (j < 0 || j >= list.length) return null
+  const arr = [...list]
+  ;[arr[index], arr[j]] = [arr[j], arr[index]]
+  return arr
+}
+const moveCategory = (index: number, dir: -1 | 1) => {
+  if (reordering.value) return
+  const arr = swapMove(visibleCategories.value, index, dir)
+  if (arr) persistOrder(arr, categoryService.reorder)
+}
+const moveProduct = (index: number, dir: -1 | 1) => {
+  if (reordering.value) return
+  const arr = swapMove(visibleProducts.value, index, dir)
+  if (arr) persistOrder(arr, productService.reorder)
+}
+
 const removeProduct = (p: Product) =>
   askDelete('Ջնջե՞լ ապրանքը', `«${p.name.hy || p.name.en || p.name.ru}» ապրանքը կջնջվի։`, async () => {
     await productService.deleteProduct(p.id)
@@ -539,6 +629,21 @@ const onUpload = async (e: Event, target: { image: string }) => {
   if (!file) return
   const { url } = await uploadService.uploadImage(file)
   target.image = url
+}
+// Generic: upload a file and store its hosted URL into obj[key] (sections,
+// category icon/banner, etc.). Used where the field isn't literally `image`.
+const onUploadInto = async (e: Event, obj: Record<string, unknown>, key: string) => {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  try {
+    const { url } = await uploadService.uploadImage(file)
+    obj[key] = url
+  } catch (err) {
+    flash((err as Error)?.message || 'Չհաջողվեց վերբեռնել')
+  } finally {
+    input.value = ''
+  }
 }
 
 // Restaurant logo upload (same pipeline: file → hosted/data URL → restaurant.logo).
@@ -788,6 +893,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                   <th class="px-4 py-3">{{ t('name') }}</th>
                   <th class="px-4 py-3">{{ t('slug') }}</th>
                   <th class="px-4 py-3">{{ t('theme') }}</th>
+                  <th class="px-4 py-3">{{ t('plan') }}</th>
                   <th class="px-4 py-3 text-center">{{ t('sectionsCount') }}</th>
                   <th class="px-4 py-3 text-center">{{ t('categoriesCount') }}</th>
                   <th class="px-4 py-3 text-center">{{ t('productsCount') }}</th>
@@ -799,6 +905,12 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                   <td class="px-4 py-3 font-medium text-slate-900">{{ r.name }}</td>
                   <td class="px-4 py-3 text-slate-500"><code>{{ r.slug }}</code></td>
                   <td class="px-4 py-3 capitalize text-slate-600">{{ r.themeKey || '—' }}</td>
+                  <td class="px-4 py-3">
+                    <span
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
+                      :class="r.planKey === 'business' ? 'bg-amber-100 text-amber-700' : r.planKey === 'pro' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'"
+                    >{{ r.planKey === 'pro' ? 'Professional' : r.planKey === 'business' ? 'Business' : 'Starter' }}</span>
+                  </td>
                   <td class="px-4 py-3 text-center text-slate-600">{{ r.sections }}</td>
                   <td class="px-4 py-3 text-center text-slate-600">{{ r.categories }}</td>
                   <td class="px-4 py-3 text-center text-slate-600">{{ r.products }}</td>
@@ -921,8 +1033,15 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
             <p v-if="!visibleCategories.length" class="p-8 text-center text-sm text-slate-400">{{ t('noCategories') }}</p>
             <ul v-else class="divide-y divide-slate-100">
-              <li v-for="c in visibleCategories" :key="c.id" class="flex items-center gap-3 p-3">
-                <span class="text-xl">{{ c.icon }}</span>
+              <li v-for="(c, ci) in visibleCategories" :key="c.id" class="flex items-center gap-3 p-3">
+                <div class="flex flex-col">
+                  <button class="ord-btn" :disabled="ci === 0 || reordering" title="Վերև" @click="moveCategory(ci, -1)">▲</button>
+                  <button class="ord-btn" :disabled="ci === visibleCategories.length - 1 || reordering" title="Ներքև" @click="moveCategory(ci, 1)">▼</button>
+                </div>
+                <span class="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-slate-100 text-xl">
+                  <img v-if="c.iconImage" :src="c.iconImage" alt="" class="h-full w-full object-cover" />
+                  <template v-else>{{ c.icon }}</template>
+                </span>
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-sm font-semibold text-slate-900">{{ trLabel(c.name) }}</p>
                   <p class="truncate text-xs text-slate-500">{{ products.filter((p) => p.categoryId === c.id).length }} {{ t('itemsWord') }}</p>
@@ -951,6 +1070,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             <table class="w-full text-sm">
               <thead class="border-b border-slate-100 text-left text-xs text-slate-500">
                 <tr>
+                  <th class="w-8 p-3"></th>
                   <th class="p-3">{{ t('colProduct') }}</th>
                   <th class="p-3">{{ t('colCategory') }}</th>
                   <th class="p-3">{{ t('colPrice') }}</th>
@@ -959,7 +1079,13 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
-                <tr v-for="p in visibleProducts" :key="p.id">
+                <tr v-for="(p, pi) in visibleProducts" :key="p.id">
+                  <td class="p-3 align-middle">
+                    <div v-if="!prodSearch" class="flex flex-col">
+                      <button class="ord-btn" :disabled="pi === 0 || reordering" title="Վերև" @click="moveProduct(pi, -1)">▲</button>
+                      <button class="ord-btn" :disabled="pi === visibleProducts.length - 1 || reordering" title="Ներքև" @click="moveProduct(pi, 1)">▼</button>
+                    </div>
+                  </td>
                   <td class="p-3">
                     <div class="flex items-center gap-3">
                       <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-100">
@@ -1052,17 +1178,49 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
 
     <!-- Toast -->
     <Transition name="t">
-      <div v-if="toast" class="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg">{{ toast }}</div>
+      <div v-if="toast" class="fixed bottom-5 left-1/2 z-[100] -translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg">{{ toast }}</div>
     </Transition>
 
     <!-- Category modal -->
     <AdminModal v-if="catModal.open" :title="catModal.mode === 'add' ? t('newCategory') : t('editCategory')" @close="catModal.open = false">
       <div class="space-y-4">
         <div class="flex items-end gap-3">
-          <label class="block w-24"><span class="lbl">{{ t('icon') }}</span><input v-model="catDraft.icon" maxlength="4" class="inp text-center text-xl" placeholder="🍽" /></label>
+          <div class="w-24">
+            <span class="lbl">{{ t('icon') }} <span class="font-normal text-slate-400">400×400</span></span>
+            <label class="mt-1 grid h-[42px] cursor-pointer place-items-center overflow-hidden rounded-lg border border-slate-300 bg-white transition hover:border-slate-900">
+              <img v-if="catDraft.iconImage" :src="catDraft.iconImage" class="h-full w-full object-cover" alt="" />
+              <span v-else class="text-xl">{{ catDraft.icon || '🍽' }}</span>
+              <input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, catDraft, 'iconImage')" />
+            </label>
+            <button v-if="catDraft.iconImage" type="button" class="mt-0.5 text-[10px] text-rose-500 hover:underline" @click="catDraft.iconImage = ''">{{ t('remove') }}</button>
+          </div>
           <div class="flex-1">
             <span class="lbl">{{ t('sectionField') }}</span>
             <div class="inp flex items-center bg-slate-100 text-slate-500">{{ sectionName(catDraft.sectionId) }}</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+          <div>
+            <span class="lbl">{{ t('bannerDesktop') }} <span class="font-normal text-slate-400">· 1600×500</span></span>
+            <div class="mt-1 flex items-center gap-2">
+              <div class="grid h-12 w-20 shrink-0 place-items-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                <img v-if="catDraft.image" :src="catDraft.image" class="h-full w-full object-cover" alt="" />
+                <span v-else class="text-[10px] text-slate-300">16:5</span>
+              </div>
+              <label class="cursor-pointer text-sm font-medium text-indigo-600 hover:underline">{{ t('upload') }}<input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, catDraft, 'image')" /></label>
+              <button v-if="catDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="catDraft.image = ''">{{ t('remove') }}</button>
+            </div>
+          </div>
+          <div>
+            <span class="lbl">{{ t('bannerMobile') }} <span class="font-normal text-slate-400">· 800×600</span></span>
+            <div class="mt-1 flex items-center gap-2">
+              <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                <img v-if="catDraft.mobileImage" :src="catDraft.mobileImage" class="h-full w-full object-cover" alt="" />
+                <span v-else class="text-[10px] text-slate-300">4:3</span>
+              </div>
+              <label class="cursor-pointer text-sm font-medium text-indigo-600 hover:underline">{{ t('upload') }}<input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, catDraft, 'mobileImage')" /></label>
+              <button v-if="catDraft.mobileImage" type="button" class="text-xs text-rose-500 hover:underline" @click="catDraft.mobileImage = ''">{{ t('remove') }}</button>
+            </div>
           </div>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
@@ -1092,7 +1250,21 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
     <!-- Section modal -->
     <AdminModal v-if="secModal.open" :title="secModal.mode === 'add' ? t('newSection') : t('editSection')" @close="secModal.open = false">
       <div class="space-y-4">
-        <label class="block w-24"><span class="lbl">{{ t('icon') }}</span><input v-model="secDraft.icon" maxlength="4" class="inp text-center text-xl" placeholder="🍽" /></label>
+        <div>
+          <span class="lbl">{{ t('icon') }} <span class="font-normal text-slate-400">200×200</span></span>
+          <div class="mt-1 flex items-center gap-3">
+            <label class="grid h-14 w-14 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-xl border border-slate-300 bg-white transition hover:border-slate-900">
+              <img v-if="secDraft.image" :src="secDraft.image" class="h-full w-full object-cover" alt="" />
+              <span v-else class="text-2xl">{{ secDraft.icon || '🍽' }}</span>
+              <input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, secDraft, 'image')" />
+            </label>
+            <label class="cursor-pointer text-sm font-medium text-indigo-600 hover:underline">
+              {{ t('upload') }}
+              <input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, secDraft, 'image')" />
+            </label>
+            <button v-if="secDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="secDraft.image = ''">{{ t('remove') }}</button>
+          </div>
+        </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
           <p class="lbl mb-2">{{ t('nameTranslations') }}</p>
           <div class="space-y-2">
@@ -1118,7 +1290,10 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           </select>
         </label>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-          <p class="lbl mb-2">{{ t('nameTranslations') }}</p>
+          <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p class="lbl">{{ t('nameTranslations') }}</p>
+            <button v-if="aiEnabled" type="button" class="ai-btn" :disabled="aiBusy" @click="aiTranslateName">🌍 {{ aiBusy ? t('aiWorking') : t('aiTranslate') }}</button>
+          </div>
           <div class="space-y-2">
             <div class="flex items-center gap-2"><span class="tl-tag">🇦🇲 Հայ</span><input v-model="prodDraft.name.hy" class="inp" placeholder="Ուտեստի անվանումը հայերեն" /></div>
             <div class="flex items-center gap-2"><span class="tl-tag">🇷🇺 Рус</span><input v-model="prodDraft.name.ru" class="inp" placeholder="Название блюда по-русски" /></div>
@@ -1126,7 +1301,13 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           </div>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-          <p class="lbl mb-2">{{ t('descTranslations') }} <span class="font-normal text-slate-400">({{ t('optional') }})</span></p>
+          <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p class="lbl">{{ t('descTranslations') }} <span class="font-normal text-slate-400">({{ t('optional') }})</span></p>
+            <div v-if="aiEnabled" class="flex gap-1.5">
+              <button type="button" class="ai-btn" :disabled="aiBusy" @click="aiDescribe">✨ {{ t('aiDescribe') }}</button>
+              <button type="button" class="ai-btn" :disabled="aiBusy" @click="aiTranslateDesc">🌍 {{ t('aiTranslate') }}</button>
+            </div>
+          </div>
           <div class="space-y-2">
             <div class="flex items-center gap-2"><span class="tl-tag">🇦🇲 Հայ</span><input v-model="prodDraft.description.hy" class="inp" placeholder="Բաղադրություն / նկարագրություն հայերեն" /></div>
             <div class="flex items-center gap-2"><span class="tl-tag">🇷🇺 Рус</span><input v-model="prodDraft.description.ru" class="inp" placeholder="Состав / описание по-русски" /></div>
@@ -1189,6 +1370,14 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             <option value="en">English</option>
           </select>
         </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">{{ t('plan') }}</span>
+          <select v-model="saEdit.planKey" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <option value="free">Starter</option>
+            <option value="pro">Professional</option>
+            <option value="business">Business</option>
+          </select>
+        </label>
         <label class="flex items-center gap-2">
           <input v-model="saEdit.isActive" type="checkbox" class="h-4 w-4 rounded border-slate-300" />
           <span class="text-sm text-slate-700">{{ t('activeRestaurant') }}</span>
@@ -1235,6 +1424,12 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
 }
 .tl-tag {
   @apply inline-flex w-16 shrink-0 items-center justify-center rounded-md bg-white px-2 py-1.5 text-xs font-semibold text-slate-500 ring-1 ring-slate-200;
+}
+.ai-btn {
+  @apply inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 px-2.5 py-1 text-xs font-semibold text-white transition hover:-translate-y-px hover:shadow disabled:cursor-not-allowed disabled:opacity-50;
+}
+.ord-btn {
+  @apply flex h-4 w-5 items-center justify-center text-[9px] leading-none text-slate-400 transition hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-25;
 }
 .btn-primary {
   @apply rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50;

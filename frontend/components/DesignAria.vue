@@ -23,12 +23,13 @@ const mono = computed(() => {
 interface View {
   key: string
   icon: string
+  image?: string
   title: LocalizedText
   level: string
   group?: 'soft' | 'alcohol'
 }
 const views = computed<View[]>(() =>
-  store.levels.map((lv) => ({ key: lv.id, icon: lv.icon || '🍽️', title: lv.title, level: lv.id })),
+  store.levels.map((lv) => ({ key: lv.id, icon: lv.icon || '🍽️', image: lv.image, title: lv.title, level: lv.id })),
 )
 
 const activeKey = ref(views.value[0]?.key ?? '')
@@ -61,7 +62,12 @@ const categories = computed<MenuCategory[]>(() => {
 const hasResults = computed(() => categories.value.length > 0)
 const activeId = ref('')
 const fmt = (n: number) => n.toLocaleString('hy-AM')
-const bannerOf = (cat: MenuCategory) => cat.items.find((i) => i.image)?.image ?? ''
+// Desktop banner: the category's own image wins; fall back to a product photo.
+const bannerOf = (cat: MenuCategory) => cat.image || cat.items.find((i) => i.image)?.image || ''
+// Mobile banner: dedicated mobile image, else the desktop banner.
+const mobileBannerOf = (cat: MenuCategory) => cat.mobileImage || bannerOf(cat)
+// The category's own small icon image (falls back to the emoji in templates).
+const iconOf = (cat: MenuCategory) => cat.iconImage || ''
 
 // Running total for the floating basket bar.
 const orderTotal = computed(() =>
@@ -234,7 +240,10 @@ onBeforeUnmount(() => {
             @click="selectView(v.key)"
           >
             <span class="flex items-center gap-1.5">
-              <span class="text-base" aria-hidden="true">{{ v.icon }}</span>
+              <span v-if="v.image" class="grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-full" aria-hidden="true">
+                <img :src="v.image" alt="" class="h-full w-full object-cover" />
+              </span>
+              <span v-else class="text-base" aria-hidden="true">{{ v.icon }}</span>
               <span>{{ t(v.title) }}</span>
             </span>
             <!-- active bottom indicator -->
@@ -281,7 +290,7 @@ onBeforeUnmount(() => {
             @click="scrollToCategory(cat.id)"
           >
             <span class="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#C69A5A]/25 to-[#6F8B4A]/15">
-              <img v-if="bannerOf(cat)" :src="bannerOf(cat)" :alt="t(cat.title)" loading="lazy" class="h-full w-full object-cover" />
+              <img v-if="iconOf(cat) || bannerOf(cat)" :src="iconOf(cat) || bannerOf(cat)" :alt="t(cat.title)" loading="lazy" class="h-full w-full object-cover" />
               <span v-else class="text-base" aria-hidden="true">{{ cat.icon }}</span>
             </span>
             <span class="flex flex-col items-start leading-tight">
@@ -300,20 +309,32 @@ onBeforeUnmount(() => {
           <!-- Premium category banner -->
           <div class="group relative mb-5 h-36 overflow-hidden rounded-[22px] shadow-[0_14px_34px_-16px_rgba(62,39,35,0.55)] ring-1 ring-[#C69A5A]/25 sm:h-44">
             <div class="absolute inset-0 bg-gradient-to-br from-[#5A4038] to-[#3E2723]" />
+            <!-- desktop banner -->
             <img
               v-if="bannerOf(cat)"
               :src="bannerOf(cat)"
               :alt="t(cat.title)"
               loading="lazy"
-              class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              class="absolute inset-0 hidden h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:block"
             />
-            <div v-else class="aria-motif absolute inset-0 opacity-30" />
+            <!-- mobile banner -->
+            <img
+              v-if="mobileBannerOf(cat)"
+              :src="mobileBannerOf(cat)"
+              :alt="t(cat.title)"
+              loading="lazy"
+              class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:hidden"
+            />
+            <div v-if="!bannerOf(cat) && !mobileBannerOf(cat)" class="aria-motif absolute inset-0 opacity-30" />
             <div class="absolute inset-0 bg-gradient-to-t from-[#2C1A16]/92 via-[#3E2723]/45 to-transparent" />
             <!-- thin inner gold frame -->
             <span class="pointer-events-none absolute inset-3 rounded-2xl border border-[#DBBA82]/30" aria-hidden="true" />
             <div class="absolute inset-0 flex flex-col justify-end p-5">
               <div class="flex items-center gap-3">
-                <span class="flex h-12 w-12 items-center justify-center rounded-full border border-[#DBBA82]/60 bg-[#3E2723]/40 text-2xl backdrop-blur-sm" aria-hidden="true">{{ cat.icon }}</span>
+                <span class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-[#DBBA82]/60 bg-[#3E2723]/40 text-2xl backdrop-blur-sm" aria-hidden="true">
+                  <img v-if="iconOf(cat)" :src="iconOf(cat)" alt="" class="h-full w-full object-cover" />
+                  <template v-else>{{ cat.icon }}</template>
+                </span>
                 <div>
                   <h2 class="font-display text-2xl font-bold uppercase tracking-[0.12em] text-[#FFF9EF] drop-shadow sm:text-3xl">{{ t(cat.title) }}</h2>
                   <p class="font-serif text-sm text-[#FFF9EF]/85">{{ cat.items.length }} {{ t(ui.dishCount) }}</p>

@@ -6,6 +6,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
+import { Throttle } from '@nestjs/throttler'
 import { UserRole } from '@prisma/client'
 import { UploadsService } from './uploads.service'
 import { RestaurantScopeGuard } from '../common/guards/restaurant-scope.guard'
@@ -18,6 +19,7 @@ export class UploadsController {
   constructor(private readonly uploads: UploadsService) {}
 
   // Multipart: field name "file". Tenant id comes from the JWT (never the body).
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post('image')
   @Roles(UserRole.OWNER, UserRole.MANAGER)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))

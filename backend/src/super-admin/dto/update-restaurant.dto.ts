@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator'
+import { IsBoolean, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator'
 
 export class UpdateRestaurantDto {
   @IsOptional() @IsString() @MinLength(1) @MaxLength(120)
@@ -12,4 +12,8 @@ export class UpdateRestaurantDto {
 
   @IsOptional() @IsBoolean()
   isActive?: boolean
+
+  // Subscription plan (super-admin assigns which tier the restaurant is on).
+  @IsOptional() @IsIn(['free', 'pro', 'business'])
+  planKey?: 'free' | 'pro' | 'business'
 }

@@ -1,4 +1,5 @@
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import type { Request } from 'express'
 import { createHash } from 'node:crypto'
 import { AuthService, type IssueContext } from './auth.service'
@@ -11,6 +12,8 @@ import { Public } from '../common/decorators/public.decorator'
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  // Brute-force protection: 10 login attempts per 15 minutes per IP.
+  @Throttle({ default: { limit: 10, ttl: 900_000 } })
   @Post('login')
   @HttpCode(200)
   login(@Body() dto: LoginDto, @Req() req: Request) {

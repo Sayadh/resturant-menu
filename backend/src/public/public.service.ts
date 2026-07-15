@@ -170,7 +170,7 @@ export class PublicService {
       language: lang,
       sections: sections.map((s) => {
         const t = this.pick(s.translations, lang, fallback)
-        return { id: s.id, icon: s.icon, sortOrder: s.sortOrder, name: t?.name ?? '' }
+        return { id: s.id, icon: s.icon, image: s.imageUrl, sortOrder: s.sortOrder, name: t?.name ?? '' }
       }),
       categories: cats.map((c) => {
         const t = this.pick(c.translations, lang, fallback)
@@ -179,7 +179,9 @@ export class PublicService {
           sectionId: c.sectionId,
           parentId: c.parentId,
           icon: c.icon,
+          iconImage: c.iconUrl,
           image: c.imageUrl,
+          mobileImage: c.mobileImageUrl,
           sortOrder: c.sortOrder,
           name: t?.name ?? '',
           description: t?.description ?? '',

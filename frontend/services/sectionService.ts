@@ -23,4 +23,9 @@ export const sectionService = {
   async deleteSection(id: string): Promise<void> {
     await useApiClient().del(`/admin/sections/${id}`, { cascade: true })
   },
+
+  /** Persist a new order: [{ id, sortOrder }, …]. */
+  async reorder(items: { id: string; sortOrder: number }[]): Promise<void> {
+    await useApiClient().patch('/admin/sections/reorder', { items })
+  },
 }

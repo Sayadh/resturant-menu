@@ -5,6 +5,7 @@ import { mapTranslations } from '../common/utils/translations'
 import { CreateSectionDto } from './dto/create-section.dto'
 import { UpdateSectionDto } from './dto/update-section.dto'
 import { ReorderItemDto } from '../common/dto/reorder.dto'
+import { UploadsService } from '../uploads/uploads.service'
 
 const INCLUDE = {
   translations: { include: { language: true } },
@@ -12,7 +13,10 @@ const INCLUDE = {
 
 @Injectable()
 export class SectionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploads: UploadsService,
+  ) {}
 
   list(restaurantId: string) {
     return this.prisma.section.findMany({
@@ -43,6 +47,7 @@ export class SectionsService {
       data: {
         restaurantId,
         icon: dto.icon,
+        imageUrl: dto.imageUrl,
         sortOrder: dto.sortOrder ?? 0,
         isActive: dto.isActive ?? true,
         translations: { create: translations.map((t) => ({ languageId: t.languageId, name: t.name })) },
@@ -52,11 +57,15 @@ export class SectionsService {
   }
 
   async update(restaurantId: string, id: string, dto: UpdateSectionDto) {
-    await this.ensureOwn(restaurantId, id)
+    const existing = await this.ensureOwn(restaurantId, id)
     await this.prisma.section.update({
       where: { id },
-      data: { icon: dto.icon, sortOrder: dto.sortOrder, isActive: dto.isActive },
+      data: { icon: dto.icon, imageUrl: dto.imageUrl, sortOrder: dto.sortOrder, isActive: dto.isActive },
     })
+    // Best-effort: drop the previous image object if it was replaced/cleared.
+    if (dto.imageUrl !== undefined && existing.imageUrl && existing.imageUrl !== dto.imageUrl) {
+      await this.uploads.removeByUrl(existing.imageUrl)
+    }
     if (dto.translations) {
       const translations = await mapTranslations(this.prisma, dto.translations)
       for (const t of translations) {

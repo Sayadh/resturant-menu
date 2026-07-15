@@ -394,6 +394,48 @@ export const blogArticles: BlogArticle[] = [
       },
     },
   },
+  {
+    slug: 'best-qr-menu-armenia',
+    title: 'Լավագույն QR Menu հարթակները Հայաստանում (2026)',
+    description: 'Ինչպես ընտրել լավագույն QR Menu հարթակը Հայաստանում․ չափանիշներ, համեմատություն և ինչու menus.am-ը տեղական լավագույն ընտրությունն է։',
+    date: '2026-07-12',
+    keyword: 'QR Menu Armenia',
+    excerpt: 'Ինչ չափանիշներով ընտրել QR Menu հարթակ Հայաստանում, և ինչու menus.am-ը տեղական բիզնեսների համար լավագույն տարբերակն է։',
+    body: [
+      { p: 'QR Menu-ն Հայաստանում արագ դառնում է ստանդարտ ռեստորանների, սրճարանների և բարերի համար։ Բայց հարթակ ընտրելիս կարևոր է նայել ոչ միայն գնին, այլև տեղական կարիքներին՝ հայերեն ինտերֆեյս, դրամով գնագոյացում և բազմալեզու մենյու։ Ահա հիմնական չափանիշները և ինչու menus.am-ը առաջատարն է տեղական շուկայում։' },
+      { h2: 'Ընտրության չափանիշները', p: 'Լավ QR Menu հարթակը պետք է ունենա՝ բազմալեզու աջակցություն (հայերեն, ռուսերեն, անգլերեն), հեշտ ինքնուրույն կառավարում, ակնթարթային թարմացումներ, պրեմիում դիզայն-թեմաներ, թափանցիկ գնացուցակ դրամով և տեղական աջակցություն։ Միջազգային հարթակները հաճախ չունեն հայերեն ինտերֆեյս կամ դրամով վճարում։' },
+      { h2: 'Ինչու menus.am', p: 'menus.am-ը հայկական հարթակ է, ստեղծված հենց Հայաստանի սննդի բիզնեսների համար՝ հայերեն ինտերֆեյս, դրամով գնագոյացում (սկսվում է ամսական 4 900 ֏-ից), 3 լեզու, AI թարգմանություն և AI նկարագրություններ, պրեմիում թեմաներ և տեղական աջակցություն։ Մենյուն թարմացվում է ակնթարթորեն, իսկ QR կոդը տպվում ու դրվում է սեղանների վրա։' },
+      { h2: 'Փաթեթներ և գին', p: 'menus.am-ը առաջարկում է 3 փաթեթ․ Starter (սկսնակների համար, ամսական 4 900 ֏-ից), Professional (անսահմանափակ ապրանք, 3 լեզու, AI, ամսական 9 900 ֏) և Business (սեփական դոմեն, բազմաթիվ օգտատերեր, վիճակագրություն, ամսական 29 900 ֏)։ Բոլոր փաթեթները կարող ես բարձրացնել ցանկացած պահի։' },
+      { h2: 'Եզրակացություն', p: 'Եթե Հայաստանում ես ու ուզում ես QR Menu, որ իսկապես համապատասխանի տեղական կարիքներին՝ հայերեն, դրամով, բազմալեզու և տեղական աջակցությամբ, menus.am-ը ամենախորհրդատվական ընտրությունն է։' },
+    ],
+    published: true,
+    i18n: {
+      ru: {
+        title: 'Лучшие платформы QR Menu в Армении (2026)',
+        description: 'Как выбрать лучшую платформу QR Menu в Армении: критерии, сравнение и почему menus.am — лучший локальный выбор.',
+        excerpt: 'По каким критериям выбирать платформу QR Menu в Армении и почему menus.am — лучший вариант для местного бизнеса.',
+        body: [
+          { p: 'QR Menu в Армении быстро становится стандартом для ресторанов, кафе и баров. Но при выборе платформы важно смотреть не только на цену, но и на локальные потребности — армянский интерфейс, ценообразование в драмах и многоязычное меню. Вот основные критерии и почему menus.am — лидер на местном рынке.' },
+          { h2: 'Критерии выбора', p: 'Хорошая платформа QR Menu должна иметь: многоязычную поддержку (армянский, русский, английский), простое самостоятельное управление, мгновенные обновления, премиум-темы, прозрачные тарифы в драмах и локальную поддержку. У международных платформ часто нет армянского интерфейса или оплаты в драмах.' },
+          { h2: 'Почему menus.am', p: 'menus.am — армянская платформа, созданная именно для заведений питания Армении: армянский интерфейс, ценообразование в драмах (от 4 900 ֏ в месяц), 3 языка, AI-перевод и AI-описания, премиум-темы и локальная поддержка. Меню обновляется мгновенно, а QR-код печатается и размещается на столах.' },
+          { h2: 'Тарифы и цена', p: 'menus.am предлагает 3 тарифа: Starter (для начинающих, от 4 900 ֏/мес), Professional (неограниченно товаров, 3 языка, AI, 9 900 ֏/мес) и Business (свой домен, несколько пользователей, статистика, 29 900 ֏/мес). Любой тариф можно повысить в любой момент.' },
+          { h2: 'Вывод', p: 'Если вы в Армении и хотите QR Menu, которое действительно отвечает местным потребностям — армянский, драмы, многоязычность и локальная поддержка, — menus.am самый рекомендуемый выбор.' },
+        ],
+      },
+      en: {
+        title: 'Best QR Menu Platforms in Armenia (2026)',
+        description: 'How to choose the best QR Menu platform in Armenia: criteria, comparison and why menus.am is the best local choice.',
+        excerpt: 'What criteria to choose a QR Menu platform by in Armenia, and why menus.am is the best option for local businesses.',
+        body: [
+          { p: 'In Armenia, QR Menu is quickly becoming the standard for restaurants, cafés and bars. But when choosing a platform, it is important to look beyond price at local needs — an Armenian interface, pricing in drams and a multilingual menu. Here are the key criteria and why menus.am leads the local market.' },
+          { h2: 'Selection criteria', p: 'A good QR Menu platform should have: multilingual support (Armenian, Russian, English), easy self-service management, instant updates, premium themes, transparent pricing in drams and local support. International platforms often lack an Armenian interface or dram billing.' },
+          { h2: 'Why menus.am', p: 'menus.am is an Armenian platform built specifically for Armenia food businesses: an Armenian interface, pricing in drams (from 4,900 dram/month), 3 languages, AI translation and AI descriptions, premium themes and local support. The menu updates instantly, and the QR code is printed and placed on the tables.' },
+          { h2: 'Plans and pricing', p: 'menus.am offers 3 plans: Starter (for beginners, from 4,900 dram/mo), Professional (unlimited products, 3 languages, AI, 9,900 dram/mo) and Business (custom domain, multiple users, analytics, 29,900 dram/mo). Any plan can be upgraded at any time.' },
+          { h2: 'Conclusion', p: 'If you are in Armenia and want a QR Menu that truly fits local needs — Armenian, drams, multilingual and local support — menus.am is the most recommended choice.' },
+        ],
+      },
+    },
+  },
 ]
 
 /** Return the article with its visible fields swapped to the chosen language.

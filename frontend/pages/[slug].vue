@@ -3,7 +3,8 @@
 // Restaurant is fetched once per slug. The menu is fetched in the ACTIVE
 // language only (one request) and refetched whenever the language changes.
 import { restaurantService, menuService } from '~/services'
-import type { Lang } from '~/data/menu'
+import type { Lang, LocalizedText } from '~/data/menu'
+import { SITE } from '~/data/seo'
 
 const route = useRoute()
 const slug = computed(() => String(route.params.slug || ''))
@@ -46,21 +47,75 @@ const displayRestaurant = computed(() =>
     : restaurant.value,
 )
 
+// SSR fetch dedicated to SEO: renders title/description/canonical/OG + the
+// Restaurant/Menu JSON-LD into the INITIAL HTML (Google + social scrapers see
+// real content, not an empty shell). The interactive UI keeps its lazy fetch.
+const { data: seo } = useAsyncData(
+  () => `seo-${slug.value}`,
+  async () => {
+    const r = await restaurantService.getRestaurantBySlug(slug.value)
+    if (!r) return null
+    const m = await menuService.getMenu(r.id, 'hy').catch(() => null)
+    return { r, m }
+  },
+  { watch: [slug] },
+)
+
+const ltPick = (lt?: LocalizedText) => lt?.AM || lt?.EN || lt?.RU || ''
+
+// schema.org Restaurant + Menu → rich results + ranks for "<name> menu".
+const restaurantSchema = computed(() => {
+  const d = seo.value
+  if (!d?.r) return null
+  const url = `${SITE.url}/${d.r.slug}`
+  const sections = (d.m?.categories ?? [])
+    .filter((c) => c.items.length)
+    .map((c) => ({
+      '@type': 'MenuSection',
+      name: ltPick(c.title),
+      hasMenuItem: c.items.map((i) => ({
+        '@type': 'MenuItem',
+        name: ltPick(i.name),
+        ...(ltPick(i.description) ? { description: ltPick(i.description) } : {}),
+        offers: { '@type': 'Offer', price: String(i.price), priceCurrency: 'AMD' },
+      })),
+    }))
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Restaurant',
+    name: d.r.name,
+    url,
+    image: d.r.coverImage || d.r.logo || SITE.ogImage,
+    ...(d.r.address ? { address: { '@type': 'PostalAddress', streetAddress: d.r.address, addressLocality: 'Yerevan', addressCountry: 'AM' } } : {}),
+    ...(d.r.tagline?.hy || d.r.tagline?.en ? { description: d.r.tagline.hy || d.r.tagline.en } : {}),
+    ...(sections.length ? { hasMenu: { '@type': 'Menu', hasMenuSection: sections } } : {}),
+  }
+})
+
 useHead(() => {
-  const r = restaurant.value
-  const title = r ? `${r.name} — Մենյու` : 'Մենյու'
-  const desc = r ? r.tagline?.hy || r.tagline?.en || `${r.name} — թվային մենյու` : 'Թվային մենյու'
+  const r = seo.value?.r || restaurant.value
+  const url = `${SITE.url}/${slug.value}`
+  const title = r ? `${r.name} — Մենյու | menus.am` : 'Մենյու | menus.am'
+  const desc = r
+    ? r.tagline?.hy || r.tagline?.en || `${r.name} — թվային մենյու QR կոդով՝ menus.am-ում։`
+    : 'Թվային մենյու'
+  const image = (r && (r.coverImage || r.logo)) || SITE.ogImage
+  const ld = restaurantSchema.value
   return {
     title,
     meta: [
       { name: 'description', content: desc },
-      { property: 'og:type', content: 'website' },
+      { property: 'og:type', content: 'restaurant.menu' },
       { property: 'og:title', content: title },
       { property: 'og:description', content: desc },
-      { name: 'twitter:card', content: 'summary' },
+      { property: 'og:url', content: url },
+      { property: 'og:image', content: image },
+      { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: title },
       { name: 'twitter:description', content: desc },
     ],
+    link: [{ rel: 'canonical', href: url }],
+    script: ld ? [{ type: 'application/ld+json', innerHTML: JSON.stringify(ld) }] : [],
   }
 })
 </script>

@@ -18,4 +18,8 @@ export const envValidationSchema = Joi.object({
   SUPABASE_URL: Joi.string().uri().allow('').optional(),
   SUPABASE_SECRET_KEY: Joi.string().allow('').optional(),
   SUPABASE_BUCKET: Joi.string().default('menu-images'),
+  // OpenAI (AI translation + descriptions). Optional so the app boots without
+  // it; the /ai endpoints return a clear error until it's configured.
+  OPENAI_API_KEY: Joi.string().allow('').optional(),
+  OPENAI_MODEL: Joi.string().default('gpt-4o-mini'),
 })

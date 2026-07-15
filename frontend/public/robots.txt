@@ -1,4 +1,54 @@
+# menus.am — all crawlers welcome on public pages (admin/api excluded).
 User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# ── AI / LLM crawlers ──────────────────────────────────────────────
+# Explicitly allowed so menus.am can be read, cited and recommended by AI
+# assistants. Named groups do NOT inherit the "*" rules, so the exclusions
+# are repeated below.
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+User-agent: CCBot
 Allow: /
 Disallow: /admin
 Disallow: /api/

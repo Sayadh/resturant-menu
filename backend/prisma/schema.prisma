@@ -87,6 +87,20 @@ model Plan {
   @@map("plans")
 }
 
+/// Monthly AI usage counter per restaurant (translate/describe calls).
+/// Enforces the plan's monthly AI quota. period = 'YYYY-MM'.
+model AiUsage {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @db.Uuid
+  period       String
+  count        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([restaurantId, period])
+  @@map("ai_usage")
+}
+
 /// Platform languages. Restaurants enable a subset (RestaurantLanguage).
 model Language {
   id         String  @id @default(uuid()) @db.Uuid
@@ -288,6 +302,7 @@ model Section {
   id           String    @id @default(uuid()) @db.Uuid
   restaurantId String    @db.Uuid
   icon         String?
+  imageUrl     String?
   sortOrder    Int       @default(0)
   isActive     Boolean   @default(true)
   deletedAt    DateTime?
@@ -320,10 +335,12 @@ model Category {
   id           String       @id @default(uuid()) @db.Uuid
   restaurantId String       @db.Uuid
   section      SectionType? // legacy enum — superseded by sectionId (kept during migration)
-  sectionId    String?      @db.Uuid
-  icon         String?
-  imageUrl     String?
-  sortOrder    Int          @default(0)
+  sectionId       String?   @db.Uuid
+  icon            String?
+  iconUrl         String?
+  imageUrl        String?
+  mobileImageUrl  String?
+  sortOrder       Int       @default(0)
   isActive     Boolean      @default(true)
   deletedAt    DateTime?
   createdAt    DateTime     @default(now())

@@ -1,4 +1,5 @@
 import { useApiClient } from './http'
+import type { PlanKey } from '~/models/types'
 
 // Platform-level (SUPER_ADMIN) API. Not tenant-scoped.
 export interface AdminRestaurantRow {
@@ -6,6 +7,7 @@ export interface AdminRestaurantRow {
   slug: string
   name: string
   themeKey: string | null
+  planKey: PlanKey
   isActive: boolean
   sections: number
   categories: number
@@ -32,6 +34,7 @@ export interface UpdateRestaurantInput {
   themeKey?: string
   defaultLang?: string
   isActive?: boolean
+  planKey?: PlanKey
 }
 
 export const superAdminService = {

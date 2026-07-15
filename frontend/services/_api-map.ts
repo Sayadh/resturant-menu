@@ -88,6 +88,7 @@ export interface ApiMenuResponse {
   sections: {
     id: string
     icon: string | null
+    image: string | null
     sortOrder: number
     name: string
   }[]
@@ -95,7 +96,9 @@ export interface ApiMenuResponse {
     id: string
     sectionId: string | null
     icon: string | null
+    iconImage: string | null
     image: string | null
+    mobileImage: string | null
     sortOrder: number
     name: string
     description: string | null
@@ -133,6 +136,7 @@ export function buildMenu(payload: ApiMenuResponse): { levels: MenuLevel[]; cate
   const levels: MenuLevel[] = payload.sections.map((s) => ({
     id: s.id,
     icon: s.icon ?? '🍽',
+    image: s.image ?? '',
     title: mirror(s.name),
   }))
 
@@ -145,9 +149,11 @@ export function buildMenu(payload: ApiMenuResponse): { levels: MenuLevel[]; cate
       level: c.sectionId ?? '',
       group: undefined,
       icon: c.icon ?? '🍽',
+      iconImage: c.iconImage ?? '',
       title: mirror(c.name),
       description: mirror(c.description ?? ''),
       image: c.image ?? '',
+      mobileImage: c.mobileImage ?? '',
       items: [],
       sortOrder: c.sortOrder,
       active: true,
@@ -182,6 +188,7 @@ export function buildMenu(payload: ApiMenuResponse): { levels: MenuLevel[]; cate
 export interface ApiSectionRow {
   id: string
   icon: string | null
+  imageUrl: string | null
   sortOrder: number
   isActive: boolean
   translations: ApiTranslationRow[]
@@ -194,6 +201,7 @@ export function mapSection(s: ApiSectionRow): Section {
     restaurantId: '',
     name: ltToTranslation(title),
     icon: s.icon ?? '',
+    image: s.imageUrl ?? '',
     sortOrder: s.sortOrder,
     active: s.isActive,
   }
@@ -202,6 +210,7 @@ export function mapSection(s: ApiSectionRow): Section {
 export function sectionDraftToDto(d: Omit<Section, 'id' | 'restaurantId'>) {
   return {
     icon: d.icon || undefined,
+    imageUrl: d.image || undefined,
     sortOrder: d.sortOrder,
     isActive: d.active,
     translations: translationToRows(d.name),
@@ -305,6 +314,7 @@ export interface ApiAdminRestaurant {
   coverImageUrl: string | null
   currency: string
   theme: { id: string; key: string } | null
+  plan?: { key: string } | null
   translations?: { tagline: string | null; language: { code: string } }[]
 }
 
@@ -327,6 +337,7 @@ export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
     rating: r.rating ?? 0,
     defaultLanguage: 'hy',
     activeLanguages: ['hy', 'en', 'ru'],
+    planKey: (r.plan?.key as Restaurant['planKey']) ?? 'free',
   }
 }
 
@@ -350,7 +361,9 @@ export interface ApiCategoryRow {
   id: string
   sectionId: string | null
   icon: string | null
+  iconUrl: string | null
   imageUrl: string | null
+  mobileImageUrl: string | null
   sortOrder: number
   isActive: boolean
   translations: ApiTranslationRow[]
@@ -365,7 +378,9 @@ export function mapCategory(c: ApiCategoryRow): Category {
     name: ltToTranslation(title),
     description: ltToTranslation(desc),
     icon: c.icon ?? '',
+    iconImage: c.iconUrl ?? '',
     image: c.imageUrl ?? '',
+    mobileImage: c.mobileImageUrl ?? '',
     sortOrder: c.sortOrder,
     active: c.isActive,
   }
@@ -411,7 +426,9 @@ export function categoryDraftToDto(d: Omit<Category, 'id' | 'restaurantId'>) {
   return {
     sectionId: d.sectionId,
     icon: d.icon || undefined,
+    iconUrl: d.iconImage || undefined,
     imageUrl: d.image || undefined,
+    mobileImageUrl: d.mobileImage || undefined,
     sortOrder: d.sortOrder,
     isActive: d.active,
     translations: translationToRows(d.name, d.description),

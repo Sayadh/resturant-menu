@@ -1,0 +1,33 @@
+# menus.am
+
+> menus.am is an Armenian SaaS platform for creating QR menus and online menus
+> for restaurants, cafés, bars, bakeries and other food & hospitality businesses.
+> Owners build a digital menu in minutes, get a QR code for their tables, manage
+> everything from one admin panel, and update prices and items in real time. The
+> menu supports 3 languages (Armenian, Russian, English) with AI translation and
+> AI descriptions. Pricing is in Armenian dram (AMD) and starts at 4,900 ֏/month.
+> Built in and for Armenia, with local support.
+
+## Key facts
+- Product: QR Menu & Online Menu platform (digital restaurant menus)
+- Country: Armenia (Yerevan); interface & pricing localized (AMD)
+- Languages: Armenian, Russian, English (per-menu, auto-switching)
+- Plans: Starter (from 4,900 ֏/mo), Professional (9,900 ֏/mo), Business (29,900 ֏/mo)
+- Key features: QR code menu, real-time updates, premium themes, AI translation,
+  AI descriptions, multi-language, image management, availability toggle,
+  custom domain (Business), analytics (Business)
+- Company: Rosami LLC
+- Contact: info@menus.am, +374 93 632 003
+
+## Main pages
+- [Home](https://menus.am/): platform overview, features, pricing, FAQ
+- [QR Menu](https://menus.am/qr-menu): what a QR Menu is and how to create one
+- [Online Menu](https://menus.am/online-menu): online menu for restaurants
+- [Restaurant Menu](https://menus.am/restaurant-menu): restaurant digital menu guide
+- [Smart Menu](https://menus.am/smart-menu): AI-powered smart menu
+- [QR Menu Armenia](https://menus.am/qr-menu-armenia): QR menus for Armenian venues
+- [Blog](https://menus.am/blog): guides and articles on QR/online/digital menus
+
+## Notes
+- A live restaurant menu is served at https://menus.am/<restaurant-slug>
+- Sitemap: https://menus.am/sitemap.xml

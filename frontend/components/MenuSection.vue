@@ -4,8 +4,10 @@ const props = defineProps<{ category: MenuCategory }>()
 const emit = defineEmits<{ open: [item: MenuItem] }>()
 const { t } = useLanguage()
 
-// Use the first dish photo as the category banner.
-const banner = computed(() => props.category.items[0]?.image ?? '')
+// The category's own uploaded banner wins; fall back to the first dish photo.
+const banner = computed(() => props.category.image || props.category.items[0]?.image || '')
+const mobileBanner = computed(() => props.category.mobileImage || banner.value)
+const iconImage = computed(() => props.category.iconImage || '')
 const bannerFailed = ref(false)
 watch(banner, () => (bannerFailed.value = false))
 </script>
@@ -24,12 +26,22 @@ watch(banner, () => (bannerFailed.value = false))
       >
         {{ category.icon }}
       </span>
+      <!-- desktop banner -->
       <img
         v-if="banner && !bannerFailed"
         :src="banner"
         :alt="t(category.title)"
         loading="lazy"
-        class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+        class="absolute inset-0 hidden h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:block"
+        @error="bannerFailed = true"
+      />
+      <!-- mobile banner -->
+      <img
+        v-if="mobileBanner && !bannerFailed"
+        :src="mobileBanner"
+        :alt="t(category.title)"
+        loading="lazy"
+        class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:hidden"
         @error="bannerFailed = true"
       />
       <!-- dark gradient overlay for contrast -->
@@ -43,10 +55,11 @@ watch(banner, () => (bannerFailed.value = false))
       <div class="absolute inset-0 flex flex-col justify-end p-5">
         <div class="flex items-center gap-3">
           <span
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-caramel/60 bg-brown/40 text-xl shadow-sm backdrop-blur-sm sm:h-12 sm:w-12 sm:text-2xl"
+            class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-caramel/60 bg-brown/40 text-xl shadow-sm backdrop-blur-sm sm:h-12 sm:w-12 sm:text-2xl"
             aria-hidden="true"
           >
-            {{ category.icon }}
+            <img v-if="iconImage" :src="iconImage" alt="" class="h-full w-full object-cover" />
+            <template v-else>{{ category.icon }}</template>
           </span>
           <div class="min-w-0">
             <h2

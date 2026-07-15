@@ -30,6 +30,8 @@ export interface Section {
   restaurantId: string
   name: Translation
   icon: string
+  /** Uploaded section image (optional). */
+  image: string
   sortOrder: number
   active: boolean
 }
@@ -41,7 +43,12 @@ export interface Category {
   name: Translation
   description: Translation
   icon: string
+  /** Small category icon image (uploaded). */
+  iconImage: string
+  /** Desktop banner image. */
   image: string
+  /** Mobile banner image (falls back to `image`). */
+  mobileImage: string
   sortOrder: number
   active: boolean
 }
@@ -126,7 +133,11 @@ export interface Restaurant {
   rating: number
   defaultLanguage: LangCode
   activeLanguages: LangCode[]
+  /** Subscription tier (set by super-admin). Gates paid features like AI. */
+  planKey?: PlanKey
 }
+
+export type PlanKey = 'free' | 'pro' | 'business'
 
 // ── Service result envelope (mirrors a typical API response) ──────────────
 export interface ApiList<T> {

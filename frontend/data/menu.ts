@@ -39,8 +39,12 @@ export interface MenuCategory {
   icon: string
   title: LocalizedText
   items: MenuItem[]
-  /** Backend-ready extras (themes derive a banner from items if unset). */
+  /** Small category icon image (uploaded). Falls back to the emoji `icon`. */
+  iconImage?: string
+  /** Desktop banner (themes derive a banner from items if unset). */
   image?: string
+  /** Mobile banner (falls back to `image`). */
+  mobileImage?: string
   description?: LocalizedText
   active?: boolean
   sortOrder?: number

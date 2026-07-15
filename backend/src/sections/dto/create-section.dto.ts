@@ -16,6 +16,9 @@ export class CreateSectionDto {
   @IsOptional() @IsString() @MaxLength(8)
   icon?: string
 
+  @IsOptional() @IsString() @MaxLength(500)
+  imageUrl?: string
+
   @IsOptional() @IsInt() @Min(0)
   sortOrder?: number
 

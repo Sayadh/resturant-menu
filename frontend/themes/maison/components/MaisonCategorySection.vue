@@ -11,8 +11,10 @@ import { vReveal, vParallax } from '~/themes/maison/animations'
 const props = defineProps<{
   category: MenuCategory
   image: string
+  mobileImage?: string
   index: number
 }>()
+const mobileSrc = computed(() => props.mobileImage || props.image)
 defineEmits<{ (e: 'explore'): void }>()
 
 const { t } = useLanguage()
@@ -21,17 +23,26 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
 
 <template>
   <div class="relative mx-auto h-[40svh] min-h-[260px] w-[calc(100%-2rem)] max-w-6xl overflow-hidden rounded-[2rem] shadow-[0_30px_60px_-32px_rgba(74,58,41,0.45)] sm:h-[62svh] sm:min-h-[400px] sm:w-[calc(100%-3rem)]">
-    <!-- Background -->
+    <!-- Background (desktop) -->
     <img
       v-if="image"
       v-parallax="50"
       :src="image"
       alt=""
       aria-hidden="true"
-      class="absolute inset-0 h-[118%] w-full -translate-y-[6%] scale-105 object-cover"
+      class="absolute inset-0 hidden h-[118%] w-full -translate-y-[6%] scale-105 object-cover sm:block"
+    />
+    <!-- Background (mobile) -->
+    <img
+      v-if="mobileSrc"
+      v-parallax="50"
+      :src="mobileSrc"
+      alt=""
+      aria-hidden="true"
+      class="absolute inset-0 h-[118%] w-full -translate-y-[6%] scale-105 object-cover sm:hidden"
     />
     <div
-      v-else
+      v-if="!image && !mobileSrc"
       class="absolute inset-0"
       style="background: radial-gradient(circle at 50% 30%, #55402E, #55402E)"
       aria-hidden="true"

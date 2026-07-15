@@ -22,6 +22,7 @@ export class SuperAdminService {
       orderBy: { createdAt: 'asc' },
       include: {
         theme: true,
+        plan: { select: { key: true } },
         _count: { select: { categories: true, products: true, sections: true } },
       },
     })
@@ -30,6 +31,7 @@ export class SuperAdminService {
       slug: r.slug,
       name: r.name,
       themeKey: r.theme?.key ?? null,
+      planKey: r.plan?.key ?? 'free',
       isActive: r.isActive,
       sections: r._count.sections,
       categories: r._count.categories,
@@ -103,6 +105,11 @@ export class SuperAdminService {
     if (dto.defaultLang !== undefined) {
       const lang = await this.prisma.language.findFirst({ where: { code: dto.defaultLang } })
       if (lang) data.defaultLanguageId = lang.id
+    }
+    if (dto.planKey !== undefined) {
+      const plan = await this.prisma.plan.findUnique({ where: { key: dto.planKey } })
+      if (!plan) throw new NotFoundException('Plan not found (run the seed to create plans)')
+      data.planId = plan.id
     }
 
     await this.prisma.restaurant.update({ where: { id }, data })

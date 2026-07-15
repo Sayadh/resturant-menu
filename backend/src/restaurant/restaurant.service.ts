@@ -14,6 +14,7 @@ export class RestaurantService {
   private readonly include = {
     settings: true,
     theme: true,
+    plan: { select: { key: true, name: true } },
     translations: { include: { language: true } },
   }
 

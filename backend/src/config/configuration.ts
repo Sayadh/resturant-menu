@@ -27,4 +27,9 @@ export default () => ({
     secretKey: process.env.SUPABASE_SECRET_KEY ?? '',
     bucket: process.env.SUPABASE_BUCKET ?? 'menu-images',
   },
+  // OpenAI for AI translation + description generation (server-side only).
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY ?? '',
+    model: process.env.OPENAI_MODEL ?? 'gpt-4o-mini',
+  },
 })

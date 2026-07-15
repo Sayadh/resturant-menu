@@ -45,4 +45,9 @@ export const productService = {
   async setAvailability(id: string, available: boolean): Promise<void> {
     await useApiClient().patch(`/admin/products/${id}/availability`, { isAvailable: available })
   },
+
+  /** Persist a new order: [{ id, sortOrder }, …]. */
+  async reorder(items: { id: string; sortOrder: number }[]): Promise<void> {
+    await useApiClient().patch('/admin/products/reorder', { items })
+  },
 }

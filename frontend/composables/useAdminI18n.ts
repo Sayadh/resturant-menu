@@ -5,6 +5,23 @@ export type AdminLang = 'hy' | 'ru' | 'en'
 type Dict = Record<string, Record<AdminLang, string>>
 
 const T: Dict = {
+  // AI (Professional/Business)
+  aiTranslate: { hy: 'Թարգմանել', ru: 'Перевести', en: 'Translate' },
+  aiDescribe: { hy: 'AI նկարագրություն', ru: 'AI-описание', en: 'AI description' },
+  aiWorking: { hy: 'Կատարվում է…', ru: 'Обработка…', en: 'Working…' },
+  aiDone: { hy: 'Պատրաստ է ✓', ru: 'Готово ✓', en: 'Done ✓' },
+  aiFailed: { hy: 'AI-ը ձախողվեց', ru: 'Ошибка AI', en: 'AI failed' },
+  aiNeedText: { hy: 'Նախ լրացրու գոնե մեկ լեզվով', ru: 'Сначала заполните хотя бы один язык', en: 'Fill at least one language first' },
+  aiNeedName: { hy: 'Նախ լրացրու անվանումը', ru: 'Сначала заполните название', en: 'Fill the name first' },
+  plan: { hy: 'Փաթեթ', ru: 'Тариф', en: 'Plan' },
+  iconImage: { hy: 'Փոքր նկար', ru: 'Иконка', en: 'Icon image' },
+  bannerImage: { hy: 'Մեծ նկար', ru: 'Баннер', en: 'Banner image' },
+  sectionImage: { hy: 'Բաժնի նկար', ru: 'Изображение раздела', en: 'Section image' },
+  upload: { hy: 'Վերբեռնել', ru: 'Загрузить', en: 'Upload' },
+  remove: { hy: 'Հեռացնել', ru: 'Удалить', en: 'Remove' },
+  bannerDesktop: { hy: 'Դեսքթոփ նկար', ru: 'Десктоп', en: 'Desktop' },
+  bannerMobile: { hy: 'Մոբայլ նկար', ru: 'Мобильный', en: 'Mobile' },
+
   // nav
   dashboard: { hy: 'Վահանակ', ru: 'Панель', en: 'Dashboard' },
   restaurantInfo: { hy: 'Հաստատության մասին', ru: 'О заведении', en: 'About' },

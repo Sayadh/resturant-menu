@@ -22,8 +22,14 @@ export class UpdateCategoryDto {
   @IsOptional() @IsString() @MaxLength(8)
   icon?: string
 
+  @IsOptional() @IsString() @MaxLength(500)
+  iconUrl?: string
+
   @IsOptional() @IsString()
   imageUrl?: string
+
+  @IsOptional() @IsString() @MaxLength(500)
+  mobileImageUrl?: string
 
   @IsOptional() @IsInt() @Min(0)
   sortOrder?: number

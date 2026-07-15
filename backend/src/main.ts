@@ -1,12 +1,17 @@
 import { NestFactory } from '@nestjs/core'
 import { ConfigService } from '@nestjs/config'
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common'
+import type { NestExpressApplication } from '@nestjs/platform-express'
 import { AppModule } from './app.module'
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { bufferLogs: false })
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: false })
   const config = app.get(ConfigService)
   const logger = new Logger('Bootstrap')
+
+  // Behind nginx: trust the first proxy so rate-limiting reads the real client
+  // IP from X-Forwarded-For (otherwise every request shares nginx's IP).
+  app.set('trust proxy', 1)
 
   // /api/v1/...  (global prefix + URI versioning)
   app.setGlobalPrefix('api')

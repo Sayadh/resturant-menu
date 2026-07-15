@@ -89,7 +89,9 @@ export class CategoriesService {
         sectionId: dto.sectionId,
         parentId: dto.parentId,
         icon: dto.icon,
+        iconUrl: dto.iconUrl,
         imageUrl: dto.imageUrl,
+        mobileImageUrl: dto.mobileImageUrl,
         sortOrder: dto.sortOrder ?? 0,
         isActive: dto.isActive ?? true,
         translations: { create: translations },
@@ -110,7 +112,9 @@ export class CategoriesService {
         sectionId: dto.sectionId,
         parentId: dto.parentId,
         icon: dto.icon,
+        iconUrl: dto.iconUrl,
         imageUrl: dto.imageUrl,
+        mobileImageUrl: dto.mobileImageUrl,
         sortOrder: dto.sortOrder,
         isActive: dto.isActive,
       },
@@ -125,9 +129,15 @@ export class CategoriesService {
         })
       }
     }
-    // Best-effort: if the image was replaced/cleared, drop the old storage object.
+    // Best-effort: if an image was replaced/cleared, drop the old storage object.
     if (dto.imageUrl !== undefined && cat.imageUrl && cat.imageUrl !== dto.imageUrl) {
       await this.uploads.removeByUrl(cat.imageUrl)
+    }
+    if (dto.iconUrl !== undefined && cat.iconUrl && cat.iconUrl !== dto.iconUrl) {
+      await this.uploads.removeByUrl(cat.iconUrl)
+    }
+    if (dto.mobileImageUrl !== undefined && cat.mobileImageUrl && cat.mobileImageUrl !== dto.mobileImageUrl) {
+      await this.uploads.removeByUrl(cat.mobileImageUrl)
     }
     return this.get(restaurantId, id)
   }

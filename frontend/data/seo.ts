@@ -17,6 +17,7 @@ export const SITE = {
 export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  '@id': `${SITE.url}/#organization`,
   name: SITE.brand,
   url: SITE.url,
   logo: SITE.logo,
@@ -28,8 +29,10 @@ export const organizationSchema = {
 export const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
+  '@id': `${SITE.url}/#website`,
   name: 'menus.am — QR Menu & Online Menu Platform',
   url: SITE.url,
+  publisher: { '@id': `${SITE.url}/#organization` },
   inLanguage: 'hy',
   potentialAction: {
     '@type': 'SearchAction',

@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, Param, Post, Query, Req } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import type { Request } from 'express'
 import { PublicService } from './public.service'
 import { LeadService } from './lead.service'
@@ -15,6 +16,8 @@ export class PublicController {
   ) {}
 
   // POST /api/v1/public/lead — landing "Get started" form → Telegram.
+  // Public + unauthenticated → tight anti-spam limit (5/min/IP).
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('lead')
   @HttpCode(200)
   lead(@Body() dto: CreateLeadDto, @Req() req: Request) {

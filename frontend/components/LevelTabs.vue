@@ -23,7 +23,10 @@ const { levels } = storeToRefs(store)
       "
       @click="emit('select', lvl.id)"
     >
-      <span class="text-base leading-none" aria-hidden="true">{{ lvl.icon }}</span>
+      <span v-if="lvl.image" class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-full" aria-hidden="true">
+        <img :src="lvl.image" alt="" class="h-full w-full object-cover" />
+      </span>
+      <span v-else class="text-base leading-none" aria-hidden="true">{{ lvl.icon }}</span>
       <span>{{ t(lvl.title) }}</span>
     </button>
   </div>

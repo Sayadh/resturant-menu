@@ -118,8 +118,10 @@ const chefSelection = computed(() =>
   featured.value.filter((i) => i.id !== todaysPick.value?.id).slice(0, 3),
 )
 
-// Pick a representative photo for a category band.
+// Category's own uploaded banner takes priority; only fall back to a product
+// photo (then a texture) if the category has no image of its own.
 const categoryImage = (cat: MenuCategory) => {
+  if (cat.image) return cat.image
   const withPhoto = cat.items.find((i) => i.image)
   return withPhoto?.image || fallbackTexture
 }
@@ -274,6 +276,7 @@ onBeforeUnmount(() => {
           <MaisonCategorySection
             :category="cat"
             :image="categoryImage(cat)"
+            :mobile-image="cat.mobileImage || categoryImage(cat)"
             :index="i"
             @explore="exploreCategory(cat)"
           />
