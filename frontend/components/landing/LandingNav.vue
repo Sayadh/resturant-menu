@@ -1,30 +1,44 @@
 <script setup lang="ts">
+// `solid` — force the opaque dark bar (for light-background pages like the blog
+// and SEO pages, where the transparent hero nav would be invisible).
+const props = defineProps<{ solid?: boolean }>()
 const { L } = useLandingI18n()
 const links = computed(() => [
   { href: '/#features', label: L.value.nav.features },
   { href: '/#demo', label: L.value.nav.demo },
   { href: '/#themes', label: L.value.nav.themes },
   { href: '/#pricing', label: L.value.nav.pricing },
-  { href: '/blog', label: L.value.nav.blog },
   { href: '/#about', label: L.value.nav.about },
 ])
 
 const { openModal } = useLeadModal()
 const scrolled = ref(false)
 const open = ref(false)
+const headerRef = ref<HTMLElement | null>(null)
+// Opaque bar when scrolled OR when the page forces it (light-bg pages).
+const opaque = computed(() => props.solid || scrolled.value)
 
 const onScroll = () => (scrolled.value = window.scrollY > 24)
+// Close the mobile menu when clicking outside the header.
+const onDocClick = (e: MouseEvent) => {
+  if (open.value && headerRef.value && !headerRef.value.contains(e.target as Node)) open.value = false
+}
 onMounted(() => {
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
+  document.addEventListener('click', onDocClick)
 })
-onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
+  document.removeEventListener('click', onDocClick)
+})
 </script>
 
 <template>
   <header
+    ref="headerRef"
     class="fixed inset-x-0 top-0 z-50 transition-all duration-300"
-    :class="scrolled ? 'border-b border-white/10 bg-[#0B1020]/80 backdrop-blur-xl' : 'bg-transparent'"
+    :class="opaque ? 'border-b border-white/10 bg-[#0B1020]/85 backdrop-blur-xl' : 'bg-transparent'"
   >
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
       <a href="/" class="flex items-center gap-2.5 text-white">
@@ -55,9 +69,13 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
         </button>
       </div>
 
-      <button class="rounded-lg p-2 text-white ring-1 ring-white/15 lg:hidden touch-manipulation" aria-label="Menu" @click="open = !open">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" /></svg>
-      </button>
+      <div class="flex items-center gap-2 lg:hidden">
+        <!-- On light-bg pages (blog, etc.) give a one-tap way to the plans/home. -->
+        <a v-if="solid" href="/#pricing" class="rounded-full bg-gradient-to-r from-indigo-500 to-violet-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-indigo-600/30">{{ L.nav.pricing }}</a>
+        <button class="rounded-lg p-2 text-white ring-1 ring-white/15 touch-manipulation" aria-label="Menu" @click="open = !open">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" /></svg>
+        </button>
+      </div>
     </nav>
 
     <Transition name="drop">

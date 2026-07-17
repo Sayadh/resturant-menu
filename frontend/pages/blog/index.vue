@@ -18,7 +18,7 @@ useHead({
 
 <template>
   <div class="landing">
-    <LandingNav />
+    <LandingNav solid />
     <main class="mx-auto max-w-5xl px-5 pt-32 pb-20 sm:px-8 sm:pt-40">
       <header class="text-center">
         <span class="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3.5 py-1.5 text-xs font-semibold text-indigo-600">{{ L.blog.badge }}</span>

@@ -52,7 +52,7 @@ useJsonLd([
 
 <template>
   <div class="landing">
-    <LandingNav />
+    <LandingNav solid />
     <article class="mx-auto max-w-3xl px-5 pt-32 pb-16 sm:px-8 sm:pt-40">
       <NuxtLink to="/blog" class="text-sm font-semibold text-indigo-600 hover:underline">{{ L.blog.back }}</NuxtLink>
       <span class="mt-6 block text-xs font-semibold uppercase tracking-wide text-indigo-500">{{ view.keyword }}</span>

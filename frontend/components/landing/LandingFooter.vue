@@ -36,7 +36,7 @@ const year = new Date().getFullYear()
           <p class="text-sm font-semibold text-white">{{ L.footer.contact }}</p>
           <ul class="mt-4 space-y-2.5 text-sm">
             <li><a href="tel:+37493632003" class="transition hover:text-white">+374 93 632 003</a></li>
-            <li><a href="mailto:info@menus.am" class="transition hover:text-white">info@menus.am</a></li>
+            <li><a href="mailto:menusam9995@gmail.com" class="transition hover:text-white">menusam9995@gmail.com</a></li>
             <li>{{ L.footer.city }}</li>
           </ul>
         </div>

@@ -47,6 +47,9 @@ const bizFeatures = computed(() => L.value.pricing.bizFeatures)
 
 // ── Comparison matrix ────────────────────────────────────────────
 const compare = computed(() => L.value.pricing.compare)
+// Row-order icons matching the plan feature lists. Empty where the label
+// already carries its own emoji (the AI rows).
+const compareIcons = ['📱', '', '', '📋', '🗂️', '🌍', '⚙️', '🎨', '⚡', '💳', '🌐', '👥', '📊', '🛠️']
 </script>
 
 <template>
@@ -225,7 +228,7 @@ const compare = computed(() => L.value.pricing.compare)
             class="grid grid-cols-[1.6fr_1fr_1fr_1fr] items-center border-t border-slate-100 px-5 py-3.5 text-sm transition-colors hover:bg-slate-50/70"
             :class="i % 2 ? 'bg-white' : 'bg-slate-50/30'"
           >
-            <span class="pr-2 text-slate-700">{{ row.label }}</span>
+            <span class="pr-2 text-slate-700"><span v-if="compareIcons[i]" class="mr-1">{{ compareIcons[i] }}</span>{{ row.label }}</span>
             <span class="flex justify-center">
               <template v-if="typeof row.s === 'string'"><span class="text-sm font-semibold text-slate-700">{{ row.s }}</span></template>
               <svg v-else-if="row.s" class="text-emerald-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round" /></svg>

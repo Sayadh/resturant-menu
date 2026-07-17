@@ -8,7 +8,7 @@ export const SITE = {
   brand: 'Menus.am',
   logo: 'https://menus.am/favicon.svg',
   ogImage: 'https://menus.am/og-image.png',
-  email: 'info@menus.am',
+  email: 'menusam9995@gmail.com',
   phone: '+374 93 632 003',
   locale: 'hy_AM',
 } as const
