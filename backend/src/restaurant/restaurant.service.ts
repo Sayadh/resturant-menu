@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto'
 import { UpdateSettingsDto } from './dto/update-settings.dto'
@@ -141,7 +141,15 @@ export class RestaurantService {
   }
 
   async updateTheme(restaurantId: string, themeKey: string) {
-    await this.getOwn(restaurantId)
+    const own = await this.getOwn(restaurantId)
+    // Starter is locked to the super-admin-assigned design; only paid plans switch.
+    const planKey = (own as { plan?: { key?: string } }).plan?.key ?? 'free'
+    if (planKey === 'free') {
+      throw new ForbiddenException({
+        message: 'PLAN_LIMIT_REACHED',
+        errors: [{ code: 'PLAN_LIMIT_REACHED', field: 'theme', message: '0' }],
+      })
+    }
     const theme = await this.prisma.theme.findFirst({ where: { key: themeKey, isActive: true } })
     if (!theme) throw new BadRequestException('Theme not found or inactive')
     return this.prisma.restaurant.update({

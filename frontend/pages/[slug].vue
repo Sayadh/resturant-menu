@@ -11,7 +11,7 @@ const slug = computed(() => String(route.params.slug || ''))
 
 // Optional render-only theme override via ?theme= (used by the landing demo
 // preview so switching a theme opens the demo in that theme). Never persisted.
-const VALID_THEMES = ['aria', 'atelier', 'maison', 'heritage']
+const VALID_THEMES = ['aria', 'atelier', 'maison', 'heritage', 'noir']
 const themeOverride = computed(() => {
   const q = String(route.query.theme || '').toLowerCase()
   return VALID_THEMES.includes(q) ? q : ''

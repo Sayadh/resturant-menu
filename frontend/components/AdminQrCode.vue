@@ -4,7 +4,12 @@
 // Design choices persist per-restaurant in localStorage. Client-only (DOM lib).
 import { useAdminI18n } from '~/composables/useAdminI18n'
 
-const props = defineProps<{ url: string; logo?: string; restaurantId: string }>()
+// `customizable` — Professional/Business only. Starter gets a fixed black & white
+// QR (no controls), the paid plans get full color/style/logo design.
+const props = withDefaults(
+  defineProps<{ url: string; logo?: string; restaurantId: string; customizable?: boolean }>(),
+  { customizable: true },
+)
 const { t } = useAdminI18n()
 
 type DotType = 'square' | 'rounded' | 'dots' | 'classy' | 'classy-rounded' | 'extra-rounded'
@@ -24,6 +29,13 @@ const holder = ref<HTMLElement | null>(null)
 let qr: any = null
 
 function buildConfig() {
+  // Starter → forced black & white, square, no logo. Paid plans → user's design.
+  const c = props.customizable
+  const dotColor = c ? opts.dotColor : '#000000'
+  const bgColor = c ? opts.bgColor : '#FFFFFF'
+  const dotStyle: DotType = c ? opts.dotStyle : 'square'
+  const cornerStyle: CornerType = c ? opts.cornerStyle : 'square'
+  const useLogo = c && opts.useLogo
   return {
     width: 320,
     height: 320,
@@ -31,13 +43,13 @@ function buildConfig() {
     data: props.url, // ← never changes with design
     // Always send `image` (undefined clears it) — omitting the key leaves the
     // previous logo in place on update(), so the toggle wouldn't work.
-    image: opts.useLogo && props.logo ? props.logo : undefined,
+    image: useLogo && props.logo ? props.logo : undefined,
     margin: 8,
     qrOptions: { errorCorrectionLevel: 'H' as const }, // high ECC → logo-safe
-    dotsOptions: { color: opts.dotColor, type: opts.dotStyle },
-    backgroundOptions: { color: opts.bgColor },
-    cornersSquareOptions: { color: opts.dotColor, type: opts.cornerStyle },
-    cornersDotOptions: { color: opts.dotColor },
+    dotsOptions: { color: dotColor, type: dotStyle },
+    backgroundOptions: { color: bgColor },
+    cornersSquareOptions: { color: dotColor, type: cornerStyle },
+    cornersDotOptions: { color: dotColor },
     imageOptions: { crossOrigin: 'anonymous', margin: 6, imageSize: 0.32 },
   }
 }
@@ -78,8 +90,8 @@ const download = (ext: 'png' | 'svg') => qr?.download({ name: 'menus-qr', extens
       </div>
     </div>
 
-    <!-- controls -->
-    <div class="space-y-4">
+    <!-- controls (paid plans only) -->
+    <div v-if="customizable" class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
         <label class="block">
           <span class="lbl">{{ t('qrColor') }}</span>
@@ -115,6 +127,12 @@ const download = (ext: 'png' | 'svg') => qr?.download({ name: 'menus-qr', extens
         <input v-model="opts.useLogo" type="checkbox" class="h-4 w-4" />
       </label>
       <p class="text-xs text-slate-400">{{ t('qrHint') }}</p>
+    </div>
+
+    <!-- Starter: locked design, upsell to Professional -->
+    <div v-else class="flex flex-col justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
+      <p class="text-sm font-semibold text-slate-700">{{ t('qrLockedTitle') }}</p>
+      <p class="text-xs leading-relaxed text-slate-500">{{ t('qrLockedHint') }}</p>
     </div>
   </div>
 </template>

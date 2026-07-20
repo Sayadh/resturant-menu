@@ -148,7 +148,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="aria flex min-h-screen flex-col overflow-x-hidden bg-[#F5EFE2] text-[#3E2723]">
+  <div class="aria flex min-h-screen flex-col bg-[#F5EFE2] text-[#3E2723]">
     <!-- ───────── HERO HEADER ───────── -->
     <header class="relative overflow-hidden">
       <!-- warm wash + faint motif -->
@@ -220,18 +220,18 @@ onBeforeUnmount(() => {
 
     <!-- ───────── STICKY: TABS + SEARCH + CATEGORY RAIL ───────── -->
     <div data-nav class="sticky top-0 z-30 border-b border-[#E4D6C2] bg-[#F5EFE2]/92 backdrop-blur-md">
-      <div class="mx-auto max-w-5xl px-4 py-3">
+      <div class="mx-auto max-w-5xl px-3 py-2 sm:px-4 sm:py-3">
         <!-- Tabs — single row: centered when they fit, horizontal scroll when
              there are many sections (never wrap, never break the layout). -->
         <div class="-mx-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div class="mx-auto flex w-max gap-2" role="tablist">
+          <div class="mx-auto flex w-max gap-1.5 sm:gap-2" role="tablist">
           <button
             v-for="v in views"
             :key="v.key"
             type="button"
             role="tab"
             :aria-selected="activeKey === v.key"
-            class="group relative flex shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-2xl border px-4 py-2.5 text-sm font-bold tracking-wide transition-all duration-300"
+            class="group relative flex shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-2xl border px-3 py-2 text-xs font-bold tracking-wide transition-all duration-300 sm:px-4 sm:py-2.5 sm:text-sm"
             :class="
               activeKey === v.key
                 ? 'border-[#C69A5A] bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] text-white shadow-[0_10px_22px_-8px_rgba(198,154,90,0.75)]'
@@ -240,10 +240,10 @@ onBeforeUnmount(() => {
             @click="selectView(v.key)"
           >
             <span class="flex items-center gap-1.5">
-              <span v-if="v.image" class="grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-full" aria-hidden="true">
+              <span v-if="v.image" class="grid h-4 w-4 shrink-0 place-items-center overflow-hidden rounded-full sm:h-5 sm:w-5" aria-hidden="true">
                 <img :src="v.image" alt="" class="h-full w-full object-cover" />
               </span>
-              <span v-else class="text-base" aria-hidden="true">{{ v.icon }}</span>
+              <span v-else class="text-sm sm:text-base" aria-hidden="true">{{ v.icon }}</span>
               <span>{{ t(v.title) }}</span>
             </span>
             <!-- active bottom indicator -->
@@ -257,17 +257,17 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Search -->
-        <div class="relative mt-3 transition">
-          <span class="pointer-events-none absolute left-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-[#C69A5A]/15">
-            <IconSearch class="h-[18px] w-[18px] text-[#A87E42]" />
+        <div class="relative mt-2 transition sm:mt-3">
+          <span class="pointer-events-none absolute left-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-[#C69A5A]/15 sm:h-9 sm:w-9">
+            <IconSearch class="h-4 w-4 text-[#A87E42] sm:h-[18px] sm:w-[18px]" />
           </span>
           <input
             v-model="search"
             type="search"
             :placeholder="t(ariaSearchPlaceholder)"
-            class="w-full rounded-full border border-[#E4D6C2] bg-[#FFF9EF] py-3 pl-13 pr-12 font-serif text-base text-[#3E2723] shadow-sm outline-none transition duration-200 focus:border-[#C69A5A] focus:shadow-[0_6px_18px_-8px_rgba(198,154,90,0.6)] focus:ring-2 focus:ring-[#C69A5A]/25"
+            class="w-full rounded-full border border-[#E4D6C2] bg-[#FFF9EF] py-2.5 pl-12 pr-11 font-serif text-sm text-[#3E2723] shadow-sm outline-none transition duration-200 focus:border-[#C69A5A] focus:shadow-[0_6px_18px_-8px_rgba(198,154,90,0.6)] focus:ring-2 focus:ring-[#C69A5A]/25 sm:py-3 sm:pl-13 sm:pr-12 sm:text-base"
           />
-          <span class="pointer-events-none absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-[#A87E42]/70">
+          <span class="pointer-events-none absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[#A87E42]/70 sm:h-9 sm:w-9">
             <svg viewBox="0 0 24 24" class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M4 6h16M7 12h10M10 18h4" />
             </svg>
@@ -275,13 +275,13 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Category image rail -->
-        <nav class="-mx-1 mt-3 flex gap-2.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <nav class="-mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mt-3 sm:gap-2.5">
           <button
             v-for="cat in baseCategories"
             :key="cat.id"
             type="button"
             :data-chip="cat.id"
-            class="group relative inline-flex shrink-0 items-center gap-2.5 overflow-hidden rounded-2xl border py-1.5 pl-1.5 pr-3.5 text-sm font-semibold transition-all duration-300"
+            class="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-2xl border py-1 pl-1 pr-3 text-[13px] font-semibold transition-all duration-300 sm:gap-2.5 sm:py-1.5 sm:pl-1.5 sm:pr-3.5 sm:text-sm"
             :class="
               activeId === cat.id
                 ? 'border-[#C69A5A] bg-[#FFF9EF] text-[#3E2723] shadow-[0_8px_18px_-8px_rgba(198,154,90,0.65)] ring-1 ring-[#C69A5A]/50'
@@ -289,13 +289,13 @@ onBeforeUnmount(() => {
             "
             @click="scrollToCategory(cat.id)"
           >
-            <span class="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#C69A5A]/25 to-[#6F8B4A]/15">
+            <span class="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-[#C69A5A]/25 to-[#6F8B4A]/15 sm:h-9 sm:w-9 sm:rounded-xl">
               <img v-if="iconOf(cat) || bannerOf(cat)" :src="iconOf(cat) || bannerOf(cat)" :alt="t(cat.title)" loading="lazy" class="h-full w-full object-cover" />
-              <span v-else class="text-base" aria-hidden="true">{{ cat.icon }}</span>
+              <span v-else class="text-sm sm:text-base" aria-hidden="true">{{ cat.icon }}</span>
             </span>
             <span class="flex flex-col items-start leading-tight">
               <span>{{ t(cat.title) }}</span>
-              <span class="text-[11px] font-normal text-[#7A6654]">{{ cat.items.length }} {{ t(ui.dishCount) }}</span>
+              <span class="text-[10px] font-normal text-[#7A6654] sm:text-[11px]">{{ cat.items.length }} {{ t(ui.dishCount) }}</span>
             </span>
           </button>
         </nav>
@@ -448,6 +448,12 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* Clip horizontal overflow (decorative wheat icons) WITHOUT creating a scroll
+   container — `overflow-x: hidden` would break `position: sticky` on the nav. */
+.aria {
+  overflow-x: clip;
+}
+
 /* Subtle Armenian-inspired diamond lattice used for placeholders & washes. */
 .aria-motif {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill='none' stroke='%23C69A5A' stroke-width='1' stroke-opacity='0.4'%3E%3Cpath d='M20 2 38 20 20 38 2 20Z'/%3E%3Cpath d='M20 12 28 20 20 28 12 20Z'/%3E%3C/g%3E%3C/svg%3E");

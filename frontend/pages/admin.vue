@@ -693,12 +693,18 @@ const removeProduct = (p: Product) =>
     flash(t('deleted'))
     await refresh().catch(() => {})
   })
+// Per-row in-flight state so the toggle disables + shows feedback while saving.
+const availBusy = reactive(new Set<string>())
 const toggleAvailable = async (p: Product) => {
+  if (availBusy.has(p.id)) return
+  availBusy.add(p.id)
   try {
     await productService.setAvailability(p.id, !p.available)
     await refresh().catch(() => {})
   } catch (e) {
     flash((e as Error)?.message || 'Չհաջողվեց փոխել')
+  } finally {
+    availBusy.delete(p.id)
   }
 }
 
@@ -757,13 +763,20 @@ const onResolve = async (target: { image: string }) => {
 }
 
 // ── theme + settings actions ───────────────────────────────────
+// Starter is locked to the design the super-admin assigned; only paid plans
+// can switch. (Backend enforces this too.)
 const chooseTheme = async (id: string) => {
+  if (!isPaidPlan.value && id !== restaurant.value.themeId) {
+    openUpgradeRequest()
+    return
+  }
   busy.value = true
   try {
     await restaurantService.setTheme(restaurant.value.id, id as ThemeId)
     restaurant.value.themeId = id as ThemeId // reflect immediately in the admin
     flash('Թեման պահպանվեց')
   } catch (e) {
+    if ((e as Error)?.message === 'PLAN_LIMIT_REACHED') { openUpgradeRequest(); return }
     flash((e as Error)?.message || 'Չհաջողվեց փոխել թեման')
   } finally {
     busy.value = false
@@ -1105,7 +1118,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 </span>
               </div>
               <button
-                v-if="restaurant.planKey !== 'business'"
+                v-if="!isPaidPlan"
                 type="button"
                 class="text-sm font-semibold text-indigo-600 hover:underline"
                 @click="openUpgradeRequest()"
@@ -1281,10 +1294,11 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                   <td class="p-3 font-semibold text-slate-900">{{ fmt(p.price) }} ֏</td>
                   <td class="p-3">
                     <button
-                      class="rounded-full px-2.5 py-1 text-xs font-bold"
+                      class="rounded-full px-2.5 py-1 text-xs font-bold transition disabled:cursor-wait disabled:opacity-50"
                       :class="p.available ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'"
+                      :disabled="availBusy.has(p.id)"
                       @click="toggleAvailable(p)"
-                    >{{ p.available ? t('inStock') : t('outOfStock') }}</button>
+                    >{{ availBusy.has(p.id) ? '…' : (p.available ? t('inStock') : t('outOfStock')) }}</button>
                   </td>
                   <td class="p-3">
                     <div class="flex justify-end gap-1">
@@ -1302,20 +1316,37 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         <!-- DESIGN -->
         <section v-else-if="active === 'design'" class="space-y-5">
           <h1 class="text-xl font-bold text-slate-900">Design</h1>
+          <div v-if="!isPaidPlan" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {{ t('designLockedHint') }}
+          </div>
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div v-for="th in themes" :key="th.id" class="overflow-hidden rounded-xl border bg-white" :class="restaurant.themeId === th.id ? 'border-slate-900 ring-2 ring-slate-900' : 'border-slate-200'">
-              <div class="flex h-28 items-center justify-center text-2xl font-bold text-white" :style="{ backgroundColor: th.accent }">{{ th.name }}</div>
+              <div class="relative flex h-28 items-center justify-center text-2xl font-bold text-white" :style="{ backgroundColor: th.accent }">
+                {{ th.name }}
+                <span v-if="!isPaidPlan && restaurant.themeId !== th.id" class="absolute inset-0 flex items-center justify-center bg-slate-900/40 text-2xl">🔒</span>
+              </div>
               <div class="space-y-2 p-4">
                 <div class="flex items-center justify-between">
                   <p class="font-bold text-slate-900">{{ th.name }}</p>
                   <span v-if="restaurant.themeId === th.id" class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">Active</span>
+                  <span v-else-if="!isPaidPlan" class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">Professional</span>
                   <span v-else-if="!th.available" class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-400">Soon</span>
                 </div>
                 <p class="text-xs text-slate-500">{{ th.description }}</p>
                 <p class="text-xs text-slate-400">Best for: {{ th.bestFor }}</p>
                 <div class="flex gap-2 pt-1">
-                  <NuxtLink :to="`/${restaurant.slug}`" target="_blank" class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-center text-xs font-semibold hover:bg-slate-50">Preview</NuxtLink>
-                  <button :disabled="!th.available" class="flex-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-40" @click="chooseTheme(th.id)">Select</button>
+                  <NuxtLink :to="`/demo?theme=${th.id}`" target="_blank" class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-center text-xs font-semibold hover:bg-slate-50">Preview</NuxtLink>
+                  <button
+                    v-if="isPaidPlan || restaurant.themeId === th.id"
+                    :disabled="!th.available || restaurant.themeId === th.id"
+                    class="flex-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-40"
+                    @click="chooseTheme(th.id)"
+                  >{{ restaurant.themeId === th.id ? 'Active' : 'Select' }}</button>
+                  <button
+                    v-else
+                    class="flex-1 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-3 py-1.5 text-xs font-semibold text-white"
+                    @click="openUpgradeRequest()"
+                  >🔒 Professional</button>
                 </div>
               </div>
             </div>
@@ -1352,7 +1383,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
               <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50" @click="copyLink">{{ t('copy') }}</button>
             </div>
             <ClientOnly>
-              <AdminQrCode :url="publicUrl" :logo="restaurant.logo" :restaurant-id="restaurant.id" />
+              <AdminQrCode :url="publicUrl" :logo="restaurant.logo" :restaurant-id="restaurant.id" :customizable="aiEnabled" />
             </ClientOnly>
           </div>
         </section>

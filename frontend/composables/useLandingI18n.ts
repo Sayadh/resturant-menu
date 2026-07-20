@@ -150,7 +150,7 @@ const dict: Record<LandingLang, Dict> = {
       starterHint: 'Սկսնակ բիզնեսների համար', proHint: 'Զարգացող բիզնեսների համար', bizHint: 'Մեծ բիզնեսների և ցանցերի համար', popular: 'Ամենապահանջված',
       startBtn: 'Սկսել', choosePro: 'Ընտրել Professional', chooseBiz: 'Ընտրել Business',
       starterFeatures: ['⚙️ Անձնական կառավարման վահանակ', '📋 Մինչև 250 ապրանք', '🗂️ Մինչև 10 կատեգորիա', '🌍 2 լեզու', '🎨 1 դիզայն', '📷 Մինչև 250 լուսանկար', '🛠️ Տեխնիկական աջակցություն'],
-      proFeatures: ['✨ AI նկարագրություններ', '🌍 AI թարգմանություն', '⚙️ Անձնական կառավարման վահանակ', '📋 Անսահմանափակ ապրանքներ', '🗂️ Անսահմանափակ կատեգորիաներ', '🌍 3 լեզու', '🎨 Բոլոր դիզայնները', '📷 Անսահմանափակ լուսանկարներ', '👁️ Առկա է / Առկա չէ կարգավիճակ', '⚡ Մենյուի ակնթարթային թարմացում', '🛠️ Տեխնիկական աջակցություն'],
+      proFeatures: ['✨ AI նկարագրություններ', '🌍 AI թարգմանություն', '⚙️ Անձնական կառավարման վահանակ', '📋 Անսահմանափակ ապրանքներ', '🗂️ Անսահմանափակ կատեգորիաներ', '🌍 3 լեզու', '🎨 Բոլոր դիզայնները', '🔳 Գունավոր QR դիզայն՝ լոգոյով', '📷 Անսահմանափակ լուսանկարներ', '👁️ Առկա է / Առկա չէ կարգավիճակ', '⚡ Մենյուի ակնթարթային թարմացում', '🛠️ Տեխնիկական աջակցություն'],
       bizFeatures: ['✅ Ներառում է Professional փաթեթի բոլոր հնարավորությունները', '🌐 Ձեր սեփական դոմենը', '👥 Բազմաթիվ օգտատերեր', '📊 Ընդլայնված վիճակագրություն', '🎨 Անհատական դիզայն', '🍽️ Սեղանից պատվեր և մատուցողի կանչ', '🚀 Առաջնահերթ աջակցություն'],
       compareTitle: 'Փաթեթների համեմատություն', compareCols: { feature: 'Հնարավորություն' },
       compare: [
@@ -279,7 +279,7 @@ const dict: Record<LandingLang, Dict> = {
       starterHint: 'Для начинающих бизнесов', proHint: 'Для растущих бизнесов', bizHint: 'Для крупных бизнесов и сетей', popular: 'Популярный',
       startBtn: 'Начать', choosePro: 'Выбрать Professional', chooseBiz: 'Выбрать Business',
       starterFeatures: ['⚙️ Личная панель управления', '📋 До 250 товаров', '🗂️ До 10 категорий', '🌍 2 языка', '🎨 1 дизайн', '📷 До 250 фото', '🛠️ Техническая поддержка'],
-      proFeatures: ['✨ AI-описания', '🌍 AI-перевод', '⚙️ Личная панель управления', '📋 Неограниченно товаров', '🗂️ Неограниченно категорий', '🌍 3 языка', '🎨 Все дизайны', '📷 Неограниченно фото', '👁️ Статус «В наличии / Нет в наличии»', '⚡ Мгновенное обновление меню', '🛠️ Техническая поддержка'],
+      proFeatures: ['✨ AI-описания', '🌍 AI-перевод', '⚙️ Личная панель управления', '📋 Неограниченно товаров', '🗂️ Неограниченно категорий', '🌍 3 языка', '🎨 Все дизайны', '🔳 Цветной дизайн QR с логотипом', '📷 Неограниченно фото', '👁️ Статус «В наличии / Нет в наличии»', '⚡ Мгновенное обновление меню', '🛠️ Техническая поддержка'],
       bizFeatures: ['✅ Включает все возможности Professional', '🌐 Ваш собственный домен', '👥 Несколько пользователей', '📊 Расширенная статистика', '🎨 Индивидуальный дизайн', '🍽️ Заказ со столика и вызов официанта', '🚀 Приоритетная поддержка'],
       compareTitle: 'Сравнение тарифов', compareCols: { feature: 'Возможность' },
       compare: [
@@ -408,7 +408,7 @@ const dict: Record<LandingLang, Dict> = {
       starterHint: 'For starting businesses', proHint: 'For growing businesses', bizHint: 'For large businesses and chains', popular: 'Most popular',
       startBtn: 'Start', choosePro: 'Choose Professional', chooseBiz: 'Choose Business',
       starterFeatures: ['⚙️ Personal management panel', '📋 Up to 250 products', '🗂️ Up to 10 categories', '🌍 2 languages', '🎨 1 design', '📷 Up to 250 photos', '🛠️ Technical support'],
-      proFeatures: ['✨ AI descriptions', '🌍 AI translation', '⚙️ Personal management panel', '📋 Unlimited products', '🗂️ Unlimited categories', '🌍 3 languages', '🎨 All designs', '📷 Unlimited photos', '👁️ In stock / Out of stock status', '⚡ Instant menu updates', '🛠️ Technical support'],
+      proFeatures: ['✨ AI descriptions', '🌍 AI translation', '⚙️ Personal management panel', '📋 Unlimited products', '🗂️ Unlimited categories', '🌍 3 languages', '🎨 All designs', '🔳 Colorful QR design with logo', '📷 Unlimited photos', '👁️ In stock / Out of stock status', '⚡ Instant menu updates', '🛠️ Technical support'],
       bizFeatures: ['✅ Everything in Professional', '🌐 Your own domain', '👥 Multiple users', '📊 Advanced analytics', '🎨 Custom design', '🍽️ Table ordering & waiter call', '🚀 Priority support'],
       compareTitle: 'Compare plans', compareCols: { feature: 'Feature' },
       compare: [
