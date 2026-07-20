@@ -46,9 +46,9 @@ async function seedThemes() {
 
 async function seedPlans() {
   const plans = [
-    { key: 'free', name: 'Starter', priceMonthly: 4900, maxProducts: 250, maxDomains: 0 },
-    { key: 'pro', name: 'Professional', priceMonthly: 9900, maxProducts: null, maxDomains: 0 },
-    { key: 'business', name: 'Business', priceMonthly: 29900, maxProducts: null, maxDomains: 1 },
+    { key: 'free', name: 'Starter', priceMonthly: 4900, maxProducts: 250, maxCategories: 10, maxDomains: 0 },
+    { key: 'pro', name: 'Professional', priceMonthly: 9900, maxProducts: null, maxCategories: null, maxDomains: 0 },
+    { key: 'business', name: 'Business', priceMonthly: 29900, maxProducts: null, maxCategories: null, maxDomains: 1 },
   ]
   for (const p of plans) {
     await prisma.plan.upsert({ where: { key: p.key }, update: p, create: p })

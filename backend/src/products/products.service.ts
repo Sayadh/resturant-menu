@@ -8,6 +8,7 @@ import { UpdateProductDto } from './dto/update-product.dto'
 import { ProductListQueryDto } from './dto/product-list.query.dto'
 import { ReorderItemDto } from '../common/dto/reorder.dto'
 import { UploadsService } from '../uploads/uploads.service'
+import { PlanLimitsService } from '../common/services/plan-limits.service'
 
 const INCLUDE = {
   translations: { include: { language: true } },
@@ -20,6 +21,7 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly uploads: UploadsService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   async list(restaurantId: string, q: ProductListQueryDto) {
@@ -83,6 +85,7 @@ export class ProductsService {
   }
 
   async create(restaurantId: string, dto: CreateProductDto) {
+    await this.planLimits.assertCanCreate(restaurantId, 'product')
     await this.ensureCategory(restaurantId, dto.categoryId)
     this.validatePrices(dto.price, dto.oldPrice)
     const translations = await mapTranslations(this.prisma, dto.translations)

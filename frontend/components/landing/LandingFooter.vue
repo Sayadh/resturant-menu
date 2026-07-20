@@ -1,5 +1,10 @@
 <script setup lang="ts">
 const { L } = useLandingI18n()
+const { locale, toLocale } = useLocale()
+// Keep every footer link within the visitor's language: hash anchors get the
+// locale home prefix, real routes get the locale prefix via toLocale.
+const lz = (h: string) =>
+  h.startsWith('/#') ? (locale.value === 'hy' ? h : `/${locale.value}${h}`) : toLocale(h, locale.value)
 const cols = computed(() => [
   { title: L.value.footer.product, links: [{ t: L.value.footer.links.features, h: '/#features' }, { t: L.value.footer.links.themes, h: '/#themes' }, { t: L.value.footer.links.pricing, h: '/#pricing' }, { t: L.value.footer.links.demo, h: '/#demo' }] },
   { title: L.value.footer.guides, links: [{ t: 'QR Menu', h: '/qr-menu' }, { t: 'Online Menu', h: '/online-menu' }, { t: 'Restaurant Menu', h: '/restaurant-menu' }, { t: L.value.footer.links.blog, h: '/blog' }] },
@@ -28,7 +33,7 @@ const year = new Date().getFullYear()
         <div v-for="c in cols" :key="c.title">
           <p class="text-sm font-semibold text-white">{{ c.title }}</p>
           <ul class="mt-4 space-y-2.5 text-sm">
-            <li v-for="l in c.links" :key="l.t"><a :href="l.h" class="transition hover:text-white">{{ l.t }}</a></li>
+            <li v-for="l in c.links" :key="l.t"><a :href="lz(l.h)" class="transition hover:text-white">{{ l.t }}</a></li>
           </ul>
         </div>
 

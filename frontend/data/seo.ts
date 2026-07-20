@@ -51,7 +51,8 @@ export const softwareSchema = {
   description:
     'QR Menu և Online Menu հարթակ ռեստորանների, սրճարանների և սննդի բիզնեսների համար՝ թվային մենյու, 3 լեզու, AI թարգմանություն, հեշտ կառավարում։',
   offers: { '@type': 'Offer', price: '4900', priceCurrency: 'AMD' },
-  aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.8', reviewCount: '320' },
+  // NOTE: no aggregateRating — fabricated review markup risks a Google manual
+  // action. Re-add only with real, verifiable reviews.
 }
 
 export interface FaqItem { q: string; a: string }

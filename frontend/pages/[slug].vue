@@ -114,7 +114,15 @@ useHead(() => {
       { name: 'twitter:title', content: title },
       { name: 'twitter:description', content: desc },
     ],
-    link: [{ rel: 'canonical', href: url }],
+    link: [
+      { rel: 'canonical', href: url },
+      // Tenant-menu display fonts are loaded here (not globally) so marketing
+      // pages stay light. Themes use these serif families.
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Noto+Serif+Armenian:wght@400;500;600;700&display=swap',
+      },
+    ],
     script: ld ? [{ type: 'application/ld+json', innerHTML: JSON.stringify(ld) }] : [],
   }
 })

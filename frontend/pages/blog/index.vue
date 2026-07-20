@@ -1,18 +1,25 @@
 <script setup lang="ts">
 import { publishedArticles, localizeArticle } from '~/data/blog'
-import { SITE } from '~/data/seo'
 
 const { L, lang } = useLandingI18n()
+const { toLocale } = useLocale()
 const articles = computed(() => publishedArticles().map((a) => localizeArticle(a, lang.value)))
-useHead({
-  title: 'Բլոգ — QR Menu, Online Menu և թվային մենյու | menus.am',
-  meta: [
-    { name: 'description', content: 'QR Menu, Online Menu և թվային մենյուի մասին ուղեցույցներ, խորհուրդներ և հոդվածներ՝ menus.am-ի բլոգում։' },
-    { property: 'og:title', content: 'Բլոգ — QR Menu & Online Menu | menus.am' },
-    { property: 'og:type', content: 'website' },
-    { property: 'og:image', content: SITE.ogImage },
-  ],
-  link: [{ rel: 'canonical', href: `${SITE.url}/blog` }],
+// Keep in-page links within the current locale (/ru/blog/… , /en/blog/…).
+const blogPath = (slug: string) => toLocale(`/blog/${slug}`, lang.value)
+
+definePageMeta({ alias: ['/ru/blog', '/en/blog'] })
+useI18nSeo({
+  base: '/blog',
+  title: {
+    hy: 'Բլոգ — QR Menu, Online Menu և թվային մենյու | menus.am',
+    ru: 'Блог — QR-меню, онлайн-меню и цифровое меню | menus.am',
+    en: 'Blog — QR Menu, Online Menu & Digital Menu | menus.am',
+  },
+  description: {
+    hy: 'QR Menu, Online Menu և թվային մենյուի մասին ուղեցույցներ, խորհուրդներ և հոդվածներ՝ menus.am-ի բլոգում։',
+    ru: 'Руководства, советы и статьи о QR-меню, онлайн-меню и цифровом меню в блоге menus.am.',
+    en: 'Guides, tips and articles about QR menus, online menus and digital menus on the menus.am blog.',
+  },
 })
 </script>
 
@@ -30,7 +37,7 @@ useHead({
         <NuxtLink
           v-for="a in articles"
           :key="a.slug"
-          :to="`/blog/${a.slug}`"
+          :to="blogPath(a.slug)"
           class="group flex flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-xl"
         >
           <span class="text-xs font-semibold uppercase tracking-wide text-indigo-500">{{ a.keyword }}</span>

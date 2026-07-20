@@ -76,7 +76,8 @@ model Plan {
   key          String   @unique // 'free' | 'pro' | 'business'
   name         String
   priceMonthly Int      @default(0)
-  maxProducts  Int?
+  maxProducts  Int? // null = unlimited
+  maxCategories Int? // null = unlimited
   maxDomains   Int?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())

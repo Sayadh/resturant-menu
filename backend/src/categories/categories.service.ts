@@ -13,6 +13,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto'
 import { CategoryListQueryDto } from './dto/category-list.query.dto'
 import { ReorderItemDto } from '../common/dto/reorder.dto'
 import { UploadsService } from '../uploads/uploads.service'
+import { PlanLimitsService } from '../common/services/plan-limits.service'
 
 const INCLUDE = { translations: { include: { language: true } } } satisfies Prisma.CategoryInclude
 
@@ -21,6 +22,7 @@ export class CategoriesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly uploads: UploadsService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   async list(restaurantId: string, q: CategoryListQueryDto) {
@@ -80,6 +82,7 @@ export class CategoriesService {
   }
 
   async create(restaurantId: string, dto: CreateCategoryDto) {
+    await this.planLimits.assertCanCreate(restaurantId, 'category')
     await this.ensureSection(restaurantId, dto.sectionId)
     await this.validateParent(restaurantId, dto.parentId, dto.sectionId)
     const translations = await mapTranslations(this.prisma, dto.translations)

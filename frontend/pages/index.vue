@@ -5,14 +5,24 @@
 // modern Inter/dark theme so it never leaks into tenant/admin pages.
 // ─────────────────────────────────────────────────────────────────
 import { websiteSchema, organizationSchema } from '~/data/seo'
-useHead({
-  title: 'QR Menu & Online Menu Platform | menus.am',
-  meta: [
-    { name: 'description', content: 'Ստեղծեք ժամանակակից QR Menu ձեզ համար։ Թվային մենյու, 3 լեզու, AI թարգմանություն, հեշտ կառավարում, Online Menu և QR Code Menu՝ menus.am-ում։' },
-    { name: 'theme-color', content: '#0B1020' },
-  ],
-  link: [{ rel: 'canonical', href: 'https://menus.am' }],
+
+// hy at root, ru → /ru, en → /en (real per-language URLs for SEO).
+definePageMeta({ alias: ['/ru', '/en'] })
+
+useI18nSeo({
+  base: '/',
+  title: {
+    hy: 'QR Menu և Online Menu հարթակ | menus.am',
+    ru: 'Платформа QR-меню и онлайн-меню для ресторанов | menus.am',
+    en: 'QR Menu & Online Menu Platform for Restaurants | menus.am',
+  },
+  description: {
+    hy: 'Ստեղծեք ժամանակակից QR Menu ձեզ համար։ Թվային մենյու, 3 լեզու, AI թարգմանություն, հեշտ կառավարում, Online Menu և QR Code Menu՝ menus.am-ում։',
+    ru: 'Создайте современное QR-меню для ресторана или кафе. Цифровое меню, 3 языка, AI-перевод, простое управление, онлайн-меню и QR-код меню на menus.am.',
+    en: 'Create a modern QR menu for your restaurant or café. Digital menu, 3 languages, AI translation, easy management, online menu and QR code menu on menus.am.',
+  },
 })
+useHead({ meta: [{ name: 'theme-color', content: '#0B1020' }] })
 
 // Structured data — helps Google understand the platform (rich results).
 useJsonLd([websiteSchema, organizationSchema])

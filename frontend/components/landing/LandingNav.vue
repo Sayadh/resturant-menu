@@ -3,13 +3,19 @@
 // and SEO pages, where the transparent hero nav would be invisible).
 const props = defineProps<{ solid?: boolean }>()
 const { L } = useLandingI18n()
+const { locale, toLocale } = useLocale()
+// Home base in the current locale ('' | '/ru' | '/en') so section anchors keep
+// the visitor in their language when navigating from blog/SEO pages.
+const home = computed(() => (locale.value === 'hy' ? '' : `/${locale.value}`))
+const homeHref = computed(() => toLocale('/', locale.value))
 const links = computed(() => [
-  { href: '/#features', label: L.value.nav.features },
-  { href: '/#demo', label: L.value.nav.demo },
-  { href: '/#themes', label: L.value.nav.themes },
-  { href: '/#pricing', label: L.value.nav.pricing },
-  { href: '/#about', label: L.value.nav.about },
+  { href: `${home.value}/#features`, label: L.value.nav.features },
+  { href: `${home.value}/#demo`, label: L.value.nav.demo },
+  { href: `${home.value}/#themes`, label: L.value.nav.themes },
+  { href: `${home.value}/#pricing`, label: L.value.nav.pricing },
+  { href: `${home.value}/#about`, label: L.value.nav.about },
 ])
+const pricingHref = computed(() => `${home.value}/#pricing`)
 
 const { openModal } = useLeadModal()
 const scrolled = ref(false)
@@ -41,7 +47,7 @@ onBeforeUnmount(() => {
     :class="opaque ? 'border-b border-white/10 bg-[#0B1020]/85 backdrop-blur-xl' : 'bg-transparent'"
   >
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-      <a href="/" class="flex items-center gap-2.5 text-white">
+      <a :href="homeHref" class="flex items-center gap-2.5 text-white">
         <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30">
           <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
             <path d="M7.5 23V10.6c0-.9 1.1-1.3 1.7-.6l6.8 7.7 6.8-7.7c.6-.7 1.7-.3 1.7.6V23" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
@@ -71,7 +77,7 @@ onBeforeUnmount(() => {
 
       <div class="flex items-center gap-2 lg:hidden">
         <!-- On light-bg pages (blog, etc.) give a one-tap way to the plans/home. -->
-        <a v-if="solid" href="/#pricing" class="rounded-full bg-gradient-to-r from-indigo-500 to-violet-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-indigo-600/30">{{ L.nav.pricing }}</a>
+        <a v-if="solid" :href="pricingHref" class="rounded-full bg-gradient-to-r from-indigo-500 to-violet-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-md shadow-indigo-600/30">{{ L.nav.pricing }}</a>
         <button class="rounded-lg p-2 text-white ring-1 ring-white/15 touch-manipulation" aria-label="Menu" @click="open = !open">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" /></svg>
         </button>

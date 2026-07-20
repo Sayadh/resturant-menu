@@ -49,7 +49,6 @@ export default defineNuxtConfig({
         // Open Graph / link previews (Telegram, Messenger, Facebook, etc.)
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Menus.am' },
-        { property: 'og:url', content: 'https://menus.am' },
         { property: 'og:title', content: 'QR Menu & Online Menu Platform | menus.am' },
         {
           property: 'og:description',
@@ -72,7 +71,8 @@ export default defineNuxtConfig({
         { name: 'twitter:image', content: 'https://menus.am/og-image.png' },
       ],
       link: [
-        { rel: 'canonical', href: 'https://menus.am' },
+        // NOTE: no global canonical here — each page sets its own self-referencing
+        // canonical (+ hreflang) via useI18nSeo / useHead, avoiding duplicates.
         // Brand favicon (replaces the default browser globe).
         // Google prefers a real .ico/PNG at the root, referenced via rel="icon";
         // the SVG is for modern browsers. Keep them all so every client picks one.
@@ -84,9 +84,13 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        // Global UI font only (landing/blog/SEO/admin). The heavier serif
+        // display families used by tenant menu themes (Cinzel, Cormorant,
+        // Noto Serif Armenian) are loaded ONLY on tenant pages (pages/[slug].vue)
+        // to keep marketing-page LCP fast — Core Web Vitals is a ranking signal.
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600;700;800;900&family=Noto+Serif+Armenian:wght@400;500;600;700&family=Noto+Sans+Armenian:wght@300;400;500;600;700&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Armenian:wght@300;400;500;600;700&display=swap',
         },
       ],
     },

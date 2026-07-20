@@ -9,30 +9,26 @@ const props = defineProps<{ slug: string }>()
 const page = seoPages[props.slug]
 const { openModal } = useLeadModal()
 const { L, lang } = useLandingI18n()
-const url = `${SITE.url}/${props.slug}`
-// Visible content follows the selected language; <head>/JSON-LD stay Armenian (SEO).
-const view = computed(() => localizeSeoPage(page, lang.value))
+const { toLocale, absolute } = useLocale()
 
-useHead({
-  title: page.title,
-  meta: [
-    { name: 'description', content: page.description },
-    { property: 'og:type', content: 'website' },
-    { property: 'og:title', content: page.title },
-    { property: 'og:description', content: page.description },
-    { property: 'og:url', content: url },
-    { property: 'og:image', content: SITE.ogImage },
-    { name: 'twitter:card', content: 'summary_large_image' },
-  ],
-  link: [{ rel: 'canonical', href: url }],
-})
+// Per-locale content so each language URL carries its own localized <head>.
+const byLocale = { hy: localizeSeoPage(page, 'hy'), ru: localizeSeoPage(page, 'ru'), en: localizeSeoPage(page, 'en') }
+const view = computed(() => byLocale[lang.value])
+const canonicalUrl = computed(() => absolute(toLocale(`/${props.slug}`, lang.value)))
+const pricingHref = computed(() => (lang.value === 'hy' ? '/#pricing' : `/${lang.value}#pricing`))
 
-useJsonLd([
+useI18nSeo(() => ({
+  base: `/${props.slug}`,
+  title: { hy: byLocale.hy.title, ru: byLocale.ru.title, en: byLocale.en.title },
+  description: { hy: byLocale.hy.description, ru: byLocale.ru.description, en: byLocale.en.description },
+}))
+
+useJsonLd(() => [
   softwareSchema,
-  faqSchema(page.faq),
+  faqSchema(view.value.faq),
   breadcrumbSchema([
-    { name: 'Գլխավոր', url: SITE.url },
-    { name: page.keyword, url },
+    { name: 'Գլխավոր', url: absolute(toLocale('/', lang.value)) },
+    { name: view.value.keyword, url: canonicalUrl.value },
   ]),
 ])
 </script>
@@ -53,7 +49,7 @@ useJsonLd([
           <p class="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">{{ view.intro }}</p>
           <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
             <button type="button" class="rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 px-6 py-3.5 text-sm font-semibold shadow-xl shadow-indigo-600/30 transition hover:-translate-y-0.5" @click="openModal(view.keyword)">{{ L.hero.start }}</button>
-            <NuxtLink to="/#pricing" class="rounded-2xl px-6 py-3.5 text-sm font-semibold text-slate-200 ring-1 ring-white/15 transition hover:bg-white/5">{{ L.pricing.view }}</NuxtLink>
+            <NuxtLink :to="pricingHref" class="rounded-2xl px-6 py-3.5 text-sm font-semibold text-slate-200 ring-1 ring-white/15 transition hover:bg-white/5">{{ L.pricing.view }}</NuxtLink>
           </div>
         </div>
       </section>

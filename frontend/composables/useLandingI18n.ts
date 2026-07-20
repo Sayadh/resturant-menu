@@ -433,27 +433,18 @@ const dict: Record<LandingLang, Dict> = {
 }
 
 /**
- * Landing language state (client-side switch; SSR stays 'hy' for SEO).
- * Persisted to localStorage so the choice survives navigation/reload.
+ * Landing language, driven by the URL locale (hy at root, `/ru`, `/en`).
+ * This makes every language a distinct, SSR-rendered, crawlable URL — real
+ * multi-language SEO — while switching languages simply navigates to the
+ * localized path (which also gives users shareable per-language links).
  */
 export function useLandingI18n() {
   const langs: LandingLang[] = ['hy', 'ru', 'en']
-  // Persist the choice in a COOKIE, not localStorage. useCookie is read on the
-  // SERVER during SSR, so the very first paint already renders the visitor's
-  // language — no Armenian-then-Russian flash, no hydration mismatch. Crawlers
-  // (Googlebot) send no cookie → they still get the 'hy' default, so SEO is safe.
-  const cookie = useCookie<LandingLang>('menus-landing-lang', {
-    default: () => 'hy',
-    maxAge: 60 * 60 * 24 * 365,
-    sameSite: 'lax',
-    path: '/',
-  })
-  const initial = langs.includes(cookie.value as LandingLang) ? (cookie.value as LandingLang) : 'hy'
-  const lang = useState<LandingLang>('landing-lang', () => initial)
+  const { locale, basePath, toLocale } = useLocale()
+  const lang = locale // Locale ('hy'|'ru'|'en') is identical to LandingLang
   const L = computed(() => dict[lang.value])
   const setLang = (l: LandingLang) => {
-    lang.value = l
-    cookie.value = l
+    if (l !== lang.value) navigateTo(toLocale(basePath.value, l))
   }
   return { lang, L, langs, setLang }
 }

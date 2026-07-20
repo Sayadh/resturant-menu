@@ -87,6 +87,32 @@ const refresh = async () => {
   }
 }
 
+// ── plan limits (Starter caps products/categories; Pro/Business unlimited) ──
+// Backend is the source of truth; this drives the proactive UI + upgrade dialog.
+const productLimit = computed(() => restaurant.value.maxProducts ?? null)
+const categoryLimit = computed(() => restaurant.value.maxCategories ?? null)
+const atProductLimit = computed(() => productLimit.value != null && products.value.length >= productLimit.value)
+const atCategoryLimit = computed(() => categoryLimit.value != null && categories.value.length >= categoryLimit.value)
+
+// Human-readable plan name for the dashboard badge.
+const PLAN_NAMES: Record<string, string> = { free: 'Starter', pro: 'Professional', business: 'Business' }
+const planName = computed(() => PLAN_NAMES[restaurant.value.planKey ?? 'free'] ?? 'Starter')
+const isPaidPlan = computed(() => (restaurant.value.planKey ?? 'free') !== 'free')
+
+const upgrade = reactive({ open: false, resource: 'product' as 'product' | 'category', limit: 0 })
+const openUpgrade = (resource: 'product' | 'category', limit: number) => {
+  Object.assign(upgrade, { open: true, resource, limit })
+}
+// Safety net: if the backend rejects a create with the plan-limit code
+// (e.g. stale counts / race), turn it into the same upgrade dialog.
+const handleLimitError = (e: unknown, resource: 'product' | 'category', limit: number | null) => {
+  if ((e as Error)?.message === 'PLAN_LIMIT_REACHED') {
+    openUpgrade(resource, limit ?? 0)
+    return true
+  }
+  return false
+}
+
 // ── super-admin (platform) ──────────────────────────────────────
 const saRestaurants = ref<AdminRestaurantRow[]>([])
 const saForm = reactive({ slug: '', name: '', themeKey: 'aria', defaultLang: 'hy', ownerEmail: '', ownerPassword: '' })
@@ -274,10 +300,6 @@ const categoryName = (id: string) => {
   return c ? trLabel(c.name) : '—'
 }
 const publicUrl = computed(() => `https://menus.am/${restaurant.value.slug}`)
-const qrImage = computed(
-  () =>
-    `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=${encodeURIComponent(publicUrl.value)}`,
-)
 
 // ── filters ────────────────────────────────────────────────────
 const menuSection = ref<string>('') // active section id
@@ -321,6 +343,10 @@ const catDraft = reactive<CategoryDraft>({
 const openAddCategory = () => {
   if (!menuSection.value) {
     flash('Նախ ստեղծիր բաժին')
+    return
+  }
+  if (atCategoryLimit.value) {
+    openUpgrade('category', categoryLimit.value!)
     return
   }
   Object.assign(catDraft, {
@@ -368,6 +394,7 @@ const submitCategory = async () => {
     flash(t('saved'))
     await refresh().catch(() => {}) // a refresh hiccup must not hide a successful save
   } catch (e) {
+    if (handleLimitError(e, 'category', categoryLimit.value)) { catModal.open = false; return }
     flash((e as Error)?.message || 'Չհաջողվեց պահպանել կատեգորիան')
   } finally {
     busy.value = false
@@ -458,6 +485,10 @@ const prodDraft = reactive<ProductDraft>({
   sortOrder: 0,
 })
 const openAddProduct = () => {
+  if (atProductLimit.value) {
+    openUpgrade('product', productLimit.value!)
+    return
+  }
   const firstCat = categories.value[0]
   Object.assign(prodDraft, {
     categoryId: firstCat?.id ?? '',
@@ -522,6 +553,7 @@ const submitProduct = async () => {
     flash(t('saved'))
     await refresh().catch(() => {})
   } catch (e) {
+    if (handleLimitError(e, 'product', productLimit.value)) { prodModal.open = false; return }
     flash((e as Error)?.message || 'Չհաջողվեց պահպանել ապրանքը')
   } finally {
     busy.value = false
@@ -535,6 +567,9 @@ const firstFilled = (tr: { hy: string; ru: string; en: string }): 'hy' | 'ru' | 
   for (const l of ['hy', 'ru', 'en'] as const) if (tr[l]?.trim()) return l
   return null
 }
+// Only fill languages the restaurant actually uses.
+const activeLangCodes = () =>
+  (['hy', 'ru', 'en'] as const).filter((l) => restaurant.value.activeLanguages.includes(l))
 const aiTranslateField = async (field: 'name' | 'description') => {
   const tr = prodDraft[field]
   const src = firstFilled(tr)
@@ -542,7 +577,8 @@ const aiTranslateField = async (field: 'name' | 'description') => {
     flash(t('aiNeedText'))
     return
   }
-  const targets = (['hy', 'ru', 'en'] as const).filter((l) => l !== src)
+  const targets = activeLangCodes().filter((l) => l !== src)
+  if (!targets.length) return
   aiBusy.value = true
   try {
     const out = await aiService.translate(tr[src], src, [...targets])
@@ -564,8 +600,9 @@ const aiDescribe = async () => {
   }
   aiBusy.value = true
   try {
-    const out = await aiService.describe(prodDraft.name[src], ['hy', 'ru', 'en'])
-    for (const l of ['hy', 'ru', 'en'] as const) if (out[l]) prodDraft.description[l] = out[l]
+    const targets = activeLangCodes()
+    const out = await aiService.describe(prodDraft.name[src], [...targets])
+    for (const l of targets) if (out[l]) prodDraft.description[l] = out[l]
     flash(t('aiDone'))
   } catch (e) {
     flash((e as Error)?.message || t('aiFailed'))
@@ -696,11 +733,68 @@ const LANGS: { code: LangCode; label: string }[] = [
   { code: 'en', label: 'English' },
   { code: 'ru', label: 'Русский' },
 ]
+
+// Per-language metadata for the multilingual editors. All translated inputs
+// iterate `formLangs` so disabling a language in Settings removes its fields
+// everywhere in the admin (tagline, sections, categories, products).
+type LangPh = 'tagline' | 'secName' | 'catName' | 'catDesc' | 'prodName' | 'prodDesc'
+const LANG_META: Record<LangCode, { code: LangCode; tag: string; ph: Record<LangPh, string> }> = {
+  hy: {
+    code: 'hy', tag: '🇦🇲 Հայ',
+    ph: {
+      tagline: 'Tagline (HY)',
+      secName: 'Բաժնի անվանումը հայերեն',
+      catName: 'Անվանումը հայերեն',
+      catDesc: 'Կարճ նկարագրություն հայերեն',
+      prodName: 'Ուտեստի անվանումը հայերեն',
+      prodDesc: 'Բաղադրություն / նկարագրություն հայերեն',
+    },
+  },
+  ru: {
+    code: 'ru', tag: '🇷🇺 Рус',
+    ph: {
+      tagline: 'Tagline (RU)',
+      secName: 'Название раздела по-русски',
+      catName: 'Название по-русски',
+      catDesc: 'Краткое описание по-русски',
+      prodName: 'Название блюда по-русски',
+      prodDesc: 'Состав / описание по-русски',
+    },
+  },
+  en: {
+    code: 'en', tag: '🇬🇧 Eng',
+    ph: {
+      tagline: 'Tagline (EN)',
+      secName: 'Section name in English',
+      catName: 'Name in English',
+      catDesc: 'Short description in English',
+      prodName: 'Dish name in English',
+      prodDesc: 'Ingredients / description in English',
+    },
+  },
+}
+// Enabled languages in canonical display order (hy → ru → en).
+const formLangs = computed(() =>
+  (['hy', 'ru', 'en'] as LangCode[])
+    .filter((c) => restaurant.value.activeLanguages.includes(c))
+    .map((c) => LANG_META[c]),
+)
 const toggleLang = (code: LangCode) => {
   const langs = restaurant.value.activeLanguages
-  restaurant.value.activeLanguages = langs.includes(code)
-    ? langs.filter((l) => l !== code)
-    : [...langs, code]
+  if (langs.includes(code)) {
+    if (langs.length === 1) return // always keep at least one language
+    restaurant.value.activeLanguages = langs.filter((l) => l !== code)
+    // If we removed the default, reassign it to the first remaining language.
+    if (restaurant.value.defaultLanguage === code) {
+      restaurant.value.defaultLanguage = restaurant.value.activeLanguages[0]
+    }
+  } else {
+    // Preserve canonical hy/en/ru order when re-adding.
+    const order: LangCode[] = ['hy', 'en', 'ru']
+    restaurant.value.activeLanguages = order.filter(
+      (l) => l === code || langs.includes(l),
+    )
+  }
 }
 const copyLink = async () => {
   try {
@@ -951,6 +1045,48 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
               <p class="mt-1 text-2xl font-bold capitalize text-slate-900">{{ restaurant.themeId }}</p>
             </div>
           </div>
+
+          <!-- Current plan + usage -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <p class="text-xs text-slate-500">{{ t('plan') }}</p>
+                <span
+                  class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold"
+                  :class="isPaidPlan ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white' : 'bg-slate-100 text-slate-700'"
+                >
+                  <span v-if="isPaidPlan">★</span>{{ planName }}
+                </span>
+              </div>
+              <a
+                v-if="!isPaidPlan"
+                href="mailto:menusam9995@gmail.com?subject=Professional%20plan%20upgrade"
+                class="text-sm font-semibold text-indigo-600 hover:underline"
+              >{{ t('limitUpgradeCta') }}</a>
+            </div>
+
+            <!-- Usage bars only where the plan caps apply (Starter). -->
+            <div v-if="productLimit != null || categoryLimit != null" class="mt-4 grid gap-4 sm:grid-cols-2">
+              <div v-if="productLimit != null">
+                <div class="flex justify-between text-xs font-medium text-slate-500">
+                  <span>{{ t('products') }}</span>
+                  <span :class="atProductLimit ? 'text-amber-600' : ''">{{ products.length }} / {{ productLimit }}</span>
+                </div>
+                <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div class="h-full rounded-full transition-all" :class="atProductLimit ? 'bg-amber-500' : 'bg-indigo-500'" :style="{ width: Math.min(100, (products.length / productLimit) * 100) + '%' }" />
+                </div>
+              </div>
+              <div v-if="categoryLimit != null">
+                <div class="flex justify-between text-xs font-medium text-slate-500">
+                  <span>{{ t('categoriesCount') }}</span>
+                  <span :class="atCategoryLimit ? 'text-amber-600' : ''">{{ categories.length }} / {{ categoryLimit }}</span>
+                </div>
+                <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div class="h-full rounded-full transition-all" :class="atCategoryLimit ? 'bg-amber-500' : 'bg-indigo-500'" :style="{ width: Math.min(100, (categories.length / categoryLimit) * 100) + '%' }" />
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="rounded-xl border border-slate-200 bg-white p-4">
             <p class="text-xs text-slate-500">{{ t('qrMenuLink') }}</p>
             <div class="mt-1 flex items-center gap-3">
@@ -991,11 +1127,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
               </div>
             </div>
             <label class="block"><span class="lbl">Name</span><input v-model="restaurant.name" class="inp" /></label>
-            <label class="block"><span class="lbl">Tagline (HY)</span><input v-model="restaurant.tagline.hy" class="inp" /></label>
-            <div class="grid grid-cols-2 gap-4">
-              <label class="block"><span class="lbl">Tagline (EN)</span><input v-model="restaurant.tagline.en" class="inp" /></label>
-              <label class="block"><span class="lbl">Tagline (RU)</span><input v-model="restaurant.tagline.ru" class="inp" /></label>
-            </div>
+            <label v-for="l in formLangs" :key="l.code" class="block"><span class="lbl">{{ l.ph.tagline }}</span><input v-model="restaurant.tagline[l.code]" class="inp" /></label>
             <label class="block"><span class="lbl">Working hours</span><input v-model="restaurant.workingHours" class="inp" /></label>
             <label class="block"><span class="lbl">Address</span><input v-model="restaurant.address" class="inp" /></label>
             <label class="block"><span class="lbl">Rating</span><input v-model.number="restaurant.rating" type="number" step="0.1" class="inp" /></label>
@@ -1007,7 +1139,8 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         <section v-else-if="active === 'menu'" class="space-y-5">
           <div class="flex items-center justify-between">
             <h1 class="text-xl font-bold text-slate-900">{{ t('menuBuilder') }}</h1>
-            <div class="flex gap-2">
+            <div class="flex items-center gap-2">
+              <span v-if="categoryLimit != null" class="mr-1 text-xs font-medium" :class="atCategoryLimit ? 'text-amber-600' : 'text-slate-400'">{{ t('limitUsage') }}: {{ categories.length }} / {{ categoryLimit }}</span>
               <button class="btn-ghost" @click="openAddSection">{{ t('addSection') }}</button>
               <button class="btn-primary" :disabled="!sections.length" @click="openAddCategory">{{ t('addCategory') }}</button>
             </div>
@@ -1057,7 +1190,10 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         <section v-else-if="active === 'products'" class="space-y-5">
           <div class="flex items-center justify-between">
             <h1 class="text-xl font-bold text-slate-900">{{ t('products') }}</h1>
-            <button class="btn-primary" @click="openAddProduct">{{ t('addProduct') }}</button>
+            <div class="flex items-center gap-3">
+              <span v-if="productLimit != null" class="text-xs font-medium" :class="atProductLimit ? 'text-amber-600' : 'text-slate-400'">{{ t('limitUsage') }}: {{ products.length }} / {{ productLimit }}</span>
+              <button class="btn-primary" @click="openAddProduct">{{ t('addProduct') }}</button>
+            </div>
           </div>
           <div class="flex flex-wrap items-center gap-2">
             <select v-model="prodSection" class="inp w-auto">
@@ -1146,7 +1282,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             <label class="block">
               <span class="lbl">Default language</span>
               <select v-model="restaurant.defaultLanguage" class="inp">
-                <option v-for="l in LANGS" :key="l.code" :value="l.code">{{ l.label }}</option>
+                <option v-for="l in LANGS.filter((x) => restaurant.activeLanguages.includes(x.code))" :key="l.code" :value="l.code">{{ l.label }}</option>
               </select>
             </label>
             <div>
@@ -1161,15 +1297,16 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         </section>
 
         <!-- QR -->
-        <section v-else-if="active === 'qr'" class="max-w-xl space-y-5">
+        <section v-else-if="active === 'qr'" class="max-w-3xl space-y-5">
           <h1 class="text-xl font-bold text-slate-900">QR Code</h1>
-          <div class="space-y-4 rounded-xl border border-slate-200 bg-white p-5 text-center">
-            <img :src="qrImage" alt="QR" class="mx-auto h-52 w-52 rounded-lg border border-slate-200" />
-            <code class="block truncate text-sm text-slate-700">{{ publicUrl }}</code>
-            <div class="flex justify-center gap-2">
-              <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50" @click="copyLink">Copy link</button>
-              <a :href="qrImage" download="qr.png" target="_blank" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">Download QR</a>
+          <div class="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
+            <div class="flex items-center gap-2">
+              <code class="flex-1 truncate rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">{{ publicUrl }}</code>
+              <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50" @click="copyLink">{{ t('copy') }}</button>
             </div>
+            <ClientOnly>
+              <AdminQrCode :url="publicUrl" :logo="restaurant.logo" :restaurant-id="restaurant.id" />
+            </ClientOnly>
           </div>
         </section>
 
@@ -1226,17 +1363,13 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
           <p class="lbl mb-2">{{ t('nameTranslations') }}</p>
           <div class="space-y-2">
-            <div class="flex items-center gap-2"><span class="tl-tag">🇦🇲 Հայ</span><input v-model="catDraft.name.hy" class="inp" placeholder="Անվանումը հայերեն" /></div>
-            <div class="flex items-center gap-2"><span class="tl-tag">🇷🇺 Рус</span><input v-model="catDraft.name.ru" class="inp" placeholder="Название по-русски" /></div>
-            <div class="flex items-center gap-2"><span class="tl-tag">🇬🇧 Eng</span><input v-model="catDraft.name.en" class="inp" placeholder="Name in English" /></div>
+            <div v-for="l in formLangs" :key="l.code" class="flex items-center gap-2"><span class="tl-tag">{{ l.tag }}</span><input v-model="catDraft.name[l.code]" class="inp" :placeholder="l.ph.catName" /></div>
           </div>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
           <p class="lbl mb-2">{{ t('descTranslations') }} <span class="font-normal text-slate-400">({{ t('optional') }})</span></p>
           <div class="space-y-2">
-            <div class="flex items-center gap-2"><span class="tl-tag">🇦🇲 Հայ</span><input v-model="catDraft.description.hy" class="inp" placeholder="Կարճ նկարագրություն հայերեն" /></div>
-            <div class="flex items-center gap-2"><span class="tl-tag">🇷🇺 Рус</span><input v-model="catDraft.description.ru" class="inp" placeholder="Краткое описание по-русски" /></div>
-            <div class="flex items-center gap-2"><span class="tl-tag">🇬🇧 Eng</span><input v-model="catDraft.description.en" class="inp" placeholder="Short description in English" /></div>
+            <div v-for="l in formLangs" :key="l.code" class="flex items-center gap-2"><span class="tl-tag">{{ l.tag }}</span><input v-model="catDraft.description[l.code]" class="inp" :placeholder="l.ph.catDesc" /></div>
           </div>
         </div>
         <label class="flex items-center justify-between text-sm"><span>{{ t('active') }}</span><input v-model="catDraft.active" type="checkbox" class="h-4 w-4" /></label>
@@ -1268,9 +1401,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
           <p class="lbl mb-2">{{ t('nameTranslations') }}</p>
           <div class="space-y-2">
-            <div class="flex items-center gap-2"><span class="tl-tag">🇦🇲 Հայ</span><input v-model="secDraft.name.hy" class="inp" placeholder="Բաժնի անվանումը հայերեն" /></div>
-            <div class="flex items-center gap-2"><span class="tl-tag">🇷🇺 Рус</span><input v-model="secDraft.name.ru" class="inp" placeholder="Название раздела по-русски" /></div>
-            <div class="flex items-center gap-2"><span class="tl-tag">🇬🇧 Eng</span><input v-model="secDraft.name.en" class="inp" placeholder="Section name in English" /></div>
+            <div v-for="l in formLangs" :key="l.code" class="flex items-center gap-2"><span class="tl-tag">{{ l.tag }}</span><input v-model="secDraft.name[l.code]" class="inp" :placeholder="l.ph.secName" /></div>
           </div>
         </div>
         <label class="flex items-center justify-between text-sm"><span>{{ t('active') }}</span><input v-model="secDraft.active" type="checkbox" class="h-4 w-4" /></label>
@@ -1295,9 +1426,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             <button v-if="aiEnabled" type="button" class="ai-btn" :disabled="aiBusy" @click="aiTranslateName">🌍 {{ aiBusy ? t('aiWorking') : t('aiTranslate') }}</button>
           </div>
           <div class="space-y-2">
-            <div class="flex items-center gap-2"><span class="tl-tag">🇦🇲 Հայ</span><input v-model="prodDraft.name.hy" class="inp" placeholder="Ուտեստի անվանումը հայերեն" /></div>
-            <div class="flex items-center gap-2"><span class="tl-tag">🇷🇺 Рус</span><input v-model="prodDraft.name.ru" class="inp" placeholder="Название блюда по-русски" /></div>
-            <div class="flex items-center gap-2"><span class="tl-tag">🇬🇧 Eng</span><input v-model="prodDraft.name.en" class="inp" placeholder="Dish name in English" /></div>
+            <div v-for="l in formLangs" :key="l.code" class="flex items-center gap-2"><span class="tl-tag">{{ l.tag }}</span><input v-model="prodDraft.name[l.code]" class="inp" :placeholder="l.ph.prodName" /></div>
           </div>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
@@ -1309,9 +1438,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             </div>
           </div>
           <div class="space-y-2">
-            <div class="flex items-center gap-2"><span class="tl-tag">🇦🇲 Հայ</span><input v-model="prodDraft.description.hy" class="inp" placeholder="Բաղադրություն / նկարագրություն հայերեն" /></div>
-            <div class="flex items-center gap-2"><span class="tl-tag">🇷🇺 Рус</span><input v-model="prodDraft.description.ru" class="inp" placeholder="Состав / описание по-русски" /></div>
-            <div class="flex items-center gap-2"><span class="tl-tag">🇬🇧 Eng</span><input v-model="prodDraft.description.en" class="inp" placeholder="Ingredients / description in English" /></div>
+            <div v-for="l in formLangs" :key="l.code" class="flex items-center gap-2"><span class="tl-tag">{{ l.tag }}</span><input v-model="prodDraft.description[l.code]" class="inp" :placeholder="l.ph.prodDesc" /></div>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
@@ -1410,6 +1537,25 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           :disabled="confirmState.busy"
           @click="runConfirm"
         >{{ confirmState.busy ? t('deleting') : t('delete') }}</button>
+      </template>
+    </AdminModal>
+
+    <!-- Plan-limit upgrade dialog -->
+    <AdminModal v-if="upgrade.open" :title="t('limitTitle')" @close="upgrade.open = false">
+      <div class="flex items-start gap-3">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-xl">⚡</div>
+        <p class="pt-1.5 text-sm leading-relaxed text-slate-600">
+          {{ t('limitLead') }} <strong class="text-slate-900">{{ upgrade.limit }} {{ upgrade.resource === 'product' ? t('limitProductsWord') : t('limitCategoriesWord') }}</strong>.
+          {{ t('limitUpsell') }}
+        </p>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" @click="upgrade.open = false">{{ t('cancel') }}</button>
+        <a
+          href="mailto:menusam9995@gmail.com?subject=Professional%20plan%20upgrade"
+          class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5"
+          @click="upgrade.open = false"
+        >{{ t('limitUpgradeCta') }}</a>
       </template>
     </AdminModal>
   </div>

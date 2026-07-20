@@ -135,6 +135,9 @@ export interface Restaurant {
   activeLanguages: LangCode[]
   /** Subscription tier (set by super-admin). Gates paid features like AI. */
   planKey?: PlanKey
+  /** Plan limits (null = unlimited). Mirrored from the backend plan. */
+  maxProducts?: number | null
+  maxCategories?: number | null
 }
 
 export type PlanKey = 'free' | 'pro' | 'business'

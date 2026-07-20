@@ -314,8 +314,10 @@ export interface ApiAdminRestaurant {
   coverImageUrl: string | null
   currency: string
   theme: { id: string; key: string } | null
-  plan?: { key: string } | null
+  plan?: { key: string; maxProducts?: number | null; maxCategories?: number | null } | null
   translations?: { tagline: string | null; language: { code: string } }[]
+  languages?: { isDefault: boolean; language: { code: string } }[]
+  defaultLanguage?: { code: string } | null
 }
 
 export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
@@ -324,6 +326,11 @@ export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
     const k = t.language.code as keyof Translation
     if (k in tagline) tagline[k] = t.tagline ?? ''
   }
+  const codes = (r.languages ?? [])
+    .map((l) => l.language.code)
+    .filter((c) => ['hy', 'en', 'ru'].includes(c)) as LangCode[]
+  const def = (r.defaultLanguage?.code
+    ?? r.languages?.find((l) => l.isDefault)?.language.code) as LangCode | undefined
   return {
     id: r.id,
     name: r.name,
@@ -335,9 +342,11 @@ export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
     address: r.address ?? '',
     workingHours: r.workingHoursText ?? '',
     rating: r.rating ?? 0,
-    defaultLanguage: 'hy',
-    activeLanguages: ['hy', 'en', 'ru'],
+    defaultLanguage: def ?? codes[0] ?? 'hy',
+    activeLanguages: codes.length ? codes : ['hy'],
     planKey: (r.plan?.key as Restaurant['planKey']) ?? 'free',
+    maxProducts: r.plan?.maxProducts ?? null,
+    maxCategories: r.plan?.maxCategories ?? null,
   }
 }
 
@@ -351,6 +360,8 @@ export function restaurantPatchToDto(patch: Partial<Restaurant>) {
   if (patch.logo !== undefined) dto.logoUrl = patch.logo || undefined
   if (patch.coverImage !== undefined) dto.coverImageUrl = patch.coverImage || undefined
   if (patch.tagline !== undefined) dto.tagline = patch.tagline
+  if (patch.activeLanguages !== undefined) dto.activeLanguages = patch.activeLanguages
+  if (patch.defaultLanguage !== undefined) dto.defaultLanguage = patch.defaultLanguage
   return dto
 }
 
