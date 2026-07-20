@@ -5,6 +5,7 @@ export interface LeadInput {
   name?: string
   message?: string
   plan?: string
+  kind?: 'contact' | 'upgrade'
   website?: string // honeypot
 }
 

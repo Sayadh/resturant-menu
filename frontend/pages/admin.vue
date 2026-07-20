@@ -18,6 +18,7 @@ import {
 } from '~/services'
 import type { ThemeId } from '~/models/types'
 import { superAdminService, type AdminRestaurantRow } from '~/services/superAdminService'
+import { leadService } from '~/services/leadService'
 
 // The admin manages exactly one restaurant — the signed-in owner's tenant.
 // The id/slug are NEVER hardcoded; they come from the loaded restaurant
@@ -102,6 +103,47 @@ const isPaidPlan = computed(() => (restaurant.value.planKey ?? 'free') !== 'free
 const upgrade = reactive({ open: false, resource: 'product' as 'product' | 'category', limit: 0 })
 const openUpgrade = (resource: 'product' | 'category', limit: number) => {
   Object.assign(upgrade, { open: true, resource, limit })
+}
+
+// Plans the current tier can upgrade to (Starter → Professional/Business, etc.).
+const upgradeTargets = computed(() => {
+  const key = restaurant.value.planKey ?? 'free'
+  if (key === 'free') return ['Professional', 'Business']
+  if (key === 'pro') return ['Business']
+  return []
+})
+const planChangeLabel = computed(() => `${planName.value} → ${upgradeReq.target}`)
+
+// In-app plan-upgrade request → Telegram (via the shared lead endpoint).
+const upgradeReq = reactive({ open: false, org: '', phone: '', target: 'Professional', busy: false })
+const openUpgradeRequest = () => {
+  upgrade.open = false // close the limit dialog if it was open
+  Object.assign(upgradeReq, {
+    open: true,
+    org: restaurant.value.name || '',
+    phone: '',
+    target: upgradeTargets.value[0] ?? 'Professional',
+    busy: false,
+  })
+}
+const submitUpgradeRequest = async () => {
+  // Error/validation alerts stay in Armenian regardless of admin UI language.
+  if (!upgradeReq.phone.trim()) { flash('Հեռախոսահամարը պարտադիր է'); return }
+  upgradeReq.busy = true
+  try {
+    await leadService.submit({
+      kind: 'upgrade',
+      name: upgradeReq.org.trim() || restaurant.value.name,
+      phone: upgradeReq.phone.trim(),
+      plan: planChangeLabel.value,
+    })
+    upgradeReq.open = false
+    flash('Հայտն ուղարկված է ✅')
+  } catch {
+    flash('Չհաջողվեց ուղարկել հայտը, փորձեք կրկին')
+  } finally {
+    upgradeReq.busy = false
+  }
 }
 // Safety net: if the backend rejects a create with the plan-limit code
 // (e.g. stale counts / race), turn it into the same upgrade dialog.
@@ -1030,11 +1072,15 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <div class="rounded-xl border border-slate-200 bg-white p-4">
               <p class="text-xs text-slate-500">{{ t('totalProducts') }}</p>
-              <p class="mt-1 text-2xl font-bold text-slate-900">{{ stats.products }}</p>
+              <p class="mt-1 text-2xl font-bold text-slate-900">
+                {{ stats.products }}<span v-if="productLimit != null" class="text-base font-semibold" :class="atProductLimit ? 'text-amber-600' : 'text-slate-400'"> / {{ productLimit }}</span>
+              </p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-4">
               <p class="text-xs text-slate-500">{{ t('categoriesCount') }}</p>
-              <p class="mt-1 text-2xl font-bold text-slate-900">{{ stats.categories }}</p>
+              <p class="mt-1 text-2xl font-bold text-slate-900">
+                {{ stats.categories }}<span v-if="categoryLimit != null" class="text-base font-semibold" :class="atCategoryLimit ? 'text-amber-600' : 'text-slate-400'"> / {{ categoryLimit }}</span>
+              </p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-4">
               <p class="text-xs text-slate-500">{{ t('available') }}</p>
@@ -1058,11 +1104,12 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                   <span v-if="isPaidPlan">★</span>{{ planName }}
                 </span>
               </div>
-              <a
-                v-if="!isPaidPlan"
-                href="mailto:menusam9995@gmail.com?subject=Professional%20plan%20upgrade"
+              <button
+                v-if="restaurant.planKey !== 'business'"
+                type="button"
                 class="text-sm font-semibold text-indigo-600 hover:underline"
-              >{{ t('limitUpgradeCta') }}</a>
+                @click="openUpgradeRequest()"
+              >{{ t('limitUpgradeCta') }}</button>
             </div>
 
             <!-- Usage bars only where the plan caps apply (Starter). -->
@@ -1551,11 +1598,41 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
       </div>
       <template #footer>
         <button class="btn-ghost" @click="upgrade.open = false">{{ t('cancel') }}</button>
-        <a
-          href="mailto:menusam9995@gmail.com?subject=Professional%20plan%20upgrade"
+        <button
+          type="button"
           class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5"
-          @click="upgrade.open = false"
-        >{{ t('limitUpgradeCta') }}</a>
+          @click="openUpgradeRequest()"
+        >{{ t('limitUpgradeCta') }}</button>
+      </template>
+    </AdminModal>
+
+    <!-- Plan-upgrade request form → Telegram -->
+    <AdminModal v-if="upgradeReq.open" :title="t('upgradeReqTitle')" @close="upgradeReq.open = false">
+      <div class="space-y-4">
+        <p class="text-sm text-slate-500">{{ t('upgradeReqHint') }}</p>
+        <label class="block">
+          <span class="lbl">{{ t('orgName') }}</span>
+          <input v-model="upgradeReq.org" class="inp" :placeholder="t('orgName')" />
+        </label>
+        <label class="block">
+          <span class="lbl">{{ t('phone') }} *</span>
+          <input v-model="upgradeReq.phone" class="inp" type="tel" placeholder="+374 ..." />
+        </label>
+        <label class="block">
+          <span class="lbl">{{ t('planChange') }}</span>
+          <select v-model="upgradeReq.target" class="inp">
+            <option v-for="p in upgradeTargets" :key="p" :value="p">{{ planName }} → {{ p }}</option>
+          </select>
+        </label>
+      </div>
+      <template #footer>
+        <button class="btn-ghost" :disabled="upgradeReq.busy" @click="upgradeReq.open = false">{{ t('cancel') }}</button>
+        <button
+          type="button"
+          class="rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 disabled:opacity-50"
+          :disabled="upgradeReq.busy"
+          @click="submitUpgradeRequest"
+        >{{ upgradeReq.busy ? t('saving') : t('sendRequest') }}</button>
       </template>
     </AdminModal>
   </div>

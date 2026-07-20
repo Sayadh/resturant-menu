@@ -26,6 +26,12 @@ export class RestaurantService {
       include: this.include,
     })
     if (!restaurant) throw new NotFoundException('Restaurant not found')
+    // Unassigned restaurants fall back to the Starter (free) plan so the admin
+    // shows the right plan + limits and enforcement stays consistent.
+    if (!restaurant.plan) {
+      const free = await this.prisma.plan.findUnique({ where: { key: 'free' } })
+      if (free) (restaurant as { plan: unknown }).plan = free
+    }
     return restaurant
   }
 

@@ -18,10 +18,14 @@ export class PlanLimitsService {
       where: { id: restaurantId },
       select: { plan: { select: { maxProducts: true, maxCategories: true } } },
     })
-    const limit = resource === 'product'
-      ? restaurant?.plan?.maxProducts
-      : restaurant?.plan?.maxCategories
-    if (limit == null) return // no plan or unlimited
+    // Unassigned restaurants default to the Starter (free) plan's limits.
+    const plan = restaurant?.plan
+      ?? (await this.prisma.plan.findUnique({
+        where: { key: 'free' },
+        select: { maxProducts: true, maxCategories: true },
+      }))
+    const limit = resource === 'product' ? plan?.maxProducts : plan?.maxCategories
+    if (limit == null) return // unlimited
 
     const count = resource === 'product'
       ? await this.prisma.product.count({ where: { restaurantId, deletedAt: null } })

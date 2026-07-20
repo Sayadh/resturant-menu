@@ -24,9 +24,10 @@ export class LeadService {
       throw new ServiceUnavailableException('Contact channel is not configured yet')
     }
 
+    const isUpgrade = dto.kind === 'upgrade'
     const lines = [
-      '🆕 <b>Նոր հայտ — QR Menu</b>',
-      dto.name ? `👤 ${this.esc(dto.name)}` : null,
+      isUpgrade ? '⬆️ <b>Փաթեթի փոփոխման հայտ</b>' : '🆕 <b>Նոր հայտ — QR Menu</b>',
+      dto.name ? `🏢 ${this.esc(dto.name)}` : null,
       `📞 ${this.esc(dto.phone)}`,
       dto.plan ? `📦 ${this.esc(dto.plan)}` : null,
       dto.message ? `📝 ${this.esc(dto.message)}` : null,
