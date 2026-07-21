@@ -1,6 +1,8 @@
 import {
   Controller,
+  Delete,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -28,5 +30,19 @@ export class UploadsController {
     @UploadedFile() file: Express.Multer.File,
   ): Promise<{ url: string; storageKey: string }> {
     return this.uploads.uploadImage(rid, file)
+  }
+
+  // Delete an object from storage by its public URL. Scoped: only files under
+  // this restaurant's path are removable (never another tenant's, never foreign
+  // URLs). Used by the admin to clean orphaned/unsaved uploads immediately.
+  @Throttle({ default: { limit: 40, ttl: 60_000 } })
+  @Delete('image')
+  @Roles(UserRole.OWNER, UserRole.MANAGER)
+  async deleteImage(
+    @RestaurantId() rid: string,
+    @Query('url') url: string,
+  ): Promise<{ ok: true }> {
+    await this.uploads.removeOwnByUrl(rid, url)
+    return { ok: true }
   }
 }

@@ -357,8 +357,10 @@ export function restaurantPatchToDto(patch: Partial<Restaurant>) {
   if (patch.address !== undefined) dto.address = patch.address || undefined
   if (patch.workingHours !== undefined) dto.workingHours = patch.workingHours || undefined
   if (patch.rating !== undefined) dto.rating = patch.rating
-  if (patch.logo !== undefined) dto.logoUrl = patch.logo || undefined
-  if (patch.coverImage !== undefined) dto.coverImageUrl = patch.coverImage || undefined
+  // Send the raw value (incl. '' ) so the backend can CLEAR a removed image and
+  // delete the old file from storage. `|| undefined` would swallow the clear.
+  if (patch.logo !== undefined) dto.logoUrl = patch.logo
+  if (patch.coverImage !== undefined) dto.coverImageUrl = patch.coverImage
   if (patch.tagline !== undefined) dto.tagline = patch.tagline
   if (patch.activeLanguages !== undefined) dto.activeLanguages = patch.activeLanguages
   if (patch.defaultLanguage !== undefined) dto.defaultLanguage = patch.defaultLanguage

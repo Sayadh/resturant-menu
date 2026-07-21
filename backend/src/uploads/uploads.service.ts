@@ -106,4 +106,15 @@ export class UploadsService {
   async removeManyByUrl(urls: (string | null | undefined)[]): Promise<void> {
     await Promise.all(urls.map((u) => this.removeByUrl(u)))
   }
+
+  /**
+   * Delete by URL, but ONLY if the object belongs to `restaurantId` (its key is
+   * under `restaurants/<id>/`). Prevents a tenant from deleting another's files.
+   */
+  async removeOwnByUrl(restaurantId: string, url: string | null | undefined): Promise<void> {
+    const key = this.keyFromUrl(url)
+    if (key && key.startsWith(`restaurants/${restaurantId}/`)) {
+      await this.remove(key)
+    }
+  }
 }

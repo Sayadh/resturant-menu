@@ -73,6 +73,8 @@ const T: Dict = {
   limitUpsell: { hy: 'Ավելին ավելացնելու համար անցեք Professional փաթեթին։', ru: 'Чтобы добавить больше, перейдите на тариф Professional.', en: 'Upgrade to Professional to add more.' },
   limitUpgradeCta: { hy: 'Անցնել Professional-ի', ru: 'Перейти на Professional', en: 'Upgrade to Professional' },
   limitUsage: { hy: 'Օգտագործված', ru: 'Использовано', en: 'Used' },
+  removeImageTitle: { hy: 'Հեռացնե՞լ նկարը', ru: 'Удалить изображение?', en: 'Remove image?' },
+  removeImageMsg: { hy: 'Նկարը կհեռացվի և կջնջվի պահեստից։ Այս գործողությունն անշրջելի է։', ru: 'Изображение будет удалено и стёрто из хранилища. Действие необратимо.', en: 'The image will be removed and deleted from storage. This cannot be undone.' },
   designLockedHint: { hy: 'Starter փաթեթում դիզայնը կողպված է՝ հասանելի է միայն ձեզ նշանակված թեման։ Բոլոր դիզայնները բացելու համար անցեք Professional փաթեթին։', ru: 'На тарифе Starter дизайн заблокирован — доступна только назначенная вам тема. Для всех дизайнов перейдите на Professional.', en: 'On Starter the design is locked to your assigned theme. Upgrade to Professional to unlock all designs.' },
   qrLockedTitle: { hy: 'QR դիզայնը հասանելի է Professional-ում', ru: 'Дизайн QR доступен в Professional', en: 'QR design is available on Professional' },
   qrLockedHint: { hy: 'Starter փաթեթում QR կոդը սև-սպիտակ է։ Գունավոր դիզայնի, ոճերի և լոգոյի համար անցեք Professional փաթեթին։', ru: 'На тарифе Starter QR-код чёрно-белый. Для цветного дизайна, стилей и логотипа перейдите на Professional.', en: 'On Starter the QR code is black & white. Upgrade to Professional for color, styles and a logo.' },

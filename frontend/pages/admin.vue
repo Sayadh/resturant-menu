@@ -402,6 +402,7 @@ const openAddCategory = () => {
     sortOrder: visibleCategories.value.length,
     active: true,
   })
+  resetPending()
   Object.assign(catModal, { open: true, mode: 'add', id: '' })
 }
 const openEditCategory = (c: Category) => {
@@ -416,6 +417,7 @@ const openEditCategory = (c: Category) => {
     sortOrder: c.sortOrder,
     active: c.active,
   })
+  resetPending()
   Object.assign(catModal, { open: true, mode: 'edit', id: c.id })
 }
 const hasName = (tr: { hy: string; en: string; ru: string }) =>
@@ -432,11 +434,12 @@ const submitCategory = async () => {
     else await categoryService.updateCategory(catModal.id, { ...catDraft })
     // Show the section the category belongs to, so it's always visible in the list.
     menuSection.value = catDraft.sectionId
+    resetPending() // saved → keep uploaded images
     catModal.open = false
     flash(t('saved'))
     await refresh().catch(() => {}) // a refresh hiccup must not hide a successful save
   } catch (e) {
-    if (handleLimitError(e, 'category', categoryLimit.value)) { catModal.open = false; return }
+    if (handleLimitError(e, 'category', categoryLimit.value)) { closeCatModal(); return }
     flash((e as Error)?.message || 'Չհաջողվեց պահպանել կատեգորիան')
   } finally {
     busy.value = false
@@ -478,10 +481,12 @@ const secModal = reactive({ open: false, mode: 'add' as 'add' | 'edit', id: '' }
 const secDraft = reactive<SectionDraft>({ name: blankTr(), icon: '🍽', image: '', sortOrder: 0, active: true })
 const openAddSection = () => {
   Object.assign(secDraft, { name: blankTr(), icon: '🍽', image: '', sortOrder: sections.value.length, active: true })
+  resetPending()
   Object.assign(secModal, { open: true, mode: 'add', id: '' })
 }
 const openEditSection = (s: Section) => {
   Object.assign(secDraft, { name: { ...s.name }, icon: s.icon, image: s.image, sortOrder: s.sortOrder, active: s.active })
+  resetPending()
   Object.assign(secModal, { open: true, mode: 'edit', id: s.id })
 }
 const submitSection = async () => {
@@ -497,6 +502,7 @@ const submitSection = async () => {
     } else {
       await sectionService.updateSection(secModal.id, { ...secDraft })
     }
+    resetPending()
     secModal.open = false
     flash(t('saved'))
     await refresh().catch(() => {})
@@ -544,6 +550,7 @@ const openAddProduct = () => {
     available: true,
     sortOrder: 0,
   })
+  resetPending()
   Object.assign(prodModal, { open: true, mode: 'add', id: '' })
 }
 const openEditProduct = (p: Product) => {
@@ -559,6 +566,7 @@ const openEditProduct = (p: Product) => {
     available: p.available,
     sortOrder: p.sortOrder,
   })
+  resetPending()
   Object.assign(prodModal, { open: true, mode: 'edit', id: p.id })
 }
 // Keep section in sync with the chosen category.
@@ -591,11 +599,12 @@ const submitProduct = async () => {
   try {
     if (prodModal.mode === 'add') await productService.createProduct({ ...prodDraft })
     else await productService.updateProduct(prodModal.id, { ...prodDraft })
+    resetPending()
     prodModal.open = false
     flash(t('saved'))
     await refresh().catch(() => {})
   } catch (e) {
-    if (handleLimitError(e, 'product', productLimit.value)) { prodModal.open = false; return }
+    if (handleLimitError(e, 'product', productLimit.value)) { closeProdModal(); return }
     flash((e as Error)?.message || 'Չհաջողվեց պահպանել ապրանքը')
   } finally {
     busy.value = false
@@ -708,12 +717,41 @@ const toggleAvailable = async (p: Product) => {
   }
 }
 
-// ── image handling (shared by both drafts) ─────────────────────
+// ── image lifecycle (upload / remove + storage hygiene) ─────────
+// URLs uploaded during the current editing session but not yet persisted.
+// Tracking them lets us delete orphans immediately when a NEW image replaces
+// an unsaved one, or when a modal is cancelled — without ever touching a file
+// that's already saved (those are cleaned by the backend on the next save).
+const pendingUploads = reactive(new Set<string>())
+const resetPending = () => pendingUploads.clear()
+// Modal cancelled → drop any unsaved uploads from storage.
+const cleanupPending = () => {
+  for (const u of pendingUploads) uploadService.deleteImage(u)
+  pendingUploads.clear()
+}
+// Apply a freshly uploaded URL, deleting the previous value if it was itself an
+// unsaved upload (intra-session replace → no orphan left behind).
+const applyUpload = (prev: string, set: (u: string) => void, url: string) => {
+  if (prev && pendingUploads.has(prev)) {
+    uploadService.deleteImage(prev)
+    pendingUploads.delete(prev)
+  }
+  set(url)
+  pendingUploads.add(url)
+}
+
 const onUpload = async (e: Event, target: { image: string }) => {
-  const file = (e.target as HTMLInputElement).files?.[0]
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
   if (!file) return
-  const { url } = await uploadService.uploadImage(file)
-  target.image = url
+  try {
+    const { url } = await uploadService.uploadImage(file)
+    applyUpload(target.image, (u) => (target.image = u), url)
+  } catch (err) {
+    flash((err as Error)?.message || 'Չհաջողվեց վերբեռնել')
+  } finally {
+    input.value = ''
+  }
 }
 // Generic: upload a file and store its hosted URL into obj[key] (sections,
 // category icon/banner, etc.). Used where the field isn't literally `image`.
@@ -723,7 +761,7 @@ const onUploadInto = async (e: Event, obj: Record<string, unknown>, key: string)
   if (!file) return
   try {
     const { url } = await uploadService.uploadImage(file)
-    obj[key] = url
+    applyUpload(String(obj[key] ?? ''), (u) => (obj[key] = u), url)
   } catch (err) {
     flash((err as Error)?.message || 'Չհաջողվեց վերբեռնել')
   } finally {
@@ -731,7 +769,7 @@ const onUploadInto = async (e: Event, obj: Record<string, unknown>, key: string)
   }
 }
 
-// Restaurant logo upload (same pipeline: file → hosted/data URL → restaurant.logo).
+// Restaurant logo upload (same pipeline: file → hosted URL → restaurant.logo).
 const uploadingLogo = ref(false)
 const onLogoUpload = async (e: Event) => {
   const input = e.target as HTMLInputElement
@@ -740,7 +778,7 @@ const onLogoUpload = async (e: Event) => {
   uploadingLogo.value = true
   try {
     const { url } = await uploadService.uploadImage(file)
-    restaurant.value.logo = url
+    applyUpload(restaurant.value.logo, (u) => (restaurant.value.logo = u), url)
   } catch {
     flash('Չհաջողվեց վերբեռնել լոգոն')
   } finally {
@@ -748,6 +786,33 @@ const onLogoUpload = async (e: Event) => {
     input.value = '' // allow re-selecting the same file
   }
 }
+
+// Remove an image with a confirmation dialog. If the removed URL was an unsaved
+// upload → delete it from storage now; if it was already saved → clearing the
+// field + `persist` (or the modal's Save) lets the backend delete it. `persist`
+// is used for logo/cover (they save immediately, outside a modal).
+const removeImage = (
+  get: () => string,
+  set: (u: string) => void,
+  persist?: () => Promise<unknown> | void,
+) => {
+  const url = get()
+  if (!url) return
+  askDelete(t('removeImageTitle'), t('removeImageMsg'), async () => {
+    set('')
+    if (pendingUploads.has(url)) {
+      await uploadService.deleteImage(url)
+      pendingUploads.delete(url)
+    }
+    if (persist) await persist()
+  })
+}
+
+// Modal close via CANCEL → drop unsaved uploads from storage. (On successful
+// save we call resetPending() instead, so kept images survive.)
+const closeCatModal = () => { cleanupPending(); catModal.open = false }
+const closeSecModal = () => { cleanupPending(); secModal.open = false }
+const closeProdModal = () => { cleanupPending(); prodModal.open = false }
 const resolving = ref(false)
 const onResolve = async (target: { image: string }) => {
   if (!target.image.trim()) return
@@ -1181,7 +1246,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                     {{ uploadingLogo ? t('saving') : (restaurant.logo ? 'Փոխել լոգոն' : 'Վերբեռնել լոգո') }}
                     <input type="file" accept="image/*" class="hidden" @change="onLogoUpload" />
                   </label>
-                  <button v-if="restaurant.logo" type="button" class="text-xs font-medium text-rose-600 hover:text-rose-700" @click="restaurant.logo = ''">Հեռացնել</button>
+                  <button v-if="restaurant.logo" type="button" class="text-xs font-medium text-rose-600 hover:text-rose-700" @click="removeImage(() => restaurant.logo, (u) => (restaurant.logo = u), saveRestaurant)">Հեռացնել</button>
                   <p class="text-[11px] text-slate-400">PNG կամ JPG, քառակուսի՝ լավագույն արդյունքի համար</p>
                 </div>
               </div>
@@ -1214,7 +1279,11 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
               class="flex items-center overflow-hidden rounded-full text-sm font-semibold transition"
               :class="menuSection === s.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200'"
             >
-              <button class="py-1.5 pl-4 pr-2" @click="menuSection = s.id">{{ s.icon }} {{ trLabel(s.name) }}</button>
+              <button class="flex items-center gap-1.5 py-1.5 pl-4 pr-2" @click="menuSection = s.id">
+                <img v-if="s.image" :src="s.image" class="h-5 w-5 rounded-full object-cover" alt="" />
+                <span v-else>{{ s.icon }}</span>
+                {{ trLabel(s.name) }}
+              </button>
               <template v-if="menuSection === s.id">
                 <button class="px-1 opacity-80 hover:opacity-100" :title="t('edit')" @click="openEditSection(s)">✎</button>
                 <button class="pl-1 pr-3 opacity-80 hover:opacity-100" :title="t('delete')" @click="removeSection(s)">🗑</button>
@@ -1397,7 +1466,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
     </Transition>
 
     <!-- Category modal -->
-    <AdminModal v-if="catModal.open" :title="catModal.mode === 'add' ? t('newCategory') : t('editCategory')" @close="catModal.open = false">
+    <AdminModal v-if="catModal.open" :title="catModal.mode === 'add' ? t('newCategory') : t('editCategory')" @close="closeCatModal">
       <div class="space-y-4">
         <div class="flex items-end gap-3">
           <div class="w-24">
@@ -1407,7 +1476,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
               <span v-else class="text-xl">{{ catDraft.icon || '🍽' }}</span>
               <input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, catDraft, 'iconImage')" />
             </label>
-            <button v-if="catDraft.iconImage" type="button" class="mt-0.5 text-[10px] text-rose-500 hover:underline" @click="catDraft.iconImage = ''">{{ t('remove') }}</button>
+            <button v-if="catDraft.iconImage" type="button" class="mt-0.5 text-[10px] text-rose-500 hover:underline" @click="removeImage(() => catDraft.iconImage, (u) => (catDraft.iconImage = u))">{{ t('remove') }}</button>
           </div>
           <div class="flex-1">
             <span class="lbl">{{ t('sectionField') }}</span>
@@ -1423,7 +1492,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 <span v-else class="text-[10px] text-slate-300">16:5</span>
               </div>
               <label class="cursor-pointer text-sm font-medium text-indigo-600 hover:underline">{{ t('upload') }}<input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, catDraft, 'image')" /></label>
-              <button v-if="catDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="catDraft.image = ''">{{ t('remove') }}</button>
+              <button v-if="catDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="removeImage(() => catDraft.image, (u) => (catDraft.image = u))">{{ t('remove') }}</button>
             </div>
           </div>
           <div>
@@ -1434,7 +1503,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 <span v-else class="text-[10px] text-slate-300">4:3</span>
               </div>
               <label class="cursor-pointer text-sm font-medium text-indigo-600 hover:underline">{{ t('upload') }}<input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, catDraft, 'mobileImage')" /></label>
-              <button v-if="catDraft.mobileImage" type="button" class="text-xs text-rose-500 hover:underline" @click="catDraft.mobileImage = ''">{{ t('remove') }}</button>
+              <button v-if="catDraft.mobileImage" type="button" class="text-xs text-rose-500 hover:underline" @click="removeImage(() => catDraft.mobileImage, (u) => (catDraft.mobileImage = u))">{{ t('remove') }}</button>
             </div>
           </div>
         </div>
@@ -1453,13 +1522,13 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         <label class="flex items-center justify-between text-sm"><span>{{ t('active') }}</span><input v-model="catDraft.active" type="checkbox" class="h-4 w-4" /></label>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="catModal.open = false">{{ t('cancel') }}</button>
+        <button class="btn-ghost" @click="closeCatModal">{{ t('cancel') }}</button>
         <button class="btn-primary" :disabled="busy" @click="submitCategory">{{ busy ? t('saving') : t('save') }}</button>
       </template>
     </AdminModal>
 
     <!-- Section modal -->
-    <AdminModal v-if="secModal.open" :title="secModal.mode === 'add' ? t('newSection') : t('editSection')" @close="secModal.open = false">
+    <AdminModal v-if="secModal.open" :title="secModal.mode === 'add' ? t('newSection') : t('editSection')" @close="closeSecModal">
       <div class="space-y-4">
         <div>
           <span class="lbl">{{ t('icon') }} <span class="font-normal text-slate-400">200×200</span></span>
@@ -1473,7 +1542,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
               {{ t('upload') }}
               <input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, secDraft, 'image')" />
             </label>
-            <button v-if="secDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="secDraft.image = ''">{{ t('remove') }}</button>
+            <button v-if="secDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="removeImage(() => secDraft.image, (u) => (secDraft.image = u))">{{ t('remove') }}</button>
           </div>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
@@ -1485,13 +1554,13 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         <label class="flex items-center justify-between text-sm"><span>{{ t('active') }}</span><input v-model="secDraft.active" type="checkbox" class="h-4 w-4" /></label>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="secModal.open = false">{{ t('cancel') }}</button>
+        <button class="btn-ghost" @click="closeSecModal">{{ t('cancel') }}</button>
         <button class="btn-primary" :disabled="busy" @click="submitSection">{{ busy ? t('saving') : t('save') }}</button>
       </template>
     </AdminModal>
 
     <!-- Product modal -->
-    <AdminModal v-if="prodModal.open" :title="prodModal.mode === 'add' ? t('newProduct') : t('editProduct')" @close="prodModal.open = false">
+    <AdminModal v-if="prodModal.open" :title="prodModal.mode === 'add' ? t('newProduct') : t('editProduct')" @close="closeProdModal">
       <div class="space-y-4">
         <label class="block"><span class="lbl">{{ t('category') }}</span>
           <select v-model="prodDraft.categoryId" class="inp">
@@ -1540,16 +1609,19 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 <input v-model="prodDraft.image" placeholder="Image / page / Google link" class="inp" />
                 <button type="button" :disabled="resolving" class="shrink-0 rounded-lg bg-slate-700 px-3 text-sm font-semibold text-white disabled:opacity-50" @click="onResolve(prodDraft)">{{ resolving ? '…' : 'Open' }}</button>
               </div>
-              <label class="mt-1.5 inline-block cursor-pointer text-xs font-semibold text-slate-500 hover:text-slate-800">
-                Upload file
-                <input type="file" accept="image/*" class="hidden" @change="(e) => onUpload(e, prodDraft)" />
-              </label>
+              <div class="mt-1.5 flex items-center gap-3">
+                <label class="inline-block cursor-pointer text-xs font-semibold text-slate-500 hover:text-slate-800">
+                  Upload file
+                  <input type="file" accept="image/*" class="hidden" @change="(e) => onUpload(e, prodDraft)" />
+                </label>
+                <button v-if="prodDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="removeImage(() => prodDraft.image, (u) => (prodDraft.image = u))">{{ t('remove') }}</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
       <template #footer>
-        <button class="btn-ghost" @click="prodModal.open = false">{{ t('cancel') }}</button>
+        <button class="btn-ghost" @click="closeProdModal">{{ t('cancel') }}</button>
         <button class="btn-primary" :disabled="busy" @click="submitProduct">{{ busy ? t('saving') : t('save') }}</button>
       </template>
     </AdminModal>

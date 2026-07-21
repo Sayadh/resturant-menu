@@ -6,6 +6,7 @@
  *    less storage/bandwidth. No dependency: pure Canvas API.
  *  • resolveImage: resolve a page / Google link to a direct image URL.
  */
+import { useApiClient } from './http'
 
 /** Downscale to `maxDim`, re-encode as WebP at `quality`. Skips GIFs (animation)
  *  and non-images, and keeps the original if optimization doesn't help. */
@@ -71,6 +72,13 @@ export const uploadService = {
       },
     )
     return res.data
+  },
+
+  /** Delete a previously uploaded object from storage (scoped to this tenant). */
+  async deleteImage(url: string): Promise<void> {
+    if (!url) return
+    const { useApiClient } = await import('./http')
+    await useApiClient().del('/uploads/image', { url }).catch(() => undefined)
   },
 
   /** Resolve a page / Google link to a direct image URL. */
