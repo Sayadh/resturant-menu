@@ -64,6 +64,33 @@ pm2 status
 
 ---
 
+## 2b. Մասնակի deploy (միայն մեկ կողմ)
+
+Երբ փոփոխությունը միայն մեկ կողմում է, պետք չէ ամեն ինչ rebuild անել։
+
+**Միայն frontend** (CSS, SFC, themes, UI — ոչ SQL, ոչ backend)
+```bash
+cd /var/www/menus-staging
+git pull origin staging
+cd frontend
+npm run build            # npm ci միայն եթե package.json փոխվել է
+pm2 restart web-staging --update-env
+```
+> `git pull`-ը backend կոդն էլ բերում է, բայց քանի որ `api-staging`-ը չես restart անում՝ աշխատող backend-ն անփոփոխ է։ CSS-ի փոփոխությունից հետո՝ hard refresh (cache)։
+
+**Միայն backend** (API, DTO, service — ոչ frontend)
+```bash
+cd /var/www/menus-staging
+git pull origin staging
+cd backend
+npx prisma generate      # միայն եթե schema.prisma փոխվել է
+npm run build            # npm ci միայն եթե package.json փոխվել է
+pm2 restart api-staging --update-env
+```
+> Եթե schema նոր դաշt ունի՝ նախ գործարկիր SQL-ը (Քայլ 1), հետո prisma generate։
+
+---
+
 ## 3. Ստուգում (smoke test)
 
 - [ ] `pm2 status` → `api-staging` և `web-staging` = online
