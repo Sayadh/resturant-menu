@@ -46,7 +46,7 @@ watch(
                 :value="modelValue"
                 type="text"
                 :placeholder="t(maisonSearch.placeholder)"
-                class="w-full border-0 border-b border-[#E7DDCB] bg-transparent pb-3 font-serif text-2xl text-[#4A3B2E] placeholder:text-[#BCB09C] focus:border-[#C4693F] focus:outline-none focus:ring-0 sm:text-3xl"
+                class="w-full border-0 border-b border-[#E7DDCB] bg-transparent pb-3 font-serif !text-2xl text-[#4A3B2E] placeholder:text-[#BCB09C] focus:border-[#C4693F] focus:outline-none focus:ring-0 sm:!text-3xl"
                 @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
               />
               <button

@@ -37,3 +37,18 @@
     font-family: Cinzel, Georgia, serif;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   iOS auto-zoom guard: mobile Safari zooms the page when a focused input has
+   font-size < 16px. Force all text-entry controls to ≥16px on small screens.
+   Placed OUTSIDE @layer so it beats Tailwind's `text-*` utilities (layer order
+   would otherwise win regardless of specificity). Intentionally-large inputs
+   opt out with Tailwind's important modifier (e.g. `!text-2xl`).
+   ───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}

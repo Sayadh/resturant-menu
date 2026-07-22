@@ -260,7 +260,7 @@ onBeforeUnmount(() => {
             v-model="search"
             type="search"
             :placeholder="t(ariaSearchPlaceholder)"
-            class="w-full rounded-full border border-[#E4D6C2] bg-[#FFF9EF] py-2.5 pl-12 pr-11 font-serif text-sm text-[#3E2723] shadow-sm outline-none transition duration-200 focus:border-[#C69A5A] focus:shadow-[0_6px_18px_-8px_rgba(198,154,90,0.6)] focus:ring-2 focus:ring-[#C69A5A]/25 sm:py-3 sm:pl-13 sm:pr-12 sm:text-base"
+            class="w-full rounded-full border border-[#E4D6C2] bg-[#FFF9EF] py-2.5 pl-12 pr-11 font-serif text-base text-[#3E2723] shadow-sm outline-none transition duration-200 focus:border-[#C69A5A] focus:shadow-[0_6px_18px_-8px_rgba(198,154,90,0.6)] focus:ring-2 focus:ring-[#C69A5A]/25 sm:py-3 sm:pl-13 sm:pr-12"
           />
           <span class="pointer-events-none absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[#A87E42]/70 sm:h-9 sm:w-9">
             <svg viewBox="0 0 24 24" class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
