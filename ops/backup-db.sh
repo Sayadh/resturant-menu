@@ -23,6 +23,16 @@ URL_VAR="${URL_VAR:-BACKUP_DATABASE_URL}"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 
+# ── Use the NEWEST installed pg_dump ─────────────────────────────────────────
+# Supabase may run a newer Postgres (e.g. 17) than the OS default client (16),
+# and pg_dump refuses to dump a newer server. Pick the highest client version.
+PG_BIN="$(ls -d /usr/lib/postgresql/*/bin 2>/dev/null | sort -V | tail -1 || true)"
+[[ -n "$PG_BIN" ]] && export PATH="$PG_BIN:$PATH"
+
+# Clean up a partial/empty dump if anything fails after the file is created.
+cleanup() { [[ -n "${OUT:-}" && -f "${OUT:-}" && ! -s "${OUT:-}" ]] && rm -f "$OUT"; }
+trap cleanup EXIT
+
 # ── Resolve the connection string ───────────────────────────────────────────
 # Priority: env DATABASE_URL → env $URL_VAR → backend .env ($URL_VAR then DATABASE_URL)
 CONN="${DATABASE_URL:-${!URL_VAR:-}}"
