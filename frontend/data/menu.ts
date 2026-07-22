@@ -45,6 +45,8 @@ export interface MenuCategory {
   image?: string
   /** Mobile banner (falls back to `image`). */
   mobileImage?: string
+  /** Banner title colour over the image: 'light' (white) or 'dark'. */
+  bannerTextColor?: 'light' | 'dark'
   description?: LocalizedText
   active?: boolean
   sortOrder?: number
@@ -112,6 +114,9 @@ export const ui = {
     RU: 'Заказ пуст',
   },
   total: { AM: 'Ընդամենը', EN: 'Total', RU: 'Итого' },
+  subtotal: { AM: 'Ապրանքներ', EN: 'Subtotal', RU: 'Товары' },
+  service: { AM: 'Սպասարկում', EN: 'Service', RU: 'Обслуживание' },
+  serviceNote: { AM: '+ սպասարկման վճար', EN: '+ service charge', RU: '+ плата за обслуживание' },
   clearOrder: { AM: 'Մաքրել', EN: 'Clear', RU: 'Очистить' },
   showWaiter: {
     AM: 'Ցույց տալ մատուցողին',

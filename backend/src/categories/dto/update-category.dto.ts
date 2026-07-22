@@ -2,6 +2,7 @@ import { Type } from 'class-transformer'
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -30,6 +31,9 @@ export class UpdateCategoryDto {
 
   @IsOptional() @IsString() @MaxLength(500)
   mobileImageUrl?: string
+
+  @IsOptional() @IsIn(['light', 'dark'])
+  bannerTextColor?: 'light' | 'dark'
 
   @IsOptional() @IsInt() @Min(0)
   sortOrder?: number

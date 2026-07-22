@@ -99,6 +99,7 @@ export interface ApiMenuResponse {
     iconImage: string | null
     image: string | null
     mobileImage: string | null
+    bannerTextColor: string | null
     sortOrder: number
     name: string
     description: string | null
@@ -154,6 +155,7 @@ export function buildMenu(payload: ApiMenuResponse): { levels: MenuLevel[]; cate
       description: mirror(c.description ?? ''),
       image: c.image ?? '',
       mobileImage: c.mobileImage ?? '',
+      bannerTextColor: (c.bannerTextColor === 'dark' ? 'dark' : 'light'),
       items: [],
       sortOrder: c.sortOrder,
       active: true,
@@ -233,6 +235,10 @@ export interface ApiRestaurantBySlug {
     rating?: number | null
     currency: string
     ordering?: boolean
+    showCartTotal?: boolean
+    serviceChargeEnabled?: boolean
+    serviceChargeMode?: string
+    serviceChargePercent?: number
   }
   // themeId on the restaurant is a FK uuid; the human key lives on theme.key.
   theme: { id: string; key: string } | null
@@ -299,6 +305,10 @@ export function mapRestaurant(r: ApiRestaurantBySlug): Restaurant {
     defaultLanguage: def ?? langs[0] ?? 'hy',
     activeLanguages: langs.length ? langs : ['hy'],
     ordering: r.restaurant.ordering ?? false,
+    showCartTotal: r.restaurant.showCartTotal ?? true,
+    serviceChargeEnabled: r.restaurant.serviceChargeEnabled ?? false,
+    serviceChargeMode: (r.restaurant.serviceChargeMode === 'text' ? 'text' : 'percent'),
+    serviceChargePercent: r.restaurant.serviceChargePercent ?? 10,
   }
 }
 
@@ -315,6 +325,11 @@ export interface ApiAdminRestaurant {
   logoUrl: string | null
   coverImageUrl: string | null
   currency: string
+  ordering?: boolean
+  showCartTotal?: boolean
+  serviceChargeEnabled?: boolean
+  serviceChargeMode?: string
+  serviceChargePercent?: number
   theme: { id: string; key: string } | null
   plan?: { key: string; maxProducts?: number | null; maxCategories?: number | null } | null
   translations?: { tagline: string | null; language: { code: string } }[]
@@ -349,6 +364,11 @@ export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
     planKey: (r.plan?.key as Restaurant['planKey']) ?? 'free',
     maxProducts: r.plan?.maxProducts ?? null,
     maxCategories: r.plan?.maxCategories ?? null,
+    ordering: r.ordering ?? false,
+    showCartTotal: r.showCartTotal ?? true,
+    serviceChargeEnabled: r.serviceChargeEnabled ?? false,
+    serviceChargeMode: r.serviceChargeMode === 'text' ? 'text' : 'percent',
+    serviceChargePercent: r.serviceChargePercent ?? 10,
   }
 }
 
@@ -366,6 +386,10 @@ export function restaurantPatchToDto(patch: Partial<Restaurant>) {
   if (patch.tagline !== undefined) dto.tagline = patch.tagline
   if (patch.activeLanguages !== undefined) dto.activeLanguages = patch.activeLanguages
   if (patch.defaultLanguage !== undefined) dto.defaultLanguage = patch.defaultLanguage
+  if (patch.showCartTotal !== undefined) dto.showCartTotal = patch.showCartTotal
+  if (patch.serviceChargeEnabled !== undefined) dto.serviceChargeEnabled = patch.serviceChargeEnabled
+  if (patch.serviceChargeMode !== undefined) dto.serviceChargeMode = patch.serviceChargeMode
+  if (patch.serviceChargePercent !== undefined) dto.serviceChargePercent = patch.serviceChargePercent
   return dto
 }
 
@@ -379,6 +403,7 @@ export interface ApiCategoryRow {
   iconUrl: string | null
   imageUrl: string | null
   mobileImageUrl: string | null
+  bannerTextColor: string | null
   sortOrder: number
   isActive: boolean
   translations: ApiTranslationRow[]
@@ -396,6 +421,7 @@ export function mapCategory(c: ApiCategoryRow): Category {
     iconImage: c.iconUrl ?? '',
     image: c.imageUrl ?? '',
     mobileImage: c.mobileImageUrl ?? '',
+    bannerTextColor: c.bannerTextColor === 'dark' ? 'dark' : 'light',
     sortOrder: c.sortOrder,
     active: c.isActive,
   }
@@ -446,6 +472,7 @@ export function categoryDraftToDto(d: Omit<Category, 'id' | 'restaurantId'>) {
     iconUrl: d.iconImage ?? '',
     imageUrl: d.image ?? '',
     mobileImageUrl: d.mobileImage ?? '',
+    bannerTextColor: d.bannerTextColor ?? 'light',
     sortOrder: d.sortOrder,
     isActive: d.active,
     translations: translationToRows(d.name, d.description),

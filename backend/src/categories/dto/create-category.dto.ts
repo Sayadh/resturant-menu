@@ -3,6 +3,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -31,6 +32,10 @@ export class CreateCategoryDto {
 
   @IsOptional() @IsString() @MaxLength(500)
   mobileImageUrl?: string
+
+  // Banner title colour over the image: 'light' (white) or 'dark'.
+  @IsOptional() @IsIn(['light', 'dark'])
+  bannerTextColor?: 'light' | 'dark'
 
   @IsOptional() @IsInt() @Min(0)
   sortOrder?: number

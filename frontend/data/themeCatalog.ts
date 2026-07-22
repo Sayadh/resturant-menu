@@ -15,6 +15,11 @@ export const emptyRestaurant: Restaurant = {
   rating: 0,
   defaultLanguage: 'hy',
   activeLanguages: ['hy', 'en', 'ru'],
+  ordering: false,
+  showCartTotal: true,
+  serviceChargeEnabled: false,
+  serviceChargeMode: 'percent',
+  serviceChargePercent: 10,
 }
 
 // Theme catalog presented in the admin's Design section (static product data).

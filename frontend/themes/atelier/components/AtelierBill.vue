@@ -39,7 +39,14 @@ const rows = computed<Row[]>(() =>
     .filter((r): r is Row => r !== null),
 )
 
-const total = computed(() => rows.value.reduce((s, r) => s + r.sum, 0))
+const brand = useBrand()
+const subtotal = computed(() => rows.value.reduce((s, r) => s + r.sum, 0))
+const serviceAmount = computed(() =>
+  brand.serviceChargeEnabled && brand.serviceChargeMode === 'percent'
+    ? Math.round((subtotal.value * brand.serviceChargePercent) / 100)
+    : 0,
+)
+const total = computed(() => subtotal.value + serviceAmount.value)
 const fmt = (n: number) => n.toLocaleString('hy-AM')
 </script>
 
@@ -105,9 +112,20 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
 
         <!-- Footer / total -->
         <div v-if="rows.length" class="border-t border-[#16130F] px-7 py-6">
-          <div class="flex items-baseline justify-between">
-            <span class="atl-eyebrow font-display text-[11px] text-[#857B6C]">{{ t(ui.total) }}</span>
-            <span class="font-serif text-3xl text-[#16130F]">{{ fmt(total) }}<span class="ml-0.5 text-[#A1502E]">֏</span></span>
+          <div v-if="brand.showCartTotal">
+            <template v-if="serviceAmount > 0">
+              <div class="flex items-center justify-between font-serif text-sm text-[#857B6C]">
+                <span>{{ t(ui.subtotal) }}</span><span>{{ fmt(subtotal) }} ֏</span>
+              </div>
+              <div class="mt-1 flex items-center justify-between font-serif text-sm text-[#857B6C]">
+                <span>{{ t(ui.service) }} ({{ brand.serviceChargePercent }}%)</span><span>+{{ fmt(serviceAmount) }} ֏</span>
+              </div>
+            </template>
+            <div class="mt-1 flex items-baseline justify-between">
+              <span class="atl-eyebrow font-display text-[11px] text-[#857B6C]">{{ t(ui.total) }}</span>
+              <span class="font-serif text-3xl text-[#16130F]">{{ fmt(total) }}<span class="ml-0.5 text-[#A1502E]">֏</span></span>
+            </div>
+            <p v-if="brand.serviceChargeEnabled && brand.serviceChargeMode === 'text'" class="mt-1 font-serif text-xs italic text-[#857B6C]">{{ t(ui.serviceNote) }}</p>
           </div>
           <div class="mt-5 flex gap-3">
             <button

@@ -128,6 +128,7 @@ model Restaurant {
   slug          String    @unique
   name          String
   email         String?
+  phone         String? // contact phone (managed in the super-admin panel)
   logoUrl       String?
   coverImageUrl String?
   address       String? // simple free-text address (v1; no maps/coordinates)
@@ -135,6 +136,13 @@ model Restaurant {
   rating           Float? // editable display rating (0–5)
   currency      String    @default("AMD")
   timezone      String    @default("Asia/Yerevan")
+
+  // Cart display settings (paid plans only — used when ordering is enabled).
+  showCartTotal        Boolean @default(true)  // show the cart's total sum
+  serviceChargeEnabled Boolean @default(false) // add a service charge
+  serviceChargeMode    String  @default("percent") // 'percent' | 'text'
+  serviceChargePercent Int     @default(10) // used when mode = 'percent'
+
   isActive      Boolean   @default(true)
   deletedAt     DateTime?
   createdAt     DateTime  @default(now())
@@ -341,6 +349,7 @@ model Category {
   iconUrl         String?
   imageUrl        String?
   mobileImageUrl  String?
+  bannerTextColor String?   // 'light' | 'dark' — banner title colour over the image
   sortOrder       Int       @default(0)
   isActive     Boolean      @default(true)
   deletedAt    DateTime?

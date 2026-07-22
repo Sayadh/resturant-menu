@@ -1,6 +1,7 @@
 import {
   ArrayNotEmpty,
   IsArray,
+  IsBoolean,
   IsEmail,
   IsIn,
   IsNumber,
@@ -57,4 +58,17 @@ export class UpdateRestaurantDto {
   // Fallback / initial language; must be one of the active languages.
   @IsOptional() @IsIn(LANG_CODES)
   defaultLanguage?: LangCode
+
+  // ── Cart display (paid plans) ──────────────────────────────────
+  @IsOptional() @IsBoolean()
+  showCartTotal?: boolean
+
+  @IsOptional() @IsBoolean()
+  serviceChargeEnabled?: boolean
+
+  @IsOptional() @IsIn(['percent', 'text'])
+  serviceChargeMode?: 'percent' | 'text'
+
+  @IsOptional() @IsNumber() @Min(0) @Max(100)
+  serviceChargePercent?: number
 }

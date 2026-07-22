@@ -9,6 +9,9 @@ export interface AdminRestaurantRow {
   themeKey: string | null
   planKey: PlanKey
   isActive: boolean
+  address: string | null
+  phone: string | null
+  ownerEmail: string | null
   sections: number
   categories: number
   products: number
@@ -35,6 +38,10 @@ export interface UpdateRestaurantInput {
   defaultLang?: string
   isActive?: boolean
   planKey?: PlanKey
+  address?: string
+  phone?: string
+  ownerEmail?: string
+  ownerPassword?: string
 }
 
 export const superAdminService = {

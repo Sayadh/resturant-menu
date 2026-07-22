@@ -40,7 +40,14 @@ const rows = computed<Row[]>(() =>
     .filter((r): r is Row => r !== null),
 )
 
-const total = computed(() => rows.value.reduce((s, r) => s + r.price * r.qty, 0))
+const brand = useBrand()
+const subtotal = computed(() => rows.value.reduce((s, r) => s + r.price * r.qty, 0))
+const serviceAmount = computed(() =>
+  brand.serviceChargeEnabled && brand.serviceChargeMode === 'percent'
+    ? Math.round((subtotal.value * brand.serviceChargePercent) / 100)
+    : 0,
+)
+const total = computed(() => subtotal.value + serviceAmount.value)
 const fmt = (n: number) => n.toLocaleString('fr-FR')
 
 // Lock body scroll while open.
@@ -142,9 +149,20 @@ onBeforeUnmount(() => {
 
             <!-- Footer -->
             <footer class="border-t border-[#E7DDCB] px-7 py-6">
-              <div class="flex items-end justify-between">
-                <span class="ms-eyebrow-sm font-sans text-[11px] text-[#8A7C6B]">{{ t(ui.total) }}</span>
-                <span class="font-serif text-3xl text-[#4A3B2E]">{{ fmt(total) }}<span class="ml-1 text-xl text-[#C4693F]">{{ ui.currency[lang] }}</span></span>
+              <div v-if="brand.showCartTotal">
+                <template v-if="serviceAmount > 0">
+                  <div class="flex items-center justify-between font-sans text-sm text-[#8A7C6B]">
+                    <span>{{ t(ui.subtotal) }}</span><span>{{ fmt(subtotal) }} {{ ui.currency[lang] }}</span>
+                  </div>
+                  <div class="mt-1 flex items-center justify-between font-sans text-sm text-[#8A7C6B]">
+                    <span>{{ t(ui.service) }} ({{ brand.serviceChargePercent }}%)</span><span>+{{ fmt(serviceAmount) }} {{ ui.currency[lang] }}</span>
+                  </div>
+                </template>
+                <div class="mt-1 flex items-end justify-between">
+                  <span class="ms-eyebrow-sm font-sans text-[11px] text-[#8A7C6B]">{{ t(ui.total) }}</span>
+                  <span class="font-serif text-3xl text-[#4A3B2E]">{{ fmt(total) }}<span class="ml-1 text-xl text-[#C4693F]">{{ ui.currency[lang] }}</span></span>
+                </div>
+                <p v-if="brand.serviceChargeEnabled && brand.serviceChargeMode === 'text'" class="mt-1 font-serif text-xs italic text-[#8A7C6B]">{{ t(ui.serviceNote) }}</p>
               </div>
 
               <button

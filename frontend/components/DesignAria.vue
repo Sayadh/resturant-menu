@@ -321,7 +321,8 @@ onBeforeUnmount(() => {
               class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:hidden"
             />
             <div v-if="!bannerOf(cat) && !mobileBannerOf(cat)" class="aria-motif absolute inset-0 opacity-30" />
-            <div class="absolute inset-0 bg-gradient-to-t from-[#2C1A16]/92 via-[#3E2723]/45 to-transparent" />
+            <!-- scrim adapts to the chosen title colour so the text always reads -->
+            <div class="absolute inset-0 bg-gradient-to-t" :class="cat.bannerTextColor === 'dark' ? 'from-[#FFF9EF]/95 via-[#FFF9EF]/55 to-transparent' : 'from-[#2C1A16]/92 via-[#3E2723]/45 to-transparent'" />
             <!-- thin inner gold frame -->
             <span class="pointer-events-none absolute inset-3 rounded-2xl border border-[#DBBA82]/30" aria-hidden="true" />
             <div class="absolute inset-0 flex flex-col justify-end p-5">
@@ -331,8 +332,8 @@ onBeforeUnmount(() => {
                   <template v-else>{{ cat.icon }}</template>
                 </span>
                 <div>
-                  <h2 class="font-display text-2xl font-bold uppercase tracking-[0.12em] text-[#FFF9EF] drop-shadow sm:text-3xl">{{ t(cat.title) }}</h2>
-                  <p class="font-serif text-sm text-[#FFF9EF]/85">{{ cat.items.length }} {{ t(ui.dishCount) }}</p>
+                  <h2 class="font-display text-2xl font-bold uppercase tracking-[0.12em] drop-shadow sm:text-3xl" :class="cat.bannerTextColor === 'dark' ? 'text-[#3E2723]' : 'text-[#FFF9EF]'">{{ t(cat.title) }}</h2>
+                  <p class="font-serif text-sm" :class="cat.bannerTextColor === 'dark' ? 'text-[#3E2723]/85' : 'text-[#FFF9EF]/85'">{{ cat.items.length }} {{ t(ui.dishCount) }}</p>
                 </div>
               </div>
             </div>
@@ -389,19 +390,21 @@ onBeforeUnmount(() => {
 
                   <!-- Add / stepper (ordering = paid plans only) -->
                   <template v-if="brand.ordering">
-                    <div v-if="order.qtyOf(item.id) > 0" class="flex items-center gap-1 sm:gap-1.5">
-                      <button type="button" class="flex h-[1.55rem] w-[1.55rem] items-center justify-center rounded-full border border-[#E4D6C2] bg-white pb-1 text-base font-bold text-[#3E2723] transition hover:border-[#C69A5A] sm:h-8 sm:w-8 sm:pb-0 sm:text-lg" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
-                      <span class="w-4 text-center font-display text-sm font-bold text-[#3E2723] sm:text-base">{{ order.qtyOf(item.id) }}</span>
-                      <button type="button" class="flex h-[1.55rem] w-[1.55rem] items-center justify-center rounded-full bg-gradient-to-br from-[#C69A5A] to-[#A87E42] pb-1 text-base font-bold text-white shadow-sm transition hover:brightness-105 sm:h-8 sm:w-8 sm:pb-0 sm:text-lg" aria-label="Ավելացնել" @click="order.add(item.id)">+</button>
+                    <div v-if="order.qtyOf(item.id) > 0" class="flex items-center gap-1 rounded-full border border-[#E4D6C2] bg-[#FFF9EF] p-1 shadow-[0_4px_12px_-6px_rgba(62,39,35,0.3)]">
+                      <button type="button" class="grid h-7 w-7 place-items-center rounded-full text-lg font-bold leading-none text-[#3E2723] transition hover:bg-[#F0E6D2] sm:h-8 sm:w-8" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
+                      <span class="min-w-[1.25rem] text-center font-display text-sm font-bold text-[#3E2723] sm:text-base">{{ order.qtyOf(item.id) }}</span>
+                      <button type="button" class="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] text-white shadow-[0_4px_10px_-3px_rgba(198,154,90,0.7)] transition hover:brightness-105 active:scale-90 sm:h-8 sm:w-8" aria-label="Ավելացնել" @click="order.add(item.id)">
+                        <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round" /></svg>
+                      </button>
                     </div>
                     <button
                       v-else-if="item.available !== false"
                       type="button"
-                      class="flex h-[1.55rem] w-[1.55rem] items-center justify-center rounded-full bg-[#3E2723] pb-1 text-lg font-bold text-[#FFF9EF] shadow-sm transition hover:bg-[#5A4038] active:scale-95 sm:h-9 sm:w-9 sm:pb-0 sm:text-xl"
+                      class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] text-white shadow-[0_8px_18px_-6px_rgba(198,154,90,0.8)] ring-1 ring-white/40 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-6px_rgba(198,154,90,0.95)] active:translate-y-0 active:scale-90 sm:h-10 sm:w-10"
                       aria-label="Ավելացնել պատվերին"
                       @click="order.add(item.id)"
                     >
-                      +
+                      <svg viewBox="0 0 24 24" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round" /></svg>
                     </button>
                   </template>
                 </div>

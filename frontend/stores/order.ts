@@ -10,13 +10,16 @@ export interface OrderLine {
 export const useOrderStore = defineStore('order', () => {
   const lines = ref<OrderLine[]>([])
   const favorites = ref<string[]>([])
+  // The tenant this cart belongs to — item IDs are per-restaurant, so the cart
+  // must not carry over to a different restaurant.
+  const restaurantId = ref('')
 
   const save = () => {
     if (!import.meta.client) return
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ lines: lines.value, favorites: favorites.value }),
+        JSON.stringify({ lines: lines.value, favorites: favorites.value, restaurantId: restaurantId.value }),
       )
     } catch {
       /* non-fatal */
@@ -29,9 +32,23 @@ export const useOrderStore = defineStore('order', () => {
       const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
       if (Array.isArray(d.lines)) lines.value = d.lines
       if (Array.isArray(d.favorites)) favorites.value = d.favorites
+      if (typeof d.restaurantId === 'string') restaurantId.value = d.restaurantId
     } catch {
       /* ignore */
     }
+  }
+
+  // Attach the cart to a restaurant. If it changes, the previous restaurant's
+  // items are cleared (they don't exist in the new menu → stale count).
+  const bindRestaurant = (id: string) => {
+    if (!id) return
+    if (import.meta.client) load()
+    if (restaurantId.value && restaurantId.value !== id) {
+      lines.value = []
+      favorites.value = []
+    }
+    restaurantId.value = id
+    save()
   }
 
   // ── order / cart ─────────────────────────────────────────────
@@ -69,8 +86,10 @@ export const useOrderStore = defineStore('order', () => {
   return {
     lines,
     favorites,
+    restaurantId,
     load,
     save,
+    bindRestaurant,
     qtyOf,
     add,
     dec,

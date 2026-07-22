@@ -49,6 +49,8 @@ export interface Category {
   image: string
   /** Mobile banner image (falls back to `image`). */
   mobileImage: string
+  /** Banner title colour over the image: 'light' (white) or 'dark'. */
+  bannerTextColor: 'light' | 'dark'
   sortOrder: number
   active: boolean
 }
@@ -140,6 +142,11 @@ export interface Restaurant {
   maxCategories?: number | null
   /** Ordering/cart enabled (paid plans only). Public feature flag. */
   ordering?: boolean
+  /** Cart display settings (paid plans). */
+  showCartTotal?: boolean
+  serviceChargeEnabled?: boolean
+  serviceChargeMode?: 'percent' | 'text'
+  serviceChargePercent?: number
 }
 
 export type PlanKey = 'free' | 'pro' | 'business'

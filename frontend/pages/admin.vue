@@ -172,7 +172,7 @@ const loadSuperAdmin = async () => {
 }
 
 // Edit an existing restaurant (name / theme / language / active).
-const saEdit = reactive({ open: false, id: '', name: '', themeKey: 'aria', defaultLang: 'hy', isActive: true, planKey: 'free' as 'free' | 'pro' | 'business' })
+const saEdit = reactive({ open: false, id: '', name: '', themeKey: 'aria', defaultLang: 'hy', isActive: true, planKey: 'free' as 'free' | 'pro' | 'business', address: '', phone: '', ownerEmail: '', ownerPassword: '' })
 const saSaving = ref(false)
 const saEditError = ref('')
 
@@ -186,20 +186,31 @@ const openEditRestaurant = (r: AdminRestaurantRow) => {
     defaultLang: 'hy',
     isActive: r.isActive,
     planKey: r.planKey || 'free',
+    address: r.address || '',
+    phone: r.phone || '',
+    ownerEmail: r.ownerEmail || '',
+    ownerPassword: '',
   })
 }
 
 const saSave = async () => {
   saEditError.value = ''
   if (!saEdit.name.trim()) return void (saEditError.value = t('nameRequired'))
+  const newPassword = saEdit.ownerPassword.trim()
+  if (newPassword && newPassword.length < 6) return void (saEditError.value = t('passwordTooShort'))
   saSaving.value = true
   try {
+    const email = saEdit.ownerEmail.trim()
     await superAdminService.update(saEdit.id, {
       name: saEdit.name.trim(),
       themeKey: saEdit.themeKey,
       defaultLang: saEdit.defaultLang,
       isActive: saEdit.isActive,
       planKey: saEdit.planKey,
+      address: saEdit.address.trim(),
+      phone: saEdit.phone.trim(),
+      ...(email ? { ownerEmail: email } : {}),
+      ...(newPassword ? { ownerPassword: newPassword } : {}),
     })
     saEdit.open = false
     await loadSuperAdmin()
@@ -379,6 +390,7 @@ const catDraft = reactive<CategoryDraft>({
   iconImage: '',
   image: '',
   mobileImage: '',
+  bannerTextColor: 'light',
   sortOrder: 0,
   active: true,
 })
@@ -399,6 +411,7 @@ const openAddCategory = () => {
     iconImage: '',
     image: '',
     mobileImage: '',
+    bannerTextColor: 'light',
     sortOrder: visibleCategories.value.length,
     active: true,
   })
@@ -414,6 +427,7 @@ const openEditCategory = (c: Category) => {
     iconImage: c.iconImage,
     image: c.image,
     mobileImage: c.mobileImage,
+    bannerTextColor: c.bannerTextColor,
     sortOrder: c.sortOrder,
     active: c.active,
   })
@@ -1109,14 +1123,17 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           </div>
 
           <!-- List -->
-          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <table class="w-full text-left text-sm">
+          <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <table class="w-full min-w-[1040px] text-left text-sm">
               <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
                   <th class="px-4 py-3">{{ t('name') }}</th>
                   <th class="px-4 py-3">{{ t('slug') }}</th>
                   <th class="px-4 py-3">{{ t('theme') }}</th>
                   <th class="px-4 py-3">{{ t('plan') }}</th>
+                  <th class="px-4 py-3">{{ t('addressLabel') }}</th>
+                  <th class="px-4 py-3">{{ t('phone') }}</th>
+                  <th class="px-4 py-3">{{ t('ownerLogin') }}</th>
                   <th class="px-4 py-3 text-center">{{ t('sectionsCount') }}</th>
                   <th class="px-4 py-3 text-center">{{ t('categoriesCount') }}</th>
                   <th class="px-4 py-3 text-center">{{ t('productsCount') }}</th>
@@ -1134,6 +1151,9 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                       :class="r.planKey === 'business' ? 'bg-amber-100 text-amber-700' : r.planKey === 'pro' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'"
                     >{{ r.planKey === 'pro' ? 'Professional' : r.planKey === 'business' ? 'Business' : 'Starter' }}</span>
                   </td>
+                  <td class="px-4 py-3 max-w-[14rem] truncate text-slate-600" :title="r.address || ''">{{ r.address || '—' }}</td>
+                  <td class="px-4 py-3 whitespace-nowrap text-slate-600">{{ r.phone || '—' }}</td>
+                  <td class="px-4 py-3 whitespace-nowrap text-slate-600">{{ r.ownerEmail || '—' }}</td>
                   <td class="px-4 py-3 text-center text-slate-600">{{ r.sections }}</td>
                   <td class="px-4 py-3 text-center text-slate-600">{{ r.categories }}</td>
                   <td class="px-4 py-3 text-center text-slate-600">{{ r.products }}</td>
@@ -1146,7 +1166,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                   </td>
                 </tr>
                 <tr v-if="!saRestaurants.length">
-                  <td colspan="7" class="px-4 py-8 text-center text-slate-400">{{ t('noRestaurants') }}</td>
+                  <td colspan="10" class="px-4 py-8 text-center text-slate-400">{{ t('noRestaurants') }}</td>
                 </tr>
               </tbody>
             </table>
@@ -1267,6 +1287,38 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             <label class="block"><span class="lbl">{{ t('workingHoursLabel') }}</span><input v-model="restaurant.workingHours" class="inp" placeholder="09:00 – 23:00" /></label>
             <label class="block"><span class="lbl">{{ t('addressLabel') }}</span><input v-model="restaurant.address" class="inp" /></label>
             <label class="block"><span class="lbl">{{ t('ratingLabel') }}</span><input v-model.number="restaurant.rating" type="number" step="0.1" min="0" max="5" class="inp" /></label>
+
+            <!-- Cart / ordering settings (paid plans only) -->
+            <div v-if="isPaidPlan" class="space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+              <p class="text-sm font-semibold text-slate-700">{{ t('cartSettings') }}</p>
+              <label class="flex items-center justify-between text-sm">
+                <span>{{ t('showCartTotalLabel') }}</span>
+                <input v-model="restaurant.showCartTotal" type="checkbox" class="h-4 w-4" />
+              </label>
+              <template v-if="restaurant.showCartTotal">
+                <label class="flex items-center justify-between text-sm">
+                  <span>{{ t('serviceChargeLabel') }}</span>
+                  <input v-model="restaurant.serviceChargeEnabled" type="checkbox" class="h-4 w-4" />
+                </label>
+                <div v-if="restaurant.serviceChargeEnabled" class="space-y-2 rounded-lg border border-slate-200 bg-white p-3">
+                  <label class="flex items-center gap-2 text-sm">
+                    <input v-model="restaurant.serviceChargeMode" type="radio" value="percent" /> {{ t('serviceModePercentLabel') }}
+                  </label>
+                  <label v-if="restaurant.serviceChargeMode === 'percent'" class="block pl-6">
+                    <span class="lbl">{{ t('servicePercentLabel') }}</span>
+                    <div class="flex items-center gap-1">
+                      <input v-model.number="restaurant.serviceChargePercent" type="number" min="0" max="100" step="1" class="inp w-24" />
+                      <span class="text-slate-500">%</span>
+                    </div>
+                  </label>
+                  <label class="flex items-center gap-2 text-sm">
+                    <input v-model="restaurant.serviceChargeMode" type="radio" value="text" /> {{ t('serviceModeTextLabel') }}
+                  </label>
+                </div>
+              </template>
+              <p class="text-[11px] leading-relaxed text-slate-400">{{ t('cartSettingsHint') }}</p>
+            </div>
+
             <button class="btn-primary" :disabled="busy" @click="saveRestaurant">{{ busy ? t('saving') : t('save') }}</button>
           </div>
         </section>
@@ -1520,6 +1572,19 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             </div>
           </div>
         </div>
+        <!-- Banner title colour (readable over any photo) -->
+        <div v-if="catDraft.image || catDraft.mobileImage" class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+          <span class="lbl">{{ t('bannerTextColorLabel') }}</span>
+          <div class="mt-1.5 flex gap-2">
+            <button type="button" class="flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition" :class="catDraft.bannerTextColor === 'light' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'" @click="catDraft.bannerTextColor = 'light'">
+              <span class="h-3.5 w-3.5 rounded-full border border-slate-300 bg-white" /> {{ t('textLight') }}
+            </button>
+            <button type="button" class="flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition" :class="catDraft.bannerTextColor === 'dark' ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'" @click="catDraft.bannerTextColor = 'dark'">
+              <span class="h-3.5 w-3.5 rounded-full bg-slate-900" /> {{ t('textDark') }}
+            </button>
+          </div>
+          <p class="mt-1.5 text-[11px] leading-relaxed text-slate-400">{{ t('bannerTextHint') }}</p>
+        </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
           <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
             <p class="lbl">{{ t('nameTranslations') }}</p>
@@ -1680,6 +1745,29 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             <option value="business">Business</option>
           </select>
         </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">{{ t('addressLabel') }}</span>
+          <input v-model="saEdit.address" type="text" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="ք. Երևան, ..." />
+        </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">{{ t('phone') }}</span>
+          <input v-model="saEdit.phone" type="tel" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="+374 XX XXX XXX" />
+        </label>
+
+        <!-- Owner login credentials -->
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-3">
+          <p class="text-xs font-semibold text-slate-700">{{ t('ownerCredentials') }}</p>
+          <label class="block">
+            <span class="text-xs font-medium text-slate-600">{{ t('ownerEmail') }}</span>
+            <input v-model="saEdit.ownerEmail" type="email" autocomplete="off" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="owner@cafe.am" />
+          </label>
+          <label class="block">
+            <span class="text-xs font-medium text-slate-600">{{ t('ownerPassword') }}</span>
+            <input v-model="saEdit.ownerPassword" type="text" autocomplete="off" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" :placeholder="t('newPasswordPlaceholder')" />
+            <span class="mt-1 block text-[11px] text-slate-400">{{ t('passwordKeepHint') }}</span>
+          </label>
+        </div>
+
         <label class="flex items-center gap-2">
           <input v-model="saEdit.isActive" type="checkbox" class="h-4 w-4 rounded border-slate-300" />
           <span class="text-sm text-slate-700">{{ t('activeRestaurant') }}</span>

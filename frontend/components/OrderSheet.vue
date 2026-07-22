@@ -7,6 +7,7 @@ const emit = defineEmits<{ close: [] }>()
 const { t } = useLanguage()
 const menu = useMenuStore()
 const order = useOrderStore()
+const brand = useBrand()
 
 interface Row {
   id: string
@@ -36,7 +37,14 @@ const rows = computed<Row[]>(() =>
     .filter((r): r is Row => r !== null),
 )
 
-const total = computed(() => rows.value.reduce((s, r) => s + r.sum, 0))
+const subtotal = computed(() => rows.value.reduce((s, r) => s + r.sum, 0))
+// Service charge (percent mode) → added to the grand total.
+const serviceAmount = computed(() =>
+  brand.serviceChargeEnabled && brand.serviceChargeMode === 'percent'
+    ? Math.round((subtotal.value * brand.serviceChargePercent) / 100)
+    : 0,
+)
+const total = computed(() => subtotal.value + serviceAmount.value)
 const fmt = (n: number) => n.toLocaleString('hy-AM')
 </script>
 
@@ -93,9 +101,22 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
 
           <!-- Footer -->
           <div v-if="rows.length" class="border-t border-[#E4D6C2] bg-white/60 px-5 py-4">
-            <div class="mb-3 flex items-end justify-between">
-              <span class="font-serif text-[#8A7868]">{{ t(ui.total) }}</span>
-              <span class="font-display text-2xl font-bold text-[#3E2723]">{{ fmt(total) }} <span class="text-[#C69A5A]">֏</span></span>
+            <div v-if="brand.showCartTotal" class="mb-3 space-y-1.5">
+              <!-- subtotal + service breakdown (percent mode) -->
+              <template v-if="serviceAmount > 0">
+                <div class="flex items-center justify-between font-serif text-sm text-[#8A7868]">
+                  <span>{{ t(ui.subtotal) }}</span><span>{{ fmt(subtotal) }} ֏</span>
+                </div>
+                <div class="flex items-center justify-between font-serif text-sm text-[#8A7868]">
+                  <span>{{ t(ui.service) }} ({{ brand.serviceChargePercent }}%)</span><span>+{{ fmt(serviceAmount) }} ֏</span>
+                </div>
+              </template>
+              <div class="flex items-end justify-between">
+                <span class="font-serif text-[#8A7868]">{{ t(ui.total) }}</span>
+                <span class="font-display text-2xl font-bold text-[#3E2723]">{{ fmt(total) }} <span class="text-[#C69A5A]">֏</span></span>
+              </div>
+              <!-- text-only service note -->
+              <p v-if="brand.serviceChargeEnabled && brand.serviceChargeMode === 'text'" class="font-serif text-xs italic text-[#8A7868]">{{ t(ui.serviceNote) }}</p>
             </div>
             <div class="flex gap-2">
               <button

@@ -22,5 +22,10 @@ export const useBrand = () => {
     cover: computed<string>(() => r.value.coverImage),
     // Ordering/cart is a paid feature (Professional & Business only).
     ordering: computed<boolean>(() => r.value.ordering ?? false),
+    // Cart display settings (paid plans).
+    showCartTotal: computed<boolean>(() => r.value.showCartTotal ?? true),
+    serviceChargeEnabled: computed<boolean>(() => r.value.serviceChargeEnabled ?? false),
+    serviceChargeMode: computed<'percent' | 'text'>(() => (r.value.serviceChargeMode === 'text' ? 'text' : 'percent')),
+    serviceChargePercent: computed<number>(() => r.value.serviceChargePercent ?? 10),
   })
 }

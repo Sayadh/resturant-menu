@@ -14,10 +14,13 @@ const props = defineProps<{
 
 const menu = useMenuStore()
 const rs = useRestaurantStore()
+const order = useOrderStore()
 
 const apply = () => {
   rs.setCurrent(props.restaurant)
   menu.setTenant(props.restaurant.id, { levels: props.levels, categories: props.categories })
+  // Cart is per-restaurant → clear it when switching to a different one.
+  order.bindRestaurant(props.restaurant.id)
 }
 
 // Apply immediately, and whenever the tenant OR the menu data changes (e.g. a

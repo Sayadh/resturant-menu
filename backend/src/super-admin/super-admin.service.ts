@@ -23,6 +23,7 @@ export class SuperAdminService {
       include: {
         theme: true,
         plan: { select: { key: true } },
+        users: { where: { role: UserRole.OWNER }, select: { email: true }, orderBy: { createdAt: 'asc' }, take: 1 },
         _count: { select: { categories: true, products: true, sections: true } },
       },
     })
@@ -33,6 +34,9 @@ export class SuperAdminService {
       themeKey: r.theme?.key ?? null,
       planKey: r.plan?.key ?? 'free',
       isActive: r.isActive,
+      address: r.address ?? null,
+      phone: r.phone ?? null,
+      ownerEmail: r.users[0]?.email ?? null,
       sections: r._count.sections,
       categories: r._count.categories,
       products: r._count.products,
@@ -98,6 +102,8 @@ export class SuperAdminService {
     const data: Record<string, unknown> = {}
     if (dto.name !== undefined) data.name = dto.name
     if (dto.isActive !== undefined) data.isActive = dto.isActive
+    if (dto.address !== undefined) data.address = dto.address.trim() || null
+    if (dto.phone !== undefined) data.phone = dto.phone.trim() || null
     if (dto.themeKey !== undefined) {
       const theme = await this.prisma.theme.findFirst({ where: { key: dto.themeKey } })
       data.themeId = theme?.id ?? null
@@ -113,7 +119,45 @@ export class SuperAdminService {
     }
 
     await this.prisma.restaurant.update({ where: { id }, data })
+
+    // Owner login: change email and/or reset password (super-admin only).
+    if (dto.ownerEmail !== undefined || dto.ownerPassword !== undefined) {
+      await this.upsertOwnerCredentials(id, dto.ownerEmail, dto.ownerPassword)
+    }
     return { ok: true }
+  }
+
+  /** Set the OWNER user's login email / password for a restaurant. */
+  private async upsertOwnerCredentials(restaurantId: string, email?: string, password?: string) {
+    const owner = await this.prisma.user.findFirst({
+      where: { restaurantId, role: UserRole.OWNER },
+      orderBy: { createdAt: 'asc' },
+    })
+
+    const newEmail = email?.toLowerCase().trim()
+    if (newEmail) {
+      const clash = await this.prisma.user.findFirst({
+        where: { email: newEmail, id: owner ? { not: owner.id } : undefined },
+      })
+      if (clash) throw new ConflictException('This email is already in use')
+    }
+
+    const passwordHash = password ? await bcrypt.hash(password, 10) : undefined
+
+    if (owner) {
+      const patch: Record<string, unknown> = {}
+      if (newEmail) patch.email = newEmail
+      if (passwordHash) patch.passwordHash = passwordHash
+      if (Object.keys(patch).length) await this.prisma.user.update({ where: { id: owner.id }, data: patch })
+      return
+    }
+
+    // No owner yet → create one (requires both email and password).
+    if (newEmail && passwordHash) {
+      await this.prisma.user.create({
+        data: { email: newEmail, passwordHash, role: UserRole.OWNER, restaurantId },
+      })
+    }
   }
 
   /** Permanently delete a restaurant and all its content (cascade). */
