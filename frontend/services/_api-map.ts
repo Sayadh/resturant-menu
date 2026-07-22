@@ -210,7 +210,7 @@ export function mapSection(s: ApiSectionRow): Section {
 export function sectionDraftToDto(d: Omit<Section, 'id' | 'restaurantId'>) {
   return {
     icon: d.icon || undefined,
-    imageUrl: d.image || undefined,
+    imageUrl: d.image ?? '', // '' clears the section image + deletes old file
     sortOrder: d.sortOrder,
     isActive: d.active,
     translations: translationToRows(d.name),
@@ -232,6 +232,7 @@ export interface ApiRestaurantBySlug {
     workingHoursText?: string | null
     rating?: number | null
     currency: string
+    ordering?: boolean
   }
   // themeId on the restaurant is a FK uuid; the human key lives on theme.key.
   theme: { id: string; key: string } | null
@@ -297,6 +298,7 @@ export function mapRestaurant(r: ApiRestaurantBySlug): Restaurant {
     rating: r.restaurant.rating ?? 0,
     defaultLanguage: def ?? langs[0] ?? 'hy',
     activeLanguages: langs.length ? langs : ['hy'],
+    ordering: r.restaurant.ordering ?? false,
   }
 }
 
@@ -439,9 +441,11 @@ export function categoryDraftToDto(d: Omit<Category, 'id' | 'restaurantId'>) {
   return {
     sectionId: d.sectionId,
     icon: d.icon || undefined,
-    iconUrl: d.iconImage || undefined,
-    imageUrl: d.image || undefined,
-    mobileImageUrl: d.mobileImage || undefined,
+    // Send '' (not undefined) so a removed image is CLEARED in the DB and its
+    // old file is deleted from storage on save. `|| undefined` swallowed clears.
+    iconUrl: d.iconImage ?? '',
+    imageUrl: d.image ?? '',
+    mobileImageUrl: d.mobileImage ?? '',
     sortOrder: d.sortOrder,
     isActive: d.active,
     translations: translationToRows(d.name, d.description),
@@ -460,7 +464,8 @@ export function productDraftToDto(d: Omit<Product, 'id' | 'restaurantId'>) {
     isRecommended: keys.includes('recommended'),
     sortOrder: d.sortOrder,
     badges: keys.length ? keys : undefined,
-    images: d.image ? [{ url: d.image, isMain: true }] : undefined,
+    // [] (not undefined) so a removed product image is cleared + old file deleted.
+    images: d.image ? [{ url: d.image, isMain: true }] : [],
     translations: translationToRows(d.name, d.description),
   }
 }

@@ -26,6 +26,7 @@ import AtelierFooter from '../components/AtelierFooter.vue'
 const { t } = useLanguage()
 const store = useMenuStore()
 const order = useOrderStore()
+const brand = useBrand() // ordering (cart) = paid plans only
 
 // Three top tabs derived from the data (no data change):
 // Food → level food · Drinks → drinks/soft · Cellar → drinks/alcohol.
@@ -264,8 +265,8 @@ onBeforeUnmount(() => {
     <AtelierFooter />
 
     <!-- Overlays -->
-    <AtelierBasketBar @open="billOpen = true" />
-    <AtelierBill :open="billOpen" @close="billOpen = false" />
+    <AtelierBasketBar v-if="brand.ordering" @open="billOpen = true" />
+    <AtelierBill v-if="brand.ordering" :open="billOpen" @close="billOpen = false" />
     <AtelierProductDetail
       :item="selected"
       :category-icon="iconForSelected"

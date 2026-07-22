@@ -3,8 +3,8 @@ import { ui } from '~/data/menu'
 const { t } = useLanguage()
 const brand = useBrand()
 const mono = computed(() => {
-  const i = brand.name.value.split(/\s+/).map((w) => w[0]).join('')
-  return (i.length > 1 ? i : brand.name.value).slice(0, 2).toUpperCase()
+  const i = brand.name.split(/\s+/).map((w) => w[0]).join('')
+  return (i.length > 1 ? i : brand.name).slice(0, 2).toUpperCase()
 })
 </script>
 
@@ -29,7 +29,7 @@ const mono = computed(() => {
           class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-caramel bg-card font-display text-2xl font-bold text-brown shadow-gold sm:h-20 sm:w-20 sm:text-3xl"
           aria-hidden="true"
         >
-          <img v-if="brand.logo.value" :src="brand.logo.value" alt="" class="h-full w-full rounded-full object-cover" />
+          <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full rounded-full object-cover" />
           <template v-else>{{ mono }}</template>
         </div>
 
@@ -43,13 +43,12 @@ const mono = computed(() => {
           {{ t(brand.tagline) }}
         </p>
 
-        <!-- Rating -->
-        <div class="mt-4 flex items-center gap-2">
+        <!-- Rating (only if set) -->
+        <div v-if="brand.rating" class="mt-4 flex items-center gap-2">
           <div class="flex text-caramel" aria-hidden="true">
             <IconStar v-for="n in 5" :key="n" class="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
           </div>
           <span class="font-display text-base font-bold text-brown sm:text-lg">{{ brand.rating }}</span>
-          <span class="font-serif text-sm text-brown-soft">· {{ t(ui.reviews) }}</span>
         </div>
 
         <!-- Caramel divider -->
@@ -59,23 +58,18 @@ const mono = computed(() => {
           <span class="h-px w-10 bg-caramel/60" />
         </div>
 
-        <!-- Restaurant info -->
+        <!-- Restaurant info (each shown only when filled) -->
         <div
+          v-if="brand.address || brand.hours"
           class="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2.5 font-serif text-[15px] text-brown/85"
         >
-          <span class="inline-flex items-center gap-1.5">
+          <span v-if="brand.address" class="inline-flex items-center gap-1.5">
             <IconPin class="h-4 w-4 text-caramel" />
             {{ brand.address }}
           </span>
-          <span class="inline-flex items-center gap-1.5">
+          <span v-if="brand.hours" class="inline-flex items-center gap-1.5">
             <IconClock class="h-4 w-4 text-caramel" />
             {{ brand.hours }}
-          </span>
-          <span
-            class="inline-flex items-center gap-1.5 rounded-full bg-herb/15 px-2.5 py-1 text-sm font-semibold text-herb"
-          >
-            <span class="h-1.5 w-1.5 rounded-full bg-herb" aria-hidden="true" />
-            {{ t(ui.openNow) }}
           </span>
         </div>
       </div>

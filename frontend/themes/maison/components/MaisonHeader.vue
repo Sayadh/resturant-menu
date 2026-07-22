@@ -5,7 +5,7 @@
 // brand mark, search + selection (basket) pill.
 // ─────────────────────────────────────────────────────────────────────────
 const brand = useBrand()
-const initial = computed(() => (brand.name.value || '?').trim().charAt(0).toUpperCase())
+const initial = computed(() => (brand.name || '?').trim().charAt(0).toUpperCase())
 
 defineProps<{ visible: boolean; count: number }>()
 defineEmits<{ (e: 'search'): void; (e: 'open-order'): void }>()
@@ -20,7 +20,7 @@ defineEmits<{ (e: 'search'): void; (e: 'open-order'): void }>()
         <!-- Brand mark -->
         <a href="#top" class="flex items-center gap-2.5">
           <span class="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#C4693F] to-[#A9522C] font-serif text-sm font-bold text-[#F6F0E4] shadow-sm">
-            <img v-if="brand.logo.value" :src="brand.logo.value" alt="" class="h-full w-full object-cover" />
+            <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full object-cover" />
             <template v-else>{{ initial }}</template>
           </span>
           <span class="font-serif text-base font-semibold tracking-tight text-[#3E3125] sm:text-lg">{{ brand.name }}</span>

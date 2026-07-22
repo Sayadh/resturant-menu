@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { randomUUID } from 'node:crypto'
@@ -27,6 +28,7 @@ const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
  */
 @Injectable()
 export class UploadsService {
+  private readonly logger = new Logger(UploadsService.name)
   private readonly url: string
   private readonly key: string
   private readonly bucket: string
@@ -84,11 +86,27 @@ export class UploadsService {
 
   /** Best-effort delete of a previously uploaded object (orphan cleanup). */
   async remove(storageKey: string | null | undefined): Promise<void> {
-    if (!storageKey || !this.url || !this.key) return
-    await fetch(`${this.url}/storage/v1/object/${this.bucket}/${storageKey}`, {
-      method: 'DELETE',
-      headers: this.headers(),
-    }).catch(() => undefined)
+    if (!storageKey || !this.url || !this.key) {
+      this.logger.warn(`Storage delete skipped (missing key/config): key=${storageKey}`)
+      return
+    }
+    try {
+      const res = await fetch(`${this.url}/storage/v1/object/${this.bucket}/${storageKey}`, {
+        method: 'DELETE',
+        headers: this.headers(),
+      })
+      if (res.ok) {
+        this.logger.log(`Storage delete OK: ${storageKey}`)
+      } else if (res.status === 404 || res.status === 400) {
+        // Already gone (Supabase returns 400/404 "not_found") — treat as success.
+        this.logger.log(`Storage object already absent: ${storageKey}`)
+      } else {
+        const detail = await res.text().catch(() => '')
+        this.logger.error(`Storage delete failed ${res.status} for ${storageKey}: ${detail}`)
+      }
+    } catch (e) {
+      this.logger.error(`Storage delete error for ${storageKey}: ${(e as Error).message}`)
+    }
   }
 
   /** Extract the object key from one of OUR public URLs; null for foreign URLs. */
@@ -115,6 +133,8 @@ export class UploadsService {
     const key = this.keyFromUrl(url)
     if (key && key.startsWith(`restaurants/${restaurantId}/`)) {
       await this.remove(key)
+    } else {
+      this.logger.warn(`Storage delete rejected (out of scope): url=${url} key=${key} rid=${restaurantId}`)
     }
   }
 }

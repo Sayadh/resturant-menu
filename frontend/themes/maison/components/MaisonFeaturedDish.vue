@@ -24,6 +24,7 @@ const props = withDefaults(
 
 const { t, lang } = useLanguage()
 const order = useOrderStore()
+const brand = useBrand() // ordering (cart) = paid plans only
 
 const qty = computed(() => order.qtyOf(props.item.id))
 const price = computed(() => props.item.price.toLocaleString('fr-FR'))
@@ -111,8 +112,8 @@ const isDark = computed(() => props.tone === 'dark')
           {{ price }}<span class="ml-1 text-xl">{{ ui.currency[lang] }}</span>
         </span>
 
-        <!-- Stepper / Add -->
-        <div class="flex items-center">
+        <!-- Stepper / Add (ordering = paid plans only) -->
+        <div v-if="brand.ordering" class="flex items-center">
           <Transition name="ms-fade" mode="out-in">
             <div
               v-if="qty > 0"

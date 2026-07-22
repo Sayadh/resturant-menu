@@ -20,6 +20,7 @@ export const demoRestaurant: Restaurant = {
   rating: 4.9,
   defaultLanguage: 'hy',
   activeLanguages: ['hy', 'en', 'ru'],
+  ordering: true, // demo shows the full design incl. cart
 }
 
 export const demoLevels: MenuLevel[] = [

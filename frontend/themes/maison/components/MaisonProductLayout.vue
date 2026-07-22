@@ -13,6 +13,7 @@ const props = defineProps<{ category: MenuCategory }>()
 
 const { t, lang } = useLanguage()
 const order = useOrderStore()
+const brand = useBrand() // ordering (cart) = paid plans only
 
 const fmt = (n: number) => n.toLocaleString('fr-FR')
 const initial = (item: MenuItem) => t(item.name).trim().charAt(0)
@@ -68,20 +69,22 @@ const soldOut = (item: MenuItem) => item.available === false
           </span>
 
           <ClientOnly>
-            <div v-if="order.qtyOf(item.id) > 0" class="flex items-center gap-1 rounded-full bg-[#F0E7D5] p-1">
-              <button type="button" class="grid h-8 w-8 place-items-center rounded-full text-lg font-bold text-[#5A4433] transition hover:bg-white" aria-label="−" @click="order.dec(item.id)">−</button>
-              <span class="min-w-5 text-center font-serif text-sm font-bold text-[#4A3B2E]">{{ order.qtyOf(item.id) }}</span>
-              <button type="button" class="grid h-8 w-8 place-items-center rounded-full bg-[#8A9466] text-lg font-bold text-[#F6F0E4] transition hover:bg-[#78855A]" aria-label="+" @click="order.add(item.id)">+</button>
-            </div>
-            <button
-              v-else-if="!soldOut(item)"
-              type="button"
-              class="grid h-11 w-11 place-items-center rounded-full bg-[#8A9466] text-2xl font-bold text-[#F6F0E4] shadow-[0_12px_22px_-10px_rgba(138,148,102,0.9)] transition hover:-translate-y-0.5 hover:bg-[#78855A] active:scale-95"
-              aria-label="Add"
-              @click="order.add(item.id)"
-            >
-              +
-            </button>
+            <template v-if="brand.ordering">
+              <div v-if="order.qtyOf(item.id) > 0" class="flex items-center gap-1 rounded-full bg-[#F0E7D5] p-1">
+                <button type="button" class="grid h-8 w-8 place-items-center rounded-full text-lg font-bold text-[#5A4433] transition hover:bg-white" aria-label="−" @click="order.dec(item.id)">−</button>
+                <span class="min-w-5 text-center font-serif text-sm font-bold text-[#4A3B2E]">{{ order.qtyOf(item.id) }}</span>
+                <button type="button" class="grid h-8 w-8 place-items-center rounded-full bg-[#8A9466] text-lg font-bold text-[#F6F0E4] transition hover:bg-[#78855A]" aria-label="+" @click="order.add(item.id)">+</button>
+              </div>
+              <button
+                v-else-if="!soldOut(item)"
+                type="button"
+                class="grid h-11 w-11 place-items-center rounded-full bg-[#8A9466] text-2xl font-bold text-[#F6F0E4] shadow-[0_12px_22px_-10px_rgba(138,148,102,0.9)] transition hover:-translate-y-0.5 hover:bg-[#78855A] active:scale-95"
+                aria-label="Add"
+                @click="order.add(item.id)"
+              >
+                +
+              </button>
+            </template>
           </ClientOnly>
         </div>
       </div>

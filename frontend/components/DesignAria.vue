@@ -4,7 +4,6 @@
 // data, language switching and Food/Drinks/Alcohol logic stay intact.
 import { ui, type MenuItem, type MenuCategory, type LocalizedText } from '~/data/menu'
 import {
-  ariaBrand,
   ariaSearchPlaceholder,
   ariaBasketLabel,
   ariaItemsWord,
@@ -15,8 +14,8 @@ const store = useMenuStore()
 const order = useOrderStore()
 const brand = useBrand()
 const mono = computed(() => {
-  const i = brand.name.value.split(/\s+/).map((w) => w[0]).join('')
-  return (i.length > 1 ? i : brand.name.value).slice(0, 2).toUpperCase()
+  const i = brand.name.split(/\s+/).map((w) => w[0]).join('')
+  return (i.length > 1 ? i : brand.name).slice(0, 2).toUpperCase()
 })
 
 // Top tabs are the restaurant's dynamic sections (one tab per section).
@@ -174,7 +173,7 @@ onBeforeUnmount(() => {
           <!-- monogram -->
           <div class="mx-auto flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] p-[2px] shadow-[0_10px_24px_-8px_rgba(198,154,90,0.7)]">
             <div class="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#FFF9EF] font-display text-2xl font-bold tracking-wide text-[#3E2723]">
-              <img v-if="brand.logo.value" :src="brand.logo.value" alt="" class="h-full w-full rounded-full object-cover" />
+              <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full rounded-full object-cover" />
               <template v-else>{{ mono }}</template>
             </div>
           </div>
@@ -193,25 +192,21 @@ onBeforeUnmount(() => {
             <span class="h-px flex-1 bg-gradient-to-l from-transparent to-[#C69A5A]/70" />
           </div>
 
-          <!-- rating -->
-          <div class="mt-3.5 flex items-center justify-center gap-2">
+          <!-- rating (only if set) -->
+          <div v-if="brand.rating" class="mt-3.5 flex items-center justify-center gap-2">
             <span class="flex text-[#C69A5A]" aria-hidden="true">
               <IconStar v-for="n in 5" :key="n" class="h-[17px] w-[17px]" />
             </span>
             <span class="font-display text-base font-bold text-[#3E2723]">{{ brand.rating }}</span>
-            <span class="font-serif text-sm text-[#7A6654]">· {{ t(ariaBrand.reviews) }}</span>
           </div>
 
-          <!-- info chips -->
-          <div class="mt-4 flex flex-wrap items-center justify-center gap-2 font-serif text-sm">
-            <span class="inline-flex items-center gap-1.5 rounded-full border border-[#E4D6C2] bg-[#FFF9EF] px-3 py-1.5 text-[#3E2723]/85 shadow-sm">
+          <!-- info chips (each shown only when filled) -->
+          <div v-if="brand.address || brand.hours" class="mt-4 flex flex-wrap items-center justify-center gap-2 font-serif text-sm">
+            <span v-if="brand.address" class="inline-flex items-center gap-1.5 rounded-full border border-[#E4D6C2] bg-[#FFF9EF] px-3 py-1.5 text-[#3E2723]/85 shadow-sm">
               <IconPin class="h-4 w-4 text-[#C69A5A]" /> {{ brand.address }}
             </span>
-            <span class="inline-flex items-center gap-1.5 rounded-full border border-[#E4D6C2] bg-[#FFF9EF] px-3 py-1.5 text-[#3E2723]/85 shadow-sm">
+            <span v-if="brand.hours" class="inline-flex items-center gap-1.5 rounded-full border border-[#E4D6C2] bg-[#FFF9EF] px-3 py-1.5 text-[#3E2723]/85 shadow-sm">
               <IconClock class="h-4 w-4 text-[#C69A5A]" /> {{ brand.hours }}
-            </span>
-            <span class="inline-flex items-center gap-1.5 rounded-full bg-[#6F8B4A]/15 px-3 py-1.5 font-semibold text-[#5A7038]">
-              <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-[#6F8B4A]" /> {{ t(ui.openNow) }}
             </span>
           </div>
         </div>
@@ -392,21 +387,23 @@ onBeforeUnmount(() => {
                     {{ fmt(item.price) }}<span class="ml-0.5 text-[#C69A5A]">֏</span>
                   </p>
 
-                  <!-- Add / stepper -->
-                  <div v-if="order.qtyOf(item.id) > 0" class="flex items-center gap-1 sm:gap-1.5">
-                    <button type="button" class="flex h-[1.55rem] w-[1.55rem] items-center justify-center rounded-full border border-[#E4D6C2] bg-white pb-1 text-base font-bold text-[#3E2723] transition hover:border-[#C69A5A] sm:h-8 sm:w-8 sm:pb-0 sm:text-lg" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
-                    <span class="w-4 text-center font-display text-sm font-bold text-[#3E2723] sm:text-base">{{ order.qtyOf(item.id) }}</span>
-                    <button type="button" class="flex h-[1.55rem] w-[1.55rem] items-center justify-center rounded-full bg-gradient-to-br from-[#C69A5A] to-[#A87E42] pb-1 text-base font-bold text-white shadow-sm transition hover:brightness-105 sm:h-8 sm:w-8 sm:pb-0 sm:text-lg" aria-label="Ավելացնել" @click="order.add(item.id)">+</button>
-                  </div>
-                  <button
-                    v-else-if="item.available !== false"
-                    type="button"
-                    class="flex h-[1.55rem] w-[1.55rem] items-center justify-center rounded-full bg-[#3E2723] pb-1 text-lg font-bold text-[#FFF9EF] shadow-sm transition hover:bg-[#5A4038] active:scale-95 sm:h-9 sm:w-9 sm:pb-0 sm:text-xl"
-                    aria-label="Ավելացնել պատվերին"
-                    @click="order.add(item.id)"
-                  >
-                    +
-                  </button>
+                  <!-- Add / stepper (ordering = paid plans only) -->
+                  <template v-if="brand.ordering">
+                    <div v-if="order.qtyOf(item.id) > 0" class="flex items-center gap-1 sm:gap-1.5">
+                      <button type="button" class="flex h-[1.55rem] w-[1.55rem] items-center justify-center rounded-full border border-[#E4D6C2] bg-white pb-1 text-base font-bold text-[#3E2723] transition hover:border-[#C69A5A] sm:h-8 sm:w-8 sm:pb-0 sm:text-lg" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
+                      <span class="w-4 text-center font-display text-sm font-bold text-[#3E2723] sm:text-base">{{ order.qtyOf(item.id) }}</span>
+                      <button type="button" class="flex h-[1.55rem] w-[1.55rem] items-center justify-center rounded-full bg-gradient-to-br from-[#C69A5A] to-[#A87E42] pb-1 text-base font-bold text-white shadow-sm transition hover:brightness-105 sm:h-8 sm:w-8 sm:pb-0 sm:text-lg" aria-label="Ավելացնել" @click="order.add(item.id)">+</button>
+                    </div>
+                    <button
+                      v-else-if="item.available !== false"
+                      type="button"
+                      class="flex h-[1.55rem] w-[1.55rem] items-center justify-center rounded-full bg-[#3E2723] pb-1 text-lg font-bold text-[#FFF9EF] shadow-sm transition hover:bg-[#5A4038] active:scale-95 sm:h-9 sm:w-9 sm:pb-0 sm:text-xl"
+                      aria-label="Ավելացնել պատվերին"
+                      @click="order.add(item.id)"
+                    >
+                      +
+                    </button>
+                  </template>
                 </div>
               </div>
             </article>
@@ -424,14 +421,14 @@ onBeforeUnmount(() => {
     <footer class="mt-12 border-t border-[#E4D6C2] bg-[#FFF9EF]/70">
       <div class="mx-auto flex max-w-5xl flex-col items-center gap-2 px-5 py-8 text-center">
         <p class="font-display text-lg font-bold uppercase tracking-[0.2em] text-[#3E2723]">{{ brand.name }}</p>
-        <p class="font-serif text-sm italic text-[#7A6654]">{{ t(ui.footerNote) }}</p>
+        <p v-if="t(brand.tagline)" class="font-serif text-sm italic text-[#7A6654]">{{ t(brand.tagline) }}</p>
       </div>
     </footer>
 
-    <!-- Floating order button (compact, corner) -->
+    <!-- Floating order button (compact, corner) — paid plans only -->
     <Transition name="bar">
       <button
-        v-if="order.count > 0"
+        v-if="brand.ordering && order.count > 0"
         type="button"
         class="fixed bottom-5 left-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#3E2723] to-[#5A4038] text-2xl text-[#FFF9EF] shadow-[0_16px_36px_-10px_rgba(62,39,35,0.7)] ring-1 ring-[#C69A5A]/30 transition hover:brightness-110 active:scale-95"
         :aria-label="`${t(ariaBasketLabel)} · ${order.count}`"
@@ -442,7 +439,7 @@ onBeforeUnmount(() => {
       </button>
     </Transition>
 
-    <OrderSheet :open="orderOpen" @close="orderOpen = false" />
+    <OrderSheet v-if="brand.ordering" :open="orderOpen" @close="orderOpen = false" />
     <ImageLightbox :item="selected" @close="selected = null" />
   </div>
 </template>

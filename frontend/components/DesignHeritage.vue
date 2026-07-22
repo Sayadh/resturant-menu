@@ -160,8 +160,8 @@ onBeforeUnmount(() => {
           <span class="h-1.5 w-1.5 rotate-45 bg-caramel" />
           <span class="h-px w-8 bg-caramel/60" />
         </div>
-        <p class="font-serif text-base italic text-brown-soft">{{ t(ui.footerNote) }}</p>
-        <p class="font-serif text-sm text-brown/70">{{ brand.address }} · {{ t(ui.hours) }}</p>
+        <p v-if="t(brand.tagline)" class="font-serif text-base italic text-brown-soft">{{ t(brand.tagline) }}</p>
+        <p v-if="brand.address || brand.hours" class="font-serif text-sm text-brown/70">{{ [brand.address, brand.hours].filter(Boolean).join(' · ') }}</p>
       </div>
     </footer>
 

@@ -83,11 +83,15 @@ export class PublicService {
       include: {
         settings: true,
         theme: true,
+        plan: { select: { key: true } },
         translations: { include: { language: true } },
         languages: { include: { language: true }, orderBy: { sortOrder: 'asc' } },
       },
     })
     if (!r) throw new NotFoundException('Restaurant not found')
+
+    // Ordering (cart) is a paid feature — Professional & Business only.
+    const ordering = r.plan?.key === 'pro' || r.plan?.key === 'business'
 
     return {
       restaurant: {
@@ -101,6 +105,7 @@ export class PublicService {
         workingHoursText: r.workingHoursText,
         rating: r.rating,
         currency: r.currency,
+        ordering,
       },
       theme: r.theme ? { id: r.theme.id, key: r.theme.key } : null,
       settings: r.settings,

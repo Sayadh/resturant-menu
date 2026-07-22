@@ -4,8 +4,8 @@
 import AtelierLangSwitch from './AtelierLangSwitch.vue'
 const brand = useBrand()
 const mono = computed(() => {
-  const i = brand.name.value.split(/\s+/).map((w) => w[0]).join('')
-  return (i.length > 1 ? i : brand.name.value).slice(0, 2).toUpperCase()
+  const i = brand.name.split(/\s+/).map((w) => w[0]).join('')
+  return (i.length > 1 ? i : brand.name).slice(0, 2).toUpperCase()
 })
 </script>
 
@@ -18,7 +18,7 @@ const mono = computed(() => {
           class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[#16130F] font-display text-[13px] font-semibold tracking-[0.08em] text-[#16130F]"
           aria-hidden="true"
         >
-          <img v-if="brand.logo.value" :src="brand.logo.value" alt="" class="h-full w-full object-cover" />
+          <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full object-cover" />
           <template v-else>{{ mono }}</template>
         </span>
         <span class="font-display text-[15px] font-semibold tracking-[0.32em] text-[#16130F]">

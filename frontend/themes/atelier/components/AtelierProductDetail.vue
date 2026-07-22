@@ -9,6 +9,7 @@ const emit = defineEmits<{ close: [] }>()
 
 const { t } = useLanguage()
 const order = useOrderStore()
+const brand = useBrand() // ordering (cart) = paid plans only
 const fmt = (n: number) => n.toLocaleString('hy-AM')
 
 const onKey = (e: KeyboardEvent) => {
@@ -66,20 +67,23 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
                     <p class="mt-1 font-serif text-3xl text-[#16130F]">{{ fmt(item.price) }}<span class="ml-0.5 text-[#A1502E]">֏</span></p>
                   </div>
 
-                  <div v-if="order.qtyOf(item.id) > 0" class="flex items-center gap-4">
-                    <button type="button" class="flex h-9 w-9 items-center justify-center rounded-full border border-[#16130F]/30 font-display text-lg text-[#16130F] transition hover:border-[#A1502E]" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
-                    <span class="w-5 text-center font-serif text-lg font-semibold">{{ order.qtyOf(item.id) }}</span>
-                    <button type="button" class="flex h-9 w-9 items-center justify-center rounded-full bg-[#16130F] font-display text-lg text-[#F6F2EA] transition hover:bg-[#A1502E]" aria-label="Ավելացնել" @click="order.add(item.id)">+</button>
-                  </div>
-                  <button
-                    v-else-if="item.available !== false"
-                    type="button"
-                    class="bg-[#16130F] px-6 py-3 font-display text-[11px] uppercase tracking-[0.24em] text-[#F6F2EA] transition hover:bg-[#A1502E]"
-                    @click="order.add(item.id)"
-                  >
-                    {{ t(atelierAddToTable) }}
-                  </button>
-                  <span v-else class="atl-eyebrow font-display text-[10px] text-[#857B6C]">{{ t(ui.soldOut) }}</span>
+                  <template v-if="brand.ordering">
+                    <div v-if="order.qtyOf(item.id) > 0" class="flex items-center gap-4">
+                      <button type="button" class="flex h-9 w-9 items-center justify-center rounded-full border border-[#16130F]/30 font-display text-lg text-[#16130F] transition hover:border-[#A1502E]" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
+                      <span class="w-5 text-center font-serif text-lg font-semibold">{{ order.qtyOf(item.id) }}</span>
+                      <button type="button" class="flex h-9 w-9 items-center justify-center rounded-full bg-[#16130F] font-display text-lg text-[#F6F2EA] transition hover:bg-[#A1502E]" aria-label="Ավելացնել" @click="order.add(item.id)">+</button>
+                    </div>
+                    <button
+                      v-else-if="item.available !== false"
+                      type="button"
+                      class="bg-[#16130F] px-6 py-3 font-display text-[11px] uppercase tracking-[0.24em] text-[#F6F2EA] transition hover:bg-[#A1502E]"
+                      @click="order.add(item.id)"
+                    >
+                      {{ t(atelierAddToTable) }}
+                    </button>
+                    <span v-else class="atl-eyebrow font-display text-[10px] text-[#857B6C]">{{ t(ui.soldOut) }}</span>
+                  </template>
+                  <span v-else-if="item.available === false" class="atl-eyebrow font-display text-[10px] text-[#857B6C]">{{ t(ui.soldOut) }}</span>
                 </div>
               </div>
             </div>

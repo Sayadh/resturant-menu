@@ -13,6 +13,7 @@ const emit = defineEmits<{ open: [item: MenuItem] }>()
 
 const { t } = useLanguage()
 const order = useOrderStore()
+const brand = useBrand() // ordering (cart) = paid plans only
 
 const fmt = (n: number) => n.toLocaleString('hy-AM')
 const soldOut = computed(() => props.item.available === false)
@@ -79,21 +80,23 @@ const soldOut = computed(() => props.item.available === false)
           {{ t(ui.soldOut) }}
         </span>
 
-        <!-- Add / stepper -->
-        <div v-if="order.qtyOf(item.id) > 0" class="ml-auto flex items-center gap-3">
-          <button type="button" class="flex h-7 w-7 items-center justify-center rounded-full border border-[#16130F]/30 font-display text-base text-[#16130F] transition hover:border-[#A1502E] hover:text-[#A1502E]" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
-          <span class="w-4 text-center font-serif text-base font-semibold text-[#16130F]">{{ order.qtyOf(item.id) }}</span>
-          <button type="button" class="flex h-7 w-7 items-center justify-center rounded-full bg-[#16130F] font-display text-base text-[#F6F2EA] transition hover:bg-[#A1502E]" aria-label="Ավելացնել" @click="order.add(item.id)">+</button>
-        </div>
-        <button
-          v-else-if="!soldOut"
-          type="button"
-          class="flex items-center gap-2 border-b border-[#16130F] pb-0.5 font-display text-[10px] uppercase tracking-[0.22em] text-[#16130F] transition-colors hover:border-[#A1502E] hover:text-[#A1502E]"
-          @click="order.add(item.id)"
-        >
-          {{ t(atelierAdd) }}
-          <span class="text-sm leading-none">+</span>
-        </button>
+        <!-- Add / stepper (ordering = paid plans only) -->
+        <template v-if="brand.ordering">
+          <div v-if="order.qtyOf(item.id) > 0" class="ml-auto flex items-center gap-3">
+            <button type="button" class="flex h-7 w-7 items-center justify-center rounded-full border border-[#16130F]/30 font-display text-base text-[#16130F] transition hover:border-[#A1502E] hover:text-[#A1502E]" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
+            <span class="w-4 text-center font-serif text-base font-semibold text-[#16130F]">{{ order.qtyOf(item.id) }}</span>
+            <button type="button" class="flex h-7 w-7 items-center justify-center rounded-full bg-[#16130F] font-display text-base text-[#F6F2EA] transition hover:bg-[#A1502E]" aria-label="Ավելացնել" @click="order.add(item.id)">+</button>
+          </div>
+          <button
+            v-else-if="!soldOut"
+            type="button"
+            class="flex items-center gap-2 border-b border-[#16130F] pb-0.5 font-display text-[10px] uppercase tracking-[0.22em] text-[#16130F] transition-colors hover:border-[#A1502E] hover:text-[#A1502E]"
+            @click="order.add(item.id)"
+          >
+            {{ t(atelierAdd) }}
+            <span class="text-sm leading-none">+</span>
+          </button>
+        </template>
       </div>
     </div>
   </article>

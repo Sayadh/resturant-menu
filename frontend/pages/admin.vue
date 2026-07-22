@@ -621,8 +621,11 @@ const firstFilled = (tr: { hy: string; ru: string; en: string }): 'hy' | 'ru' | 
 // Only fill languages the restaurant actually uses.
 const activeLangCodes = () =>
   (['hy', 'ru', 'en'] as const).filter((l) => restaurant.value.activeLanguages.includes(l))
-const aiTranslateField = async (field: 'name' | 'description') => {
-  const tr = prodDraft[field]
+// Generic AI helpers — work on ANY trilingual field, so products, categories
+// and sections all reuse the same logic (DRY, one source of truth).
+type Tr = { hy: string; ru: string; en: string }
+// Translate a field from its first filled language into the other active ones.
+const aiTranslateTr = async (tr: Tr) => {
   const src = firstFilled(tr)
   if (!src) {
     flash(t('aiNeedText'))
@@ -641,10 +644,9 @@ const aiTranslateField = async (field: 'name' | 'description') => {
     aiBusy.value = false
   }
 }
-const aiTranslateName = () => aiTranslateField('name')
-const aiTranslateDesc = () => aiTranslateField('description')
-const aiDescribe = async () => {
-  const src = firstFilled(prodDraft.name)
+// Generate a description (all active languages) from a name field.
+const aiDescribeInto = async (nameTr: Tr, descTr: Tr) => {
+  const src = firstFilled(nameTr)
   if (!src) {
     flash(t('aiNeedName'))
     return
@@ -652,8 +654,8 @@ const aiDescribe = async () => {
   aiBusy.value = true
   try {
     const targets = activeLangCodes()
-    const out = await aiService.describe(prodDraft.name[src], [...targets])
-    for (const l of targets) if (out[l]) prodDraft.description[l] = out[l]
+    const out = await aiService.describe(nameTr[src], [...targets])
+    for (const l of targets) if (out[l]) descTr[l] = out[l]
     flash(t('aiDone'))
   } catch (e) {
     flash((e as Error)?.message || t('aiFailed'))
@@ -661,6 +663,10 @@ const aiDescribe = async () => {
     aiBusy.value = false
   }
 }
+// Product wrappers (keep the product modal's existing bindings).
+const aiTranslateName = () => aiTranslateTr(prodDraft.name)
+const aiTranslateDesc = () => aiTranslateTr(prodDraft.description)
+const aiDescribe = () => aiDescribeInto(prodDraft.name, prodDraft.description)
 
 // ── ordering (drag-free: up/down; persists sortOrder) ───────────
 const reordering = ref(false)
@@ -800,10 +806,10 @@ const removeImage = (
   if (!url) return
   askDelete(t('removeImageTitle'), t('removeImageMsg'), async () => {
     set('')
-    if (pendingUploads.has(url)) {
-      await uploadService.deleteImage(url)
-      pendingUploads.delete(url)
-    }
+    pendingUploads.delete(url)
+    // Delete from storage immediately (scoped backend endpoint).
+    await uploadService.deleteImage(url)
+    // Logo/cover live outside a modal → persist the cleared field right away.
     if (persist) await persist()
   })
 }
@@ -899,6 +905,9 @@ const formLangs = computed(() =>
     .filter((c) => restaurant.value.activeLanguages.includes(c))
     .map((c) => LANG_META[c]),
 )
+// Language name shown inside a field label, in the admin's current language.
+const LANG_KEY = { hy: 'langHy', ru: 'langRu', en: 'langEn' } as const
+const langLabel = (c: LangCode) => t(LANG_KEY[c])
 const toggleLang = (code: LangCode) => {
   const langs = restaurant.value.activeLanguages
   if (langs.includes(code)) {
@@ -1236,26 +1245,28 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             <!-- Logo -->
             <div>
               <span class="lbl">Լոգո</span>
-              <div class="mt-1.5 flex items-center gap-4">
+              <div class="mt-1.5 flex items-start gap-4">
                 <div class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
                   <img v-if="restaurant.logo" :src="restaurant.logo" alt="logo" class="h-full w-full object-cover" />
                   <span v-else class="text-xl font-bold text-slate-300">{{ (restaurant.name || '?').charAt(0) }}</span>
                 </div>
-                <div class="flex flex-col items-start gap-1.5">
-                  <label class="cursor-pointer rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50" :class="uploadingLogo && 'pointer-events-none opacity-60'">
-                    {{ uploadingLogo ? t('saving') : (restaurant.logo ? 'Փոխել լոգոն' : 'Վերբեռնել լոգո') }}
-                    <input type="file" accept="image/*" class="hidden" @change="onLogoUpload" />
-                  </label>
-                  <button v-if="restaurant.logo" type="button" class="text-xs font-medium text-rose-600 hover:text-rose-700" @click="removeImage(() => restaurant.logo, (u) => (restaurant.logo = u), saveRestaurant)">Հեռացնել</button>
-                  <p class="text-[11px] text-slate-400">PNG կամ JPG, քառակուսի՝ լավագույն արդյունքի համար</p>
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <label class="cursor-pointer rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50" :class="uploadingLogo && 'pointer-events-none opacity-60'">
+                      {{ uploadingLogo ? t('saving') : (restaurant.logo ? 'Փոխել լոգոն' : 'Վերբեռնել լոգո') }}
+                      <input type="file" accept="image/*" class="hidden" @change="onLogoUpload" />
+                    </label>
+                    <button v-if="restaurant.logo" type="button" class="rounded-lg px-2.5 py-2 text-xs font-medium text-rose-600 transition hover:bg-rose-50" @click="removeImage(() => restaurant.logo, (u) => (restaurant.logo = u), saveRestaurant)">Հեռացնել</button>
+                  </div>
+                  <p class="mt-2 text-[11px] leading-relaxed text-slate-400">Ձեր հաստատության լոգոն՝ երևում է մենյուի վերևում։ Լավագույն արդյունքի համար՝ քառակուսի PNG կամ JPG, առնվազն 200×200։</p>
                 </div>
               </div>
             </div>
-            <label class="block"><span class="lbl">Name</span><input v-model="restaurant.name" class="inp" /></label>
-            <label v-for="l in formLangs" :key="l.code" class="block"><span class="lbl">{{ l.ph.tagline }}</span><input v-model="restaurant.tagline[l.code]" class="inp" /></label>
-            <label class="block"><span class="lbl">Working hours</span><input v-model="restaurant.workingHours" class="inp" /></label>
-            <label class="block"><span class="lbl">Address</span><input v-model="restaurant.address" class="inp" /></label>
-            <label class="block"><span class="lbl">Rating</span><input v-model.number="restaurant.rating" type="number" step="0.1" class="inp" /></label>
+            <label class="block"><span class="lbl">{{ t('name') }}</span><input v-model="restaurant.name" class="inp" /></label>
+            <label v-for="l in formLangs" :key="l.code" class="block"><span class="lbl">{{ t('slogan') }} ({{ langLabel(l.code) }})</span><input v-model="restaurant.tagline[l.code]" class="inp" /></label>
+            <label class="block"><span class="lbl">{{ t('workingHoursLabel') }}</span><input v-model="restaurant.workingHours" class="inp" placeholder="09:00 – 23:00" /></label>
+            <label class="block"><span class="lbl">{{ t('addressLabel') }}</span><input v-model="restaurant.address" class="inp" /></label>
+            <label class="block"><span class="lbl">{{ t('ratingLabel') }}</span><input v-model.number="restaurant.rating" type="number" step="0.1" min="0" max="5" class="inp" /></label>
             <button class="btn-primary" :disabled="busy" @click="saveRestaurant">{{ busy ? t('saving') : t('save') }}</button>
           </div>
         </section>
@@ -1480,7 +1491,9 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           </div>
           <div class="flex-1">
             <span class="lbl">{{ t('sectionField') }}</span>
-            <div class="inp flex items-center bg-slate-100 text-slate-500">{{ sectionName(catDraft.sectionId) }}</div>
+            <select v-model="catDraft.sectionId" class="inp">
+              <option v-for="s in sections" :key="s.id" :value="s.id">{{ sectionName(s.id) }}</option>
+            </select>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
@@ -1508,13 +1521,22 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           </div>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-          <p class="lbl mb-2">{{ t('nameTranslations') }}</p>
+          <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p class="lbl">{{ t('nameTranslations') }}</p>
+            <button v-if="aiEnabled" type="button" class="ai-btn" :disabled="aiBusy" @click="aiTranslateTr(catDraft.name)">🌍 {{ aiBusy ? t('aiWorking') : t('aiTranslate') }}</button>
+          </div>
           <div class="space-y-2">
             <div v-for="l in formLangs" :key="l.code" class="flex items-center gap-2"><span class="tl-tag">{{ l.tag }}</span><input v-model="catDraft.name[l.code]" class="inp" :placeholder="l.ph.catName" /></div>
           </div>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-          <p class="lbl mb-2">{{ t('descTranslations') }} <span class="font-normal text-slate-400">({{ t('optional') }})</span></p>
+          <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p class="lbl">{{ t('descTranslations') }} <span class="font-normal text-slate-400">({{ t('optional') }})</span></p>
+            <div v-if="aiEnabled" class="flex gap-1.5">
+              <button type="button" class="ai-btn" :disabled="aiBusy" @click="aiDescribeInto(catDraft.name, catDraft.description)">✨ {{ t('aiDescribe') }}</button>
+              <button type="button" class="ai-btn" :disabled="aiBusy" @click="aiTranslateTr(catDraft.description)">🌍 {{ t('aiTranslate') }}</button>
+            </div>
+          </div>
           <div class="space-y-2">
             <div v-for="l in formLangs" :key="l.code" class="flex items-center gap-2"><span class="tl-tag">{{ l.tag }}</span><input v-model="catDraft.description[l.code]" class="inp" :placeholder="l.ph.catDesc" /></div>
           </div>
@@ -1546,7 +1568,10 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           </div>
         </div>
         <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-          <p class="lbl mb-2">{{ t('nameTranslations') }}</p>
+          <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p class="lbl">{{ t('nameTranslations') }}</p>
+            <button v-if="aiEnabled" type="button" class="ai-btn" :disabled="aiBusy" @click="aiTranslateTr(secDraft.name)">🌍 {{ aiBusy ? t('aiWorking') : t('aiTranslate') }}</button>
+          </div>
           <div class="space-y-2">
             <div v-for="l in formLangs" :key="l.code" class="flex items-center gap-2"><span class="tl-tag">{{ l.tag }}</span><input v-model="secDraft.name[l.code]" class="inp" :placeholder="l.ph.secName" /></div>
           </div>

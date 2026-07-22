@@ -5,7 +5,6 @@
 // a terracotta call-to-action on the left, a soft rounded, framed cover photo
 // on the right. Cozy, friendly, premium — never dark or cinematic.
 // ─────────────────────────────────────────────────────────────────────────
-import { ui } from '~/data/menu'
 import { maisonBrand, maisonHero } from '~/themes/maison/config'
 
 defineEmits<{ (e: 'enter'): void }>()
@@ -17,7 +16,7 @@ const menu = useMenuStore()
 // Hero photo: the restaurant's cover if set, otherwise the first real dish
 // photo from the menu (so the hero always shows appetising, on-brand food).
 const heroImage = computed(
-  () => brand.cover.value || menu.categories.flatMap((c) => c.items).find((i) => i.image)?.image || '',
+  () => brand.cover || menu.categories.flatMap((c) => c.items).find((i) => i.image)?.image || '',
 )
 </script>
 
@@ -41,8 +40,8 @@ const heroImage = computed(
         <p class="ms-eyebrow font-sans text-[11px] font-semibold text-[#8A9466]">{{ t(maisonHero.welcome) }}</p>
 
         <img
-          v-if="brand.logo.value"
-          :src="brand.logo.value"
+          v-if="brand.logo"
+          :src="brand.logo"
           alt=""
           class="mx-auto mt-5 h-20 w-20 rounded-full object-cover shadow-[0_16px_30px_-14px_rgba(90,68,51,0.5)] ring-4 ring-white/70 sm:h-24 sm:w-24 lg:mx-0"
         />
@@ -55,18 +54,17 @@ const heroImage = computed(
           {{ t(brand.tagline) }}
         </p>
 
-        <!-- meta -->
-        <div class="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-sans text-[13px] text-[#6E6152] lg:justify-start">
-          <span class="flex items-center gap-1.5">
+        <!-- meta (each shown only when filled) -->
+        <div v-if="brand.rating || brand.hours" class="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-sans text-[13px] text-[#6E6152] lg:justify-start">
+          <span v-if="brand.rating" class="flex items-center gap-1.5">
             <svg viewBox="0 0 24 24" class="h-4 w-4 fill-[#E0A458]" aria-hidden="true">
               <path d="M12 2l2.9 6.1 6.7.9-4.9 4.6 1.2 6.6L12 18.6 6.1 20.8l1.2-6.6L2.4 9.6l6.7-.9z" />
             </svg>
-            {{ brand.rating }} · {{ t(maisonBrand.reviews) }}
+            {{ brand.rating }}
           </span>
-          <span class="hidden h-3 w-px bg-[#D8CBB4] sm:block" aria-hidden="true" />
-          <span class="flex items-center gap-1.5">
-            <span class="ms-pulse inline-block h-1.5 w-1.5 rounded-full bg-[#8A9466]" aria-hidden="true" />
-            {{ t(ui.openNow) }} · {{ brand.hours }}
+          <span v-if="brand.rating && brand.hours" class="hidden h-3 w-px bg-[#D8CBB4] sm:block" aria-hidden="true" />
+          <span v-if="brand.hours" class="flex items-center gap-1.5">
+            {{ brand.hours }}
           </span>
         </div>
 
@@ -82,7 +80,7 @@ const heroImage = computed(
               <path d="M12 5v14M6 13l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
-          <span class="inline-flex items-center gap-2 rounded-full border border-[#E7DDCB] bg-[#FCF8F0] px-5 py-3.5 font-sans text-sm font-medium text-[#5A4433]">
+          <span v-if="brand.address" class="inline-flex items-center gap-2 rounded-full border border-[#E7DDCB] bg-[#FCF8F0] px-5 py-3.5 font-sans text-sm font-medium text-[#5A4433]">
             <svg viewBox="0 0 24 24" class="h-4 w-4 text-[#C4693F]" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
               <path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11z" stroke-linejoin="round" /><circle cx="12" cy="10" r="2.4" />
             </svg>

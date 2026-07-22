@@ -138,6 +138,8 @@ export interface Restaurant {
   /** Plan limits (null = unlimited). Mirrored from the backend plan. */
   maxProducts?: number | null
   maxCategories?: number | null
+  /** Ordering/cart enabled (paid plans only). Public feature flag. */
+  ordering?: boolean
 }
 
 export type PlanKey = 'free' | 'pro' | 'business'

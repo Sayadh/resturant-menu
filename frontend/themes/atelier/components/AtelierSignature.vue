@@ -13,6 +13,7 @@ const emit = defineEmits<{ open: [item: MenuItem] }>()
 
 const { t } = useLanguage()
 const order = useOrderStore()
+const brand = useBrand() // ordering (cart) = paid plans only
 const fmt = (n: number) => n.toLocaleString('hy-AM')
 </script>
 
@@ -71,6 +72,7 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
           </div>
 
           <button
+            v-if="brand.ordering"
             type="button"
             class="mt-4 self-start border-b border-[#F6F2EA]/40 pb-0.5 font-display text-[10px] uppercase tracking-[0.22em] text-[#F6F2EA] transition-colors hover:border-[#A1502E] hover:text-[#A1502E]"
             @click="order.add(d.item.id)"

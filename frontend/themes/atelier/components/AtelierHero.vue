@@ -1,7 +1,6 @@
 <script setup lang="ts">
 // Editorial hero — asymmetric magazine cover: oversized serif headline and
 // editorial meta on the left, a tall framed signature photograph on the right.
-import { ui } from '~/data/menu'
 import { atelierBrand, atelierMeta } from '~/themes/atelier/config'
 
 const { t } = useLanguage()
@@ -26,26 +25,22 @@ const brand = useBrand()
           {{ t(brand.tagline) }}
         </p>
 
-        <!-- Editorial meta row -->
-        <dl class="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
-          <div class="flex flex-col">
+        <!-- Editorial meta row (each item shown only when filled) -->
+        <dl v-if="brand.rating || brand.hours || brand.address" class="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <div v-if="brand.rating" class="flex flex-col">
             <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">{{ t(atelierMeta.rating) }}</dt>
             <dd class="mt-1 flex items-baseline gap-1.5 font-serif text-[#16130F]">
               <span class="text-2xl font-semibold">{{ brand.rating }}</span>
-              <span class="text-sm text-[#857B6C]">/ 5 · {{ t(atelierBrand.reviews) }}</span>
+              <span class="text-sm text-[#857B6C]">/ 5</span>
             </dd>
           </div>
-          <span class="hidden h-9 w-px bg-[#D4C9B8] sm:block" aria-hidden="true" />
-          <div class="flex flex-col">
+          <div v-if="brand.hours" class="flex flex-col">
             <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">{{ t(atelierMeta.hours) }}</dt>
             <dd class="mt-1 flex items-center gap-2 font-serif text-[#16130F]">
-              <span class="atl-pulse h-1.5 w-1.5 rounded-full bg-[#A1502E]" aria-hidden="true" />
               <span class="text-base">{{ brand.hours }}</span>
-              <span class="text-sm text-[#857B6C]">· {{ t(ui.openNow) }}</span>
             </dd>
           </div>
-          <span class="hidden h-9 w-px bg-[#D4C9B8] sm:block" aria-hidden="true" />
-          <div class="flex flex-col">
+          <div v-if="brand.address" class="flex flex-col">
             <dt class="atl-eyebrow font-display text-[9px] text-[#857B6C]">{{ t(atelierMeta.location) }}</dt>
             <dd class="mt-1 font-serif text-base text-[#16130F]">{{ brand.address }}</dd>
           </div>
@@ -66,7 +61,7 @@ const brand = useBrand()
         <!-- caption tag -->
         <figcaption class="absolute -bottom-4 left-5 bg-[#16130F] px-4 py-2.5 sm:left-8">
           <span class="atl-eyebrow font-display text-[9px] text-[#A1502E]">Signature</span>
-          <span class="mt-0.5 block font-serif text-sm italic text-[#F6F2EA]">{{ brand.address }}</span>
+          <span v-if="brand.address" class="mt-0.5 block font-serif text-sm italic text-[#F6F2EA]">{{ brand.address }}</span>
         </figcaption>
       </figure>
     </div>

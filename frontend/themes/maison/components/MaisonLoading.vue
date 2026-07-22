@@ -3,8 +3,8 @@
 // load. A centred monogram fades over warm ivory before the experience opens.
 const brand = useBrand()
 const mono = computed(() => {
-  const i = brand.name.value.split(/\s+/).map((w) => w[0]).join('')
-  return (i.length > 1 ? i : brand.name.value).slice(0, 2).toUpperCase()
+  const i = brand.name.split(/\s+/).map((w) => w[0]).join('')
+  return (i.length > 1 ? i : brand.name).slice(0, 2).toUpperCase()
 })
 </script>
 

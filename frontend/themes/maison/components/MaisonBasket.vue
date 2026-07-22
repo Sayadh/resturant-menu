@@ -12,6 +12,7 @@ defineEmits<{ (e: 'open'): void }>()
 const { t, lang } = useLanguage()
 const order = useOrderStore()
 const store = useMenuStore()
+const brand = useBrand() // ordering (cart) = paid plans only
 
 const total = computed(() =>
   order.lines.reduce((sum, line) => {
@@ -25,7 +26,7 @@ const totalLabel = computed(() => total.value.toLocaleString('fr-FR'))
 <template>
   <ClientOnly>
     <Transition name="ms-dock">
-      <div v-if="order.count > 0" class="fixed bottom-6 left-5 z-30">
+      <div v-if="brand.ordering && order.count > 0" class="fixed bottom-6 left-5 z-30">
         <button
           type="button"
           class="relative flex h-14 w-14 items-center justify-center rounded-full bg-[#55402E] text-[#FCF8F0] shadow-[0_18px_40px_-12px_rgba(74,58,41,0.6)] transition-colors duration-300 hover:bg-[#5C4A35] active:scale-95"
