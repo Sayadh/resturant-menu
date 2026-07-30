@@ -49,10 +49,14 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid or expired token')
     }
 
-    // Token must not predate the user's last credential change.
+    // One lookup covers two checks: token freshness (HIGH-3) and the tenant's
+    // status (MED-5), which RestaurantScopeGuard enforces right after us.
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { passwordChangedAt: true },
+      select: {
+        passwordChangedAt: true,
+        restaurant: { select: { isActive: true, deletedAt: true } },
+      },
     })
     // A token for a user that no longer exists is not usable either.
     if (!user) throw new UnauthorizedException('Invalid or expired token')
@@ -60,6 +64,9 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Session expired, please sign in again')
     }
 
+    // Stashed, not enforced here: /admin/me must stay reachable so a suspended
+    // owner can sign in and be shown why the rest of the admin is closed.
+    req.tenantStatus = user.restaurant ?? null
     req.user = payload
     RequestContext.set({ user: payload })
     return true

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common'
 import { UserRole } from '@prisma/client'
 import { RequestContext } from '../context/request-context'
+import { tenantBlockMessage, tenantBlockReason, type TenantStatus } from './tenant-status'
 import type { AuthUser } from '../types/auth.types'
 
 /**
@@ -45,6 +46,12 @@ export class RestaurantScopeGuard implements CanActivate {
       if (supplied !== undefined && supplied !== scoped) {
         throw new ForbiddenException('Cross-restaurant access is not allowed')
       }
+
+      // A suspended or soft-deleted restaurant may not be operated on at all
+      // (MED-5). Status was loaded by JwtAuthGuard, so this costs no query.
+      // SUPER_ADMIN is exempt: managing suspended tenants is the whole point.
+      const reason = tenantBlockReason(req.tenantStatus as TenantStatus | null | undefined)
+      if (reason) throw new ForbiddenException(tenantBlockMessage(reason))
     }
 
     req.restaurantId = scoped
