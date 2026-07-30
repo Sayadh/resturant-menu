@@ -11,7 +11,6 @@
 import { type MenuItem, type MenuCategory, type LocalizedText } from '~/data/menu'
 import {
   maisonAlcoholTitle,
-  maisonStory,
   maisonChefSelection,
   maisonCategories,
 } from '~/themes/maison/config'
@@ -21,11 +20,9 @@ import '~/themes/maison/styles/maison.css'
 import MaisonLoading from '../components/MaisonLoading.vue'
 import MaisonHeader from '../components/MaisonHeader.vue'
 import MaisonHero from '../components/MaisonHero.vue'
-import MaisonStorySection from '../components/MaisonStorySection.vue'
 import MaisonFeaturedDish from '../components/MaisonFeaturedDish.vue'
 import MaisonCategorySection from '../components/MaisonCategorySection.vue'
 import MaisonProductLayout from '../components/MaisonProductLayout.vue'
-import MaisonSearch from '../components/MaisonSearch.vue'
 import MaisonBasket from '../components/MaisonBasket.vue'
 import MaisonOrderDrawer from '../components/MaisonOrderDrawer.vue'
 import MaisonEmptyState from '../components/MaisonEmptyState.vue'
@@ -63,7 +60,6 @@ const activeKey = ref(views.value[0]?.key ?? 'food')
 const activeView = computed(() => views.value.find((v) => v.key === activeKey.value) ?? views.value[0])
 
 const search = ref('')
-const searchOpen = ref(false)
 const orderOpen = ref(false)
 const ready = ref(false)
 const scrolled = ref(false)
@@ -92,19 +88,21 @@ const filteredCategories = computed<MenuCategory[]>(() => {
 const isSearching = computed(() => search.value.trim().length > 0)
 const hasResults = computed(() => filteredCategories.value.length > 0)
 
-// Featured (badged, available) dishes for the active chapter.
+// Featured (badged, available) dishes for the active chapter — the editorial
+// Chef's Selection band only ever shows dishes that actually have a photo;
+// image-less dishes still appear normally in the regular product grid below.
 const featured = computed(() => {
   const out: MenuItem[] = []
   for (const cat of baseCategories.value) {
     for (const item of cat.items) {
-      if (item.badge && item.available !== false) out.push(item)
+      if (item.badge && item.available !== false && item.image) out.push(item)
     }
   }
-  // Fallback: first few dishes so the editorial sections never sit empty.
+  // Fallback: first few photographed dishes so the band isn't sparse.
   if (out.length === 0) {
     for (const cat of baseCategories.value) {
       for (const item of cat.items) {
-        if (item.available !== false) out.push(item)
+        if (item.available !== false && item.image) out.push(item)
         if (out.length >= 4) break
       }
       if (out.length >= 4) break
@@ -113,10 +111,7 @@ const featured = computed(() => {
   return out
 })
 
-const todaysPick = computed(() => featured.value[0] ?? null)
-const chefSelection = computed(() =>
-  featured.value.filter((i) => i.id !== todaysPick.value?.id).slice(0, 3),
-)
+const chefSelection = computed(() => featured.value.slice(0, 3))
 
 // Category's own uploaded banner takes priority; only fall back to a product
 // photo (then a texture) if the category has no image of its own.
@@ -130,7 +125,7 @@ const categoryImage = (cat: MenuCategory) => {
 const scrollToId = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
-const enterMenu = () => scrollToId('ms-story')
+const enterMenu = () => scrollToId(chefSelection.value.length ? 'ms-chef' : 'ms-collection')
 const exploreCategory = (cat: MenuCategory) => scrollToId(`ms-products-${cat.id}`)
 
 const selectView = (key: string) => {
@@ -139,14 +134,6 @@ const selectView = (key: string) => {
   search.value = ''
   nextTick(() => scrollToId('ms-collection'))
 }
-
-const openSearch = () => {
-  searchOpen.value = true
-}
-watch(searchOpen, (open) => {
-  // When closing the panel, keep any typed query so results remain visible.
-  if (!open && isSearching.value) scrollToId('ms-collection')
-})
 
 // Show the slim header only after the hero is scrolled past.
 const onScroll = () => {
@@ -187,28 +174,23 @@ onBeforeUnmount(() => {
 
     <!-- Slim fixed header (after hero) -->
     <MaisonHeader
-      :visible="scrolled && !searchOpen"
+      v-model:search="search"
+      :visible="scrolled"
       :count="order.count"
-      @search="openSearch"
       @open-order="orderOpen = true"
     />
 
     <!-- 1 · Welcome -->
     <MaisonHero @enter="enterMenu" />
 
-    <!-- 2 · Story -->
-    <div id="ms-story">
-      <MaisonStorySection />
-    </div>
-
     <!-- When searching, collapse the editorial chapters and show results. -->
     <template v-if="!isSearching">
       <!-- Chef's Selection (warm beige band) -->
-      <section v-if="chefSelection.length" class="bg-[#EFE3D0] py-20 sm:py-28">
+      <section v-if="chefSelection.length" id="ms-chef" class="bg-[#EEDDE3] py-20 sm:py-28">
         <div class="mx-auto max-w-6xl px-5 sm:px-8">
           <header v-reveal class="mb-16 text-center">
-            <p class="ms-eyebrow font-sans text-[11px] font-semibold text-[#C4693F]">{{ t(maisonChefSelection.kicker) }}</p>
-            <h2 class="mt-5 text-balance font-serif text-4xl font-semibold text-[#3E3125] sm:text-5xl">
+            <p class="ms-eyebrow font-sans text-[11px] font-semibold text-[#8C304A]">{{ t(maisonChefSelection.kicker) }}</p>
+            <h2 class="mt-5 text-balance font-serif text-4xl font-semibold text-[#2C1B22] sm:text-5xl">
               {{ t(maisonChefSelection.title) }}
             </h2>
             <div class="ms-rule mx-auto mt-8 w-32" aria-hidden="true" />
@@ -229,30 +211,30 @@ onBeforeUnmount(() => {
     </template>
 
     <!-- 5 · Categories + 6 · Products -->
-    <section id="ms-collection" class="bg-[#F4EEE2] pt-20 sm:pt-28">
+    <section id="ms-collection" class="bg-[#F5EFF1] pt-20 sm:pt-28">
       <!-- Collection intro -->
       <div class="mx-auto max-w-6xl px-5 text-center sm:px-8">
-        <p v-reveal class="ms-eyebrow font-sans text-[11px] font-semibold text-[#C4693F]">{{ t(maisonCategories.kicker) }}</p>
-        <h2 v-reveal="1" class="mt-5 text-balance font-serif text-4xl font-semibold text-[#3E3125] sm:text-5xl">
+        <p v-reveal class="ms-eyebrow font-sans text-[11px] font-semibold text-[#8C304A]">{{ t(maisonCategories.kicker) }}</p>
+        <h2 v-reveal="1" class="mt-5 text-balance font-serif text-4xl font-semibold text-[#2C1B22] sm:text-5xl">
           {{ t(maisonCategories.title) }}
         </h2>
       </div>
 
       <!-- Sticky chapter selector — stays pinned so guests can always switch -->
-      <div class="sticky top-[64px] z-30 mt-8 border-y border-[#E7DDCB]/70 bg-[#F6F0E4]/85 backdrop-blur-md sm:top-[72px]">
+      <div class="sticky top-[64px] z-30 mt-8 border-y border-[#DDCED3]/70 bg-[#F5EFF1]/85 backdrop-blur-md sm:top-[72px]">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-7 gap-y-1.5 px-5 py-3.5 sm:gap-x-9 sm:px-8">
           <button
             v-for="view in views"
             :key="view.key"
             type="button"
             class="relative pb-1 font-serif text-lg transition-colors duration-300 sm:text-xl"
-            :class="activeKey === view.key ? 'text-[#3E3125]' : 'text-[#B6AC9C] hover:text-[#6E6152]'"
+            :class="activeKey === view.key ? 'text-[#2C1B22]' : 'text-[#9B9094] hover:text-[#74656B]'"
             @click="selectView(view.key)"
           >
             {{ t(view.title) }}
             <span
               v-if="activeKey === view.key"
-              class="absolute -bottom-0.5 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#C4693F]"
+              class="absolute -bottom-0.5 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[#8C304A]"
               aria-hidden="true"
             />
           </button>
@@ -263,7 +245,7 @@ onBeforeUnmount(() => {
       <div v-if="isSearching" class="mx-auto max-w-6xl px-5 pb-24 pt-16 sm:px-8">
         <template v-if="hasResults">
           <div v-for="cat in filteredCategories" :key="cat.id" class="mb-20">
-            <h3 class="mb-10 text-center font-serif text-3xl text-[#4A3B2E]">{{ t(cat.title) }}</h3>
+            <h3 class="mb-10 text-center font-serif text-3xl text-[#2C1B22]">{{ t(cat.title) }}</h3>
             <MaisonProductLayout :category="cat" />
           </div>
         </template>
@@ -294,6 +276,5 @@ onBeforeUnmount(() => {
     <!-- Overlays -->
     <MaisonBasket @open="orderOpen = true" />
     <MaisonOrderDrawer :open="orderOpen" @close="orderOpen = false" />
-    <MaisonSearch v-model="search" :open="searchOpen" @close="searchOpen = false" />
   </div>
 </template>

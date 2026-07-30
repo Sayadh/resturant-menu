@@ -15,9 +15,9 @@ watch(banner, () => (bannerFailed.value = false))
 <template>
   <section :id="category.id">
     <!-- Category banner card -->
-    <div class="group relative h-36 overflow-hidden rounded-card shadow-card sm:h-44">
+    <div class="group relative h-36 overflow-hidden rounded-card shadow-[0_4px_18px_-6px_rgba(38,56,47,0.16)] sm:h-44">
       <!-- fallback base -->
-      <div class="absolute inset-0 bg-gradient-to-br from-brown-light to-brown" />
+      <div class="absolute inset-0 bg-gradient-to-br from-[#33473C] to-[#26382F]" />
       <!-- big category emoji watermark when there is no banner photo -->
       <span
         v-if="!banner || bannerFailed"
@@ -45,17 +45,17 @@ watch(banner, () => (bannerFailed.value = false))
         @error="bannerFailed = true"
       />
       <!-- dark gradient overlay for contrast -->
-      <div class="absolute inset-0 bg-gradient-to-t from-brown/95 via-brown/50 to-brown/15" />
+      <div class="absolute inset-0 bg-gradient-to-t from-[#26382F]/95 via-[#26382F]/50 to-[#26382F]/15" />
       <!-- decorative wheat -->
       <IconWheat
-        class="pointer-events-none absolute -right-1 top-1 h-24 w-24 rotate-[14deg] text-caramel opacity-25"
+        class="pointer-events-none absolute -right-1 top-1 h-24 w-24 rotate-[14deg] text-[#A47B45] opacity-25"
       />
 
       <!-- content -->
       <div class="absolute inset-0 flex flex-col justify-end p-5">
         <div class="flex items-center gap-3">
           <span
-            class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-caramel/60 bg-brown/40 text-xl shadow-sm backdrop-blur-sm sm:h-12 sm:w-12 sm:text-2xl"
+            class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#A47B45]/60 bg-[#26382F]/40 text-xl shadow-sm backdrop-blur-sm sm:h-12 sm:w-12 sm:text-2xl"
             aria-hidden="true"
           >
             <img v-if="iconImage" :src="iconImage" alt="" class="h-full w-full object-cover" />
@@ -63,11 +63,11 @@ watch(banner, () => (bannerFailed.value = false))
           </span>
           <div class="min-w-0">
             <h2
-              class="font-display text-2xl font-bold uppercase leading-tight tracking-[0.12em] text-cream drop-shadow sm:text-3xl"
+              class="font-display text-2xl font-bold uppercase leading-tight tracking-[0.12em] text-[#FCFBF7] drop-shadow sm:text-3xl"
             >
               {{ t(category.title) }}
             </h2>
-            <p class="mt-0.5 font-serif text-sm text-cream/80">
+            <p class="mt-0.5 font-serif text-sm text-[#FCFBF7]/80">
               {{ category.items.length }} {{ t(ui.dishCount) }}
             </p>
           </div>

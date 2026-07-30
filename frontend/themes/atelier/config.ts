@@ -17,13 +17,13 @@ export const atelierThemeId = 'atelier' as const
 
 /** Refined ink / bone / clay palette — intentionally unlike Aria's gold. */
 export const atelierColors = {
-  ink: '#16130F', // near-black — text & dark sections
-  bone: '#EAE3D6', // page background (warm paper)
-  paper: '#F6F2EA', // elevated light surfaces
-  clay: '#A1502E', // single warm accent (terracotta)
-  clayDeep: '#7E3D22',
-  muted: '#857B6C', // secondary text
-  line: '#D4C9B8', // hairlines
+  ink: '#172033', // near-black — text & dark sections
+  bone: '#F8FAFC', // page background (warm paper)
+  paper: '#F8FAFC', // elevated light surfaces
+  clay: '#C65D3A', // single warm accent (terracotta)
+  clayDeep: '#8C4429',
+  muted: '#667085', // secondary text
+  line: '#DCE2EA', // hairlines
 } as const
 
 /** Restaurant branding shown across the Atelier layout. */

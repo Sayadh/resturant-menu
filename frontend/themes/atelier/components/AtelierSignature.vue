@@ -6,7 +6,7 @@ import { atelierSignatureKicker, atelierSignatureTitle } from '~/themes/atelier/
 import { vReveal } from '~/themes/atelier/animations'
 
 defineProps<{
-  dishes: { item: MenuItem; icon: string }[]
+  dishes: { item: MenuItem }[]
 }>()
 
 const emit = defineEmits<{ open: [item: MenuItem] }>()
@@ -18,14 +18,14 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
 </script>
 
 <template>
-  <section class="relative z-[1] bg-[#16130F] text-[#F6F2EA]">
+  <section class="relative z-[1] bg-[#111827] text-[#F8FAFC]">
     <div class="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
-      <div class="flex items-end justify-between gap-6 border-b border-[#F6F2EA]/15 pb-6">
+      <div class="flex items-end justify-between gap-6 border-b border-[#F8FAFC]/15 pb-6">
         <div>
-          <p class="atl-eyebrow font-display text-[11px] text-[#A1502E]">{{ t(atelierSignatureKicker) }}</p>
+          <p class="atl-eyebrow font-display text-[11px] text-[#C65D3A]">{{ t(atelierSignatureKicker) }}</p>
           <h2 class="mt-3 font-serif text-3xl italic sm:text-5xl">{{ t(atelierSignatureTitle) }}</h2>
         </div>
-        <span class="atl-numeral hidden font-serif text-5xl text-[#F6F2EA]/15 sm:block">
+        <span class="atl-numeral hidden font-serif text-5xl text-[#F8FAFC]/15 sm:block">
           {{ String(dishes.length).padStart(2, '0') }}
         </span>
       </div>
@@ -39,24 +39,18 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
         >
           <button
             type="button"
-            class="relative aspect-[16/10] overflow-hidden rounded-[2px] bg-[#0E0C09] sm:aspect-[3/4]"
+            class="relative aspect-[16/10] overflow-hidden rounded-[2px] bg-[#0B0F1A] sm:aspect-[3/4]"
             :aria-label="t(d.item.name)"
             @click="emit('open', d.item)"
           >
             <img
-              v-if="d.item.image"
               :src="d.item.image"
               :alt="t(d.item.name)"
               loading="lazy"
               class="h-full w-full object-cover opacity-90 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-100"
             />
-            <span
-              v-else
-              class="flex h-full w-full items-center justify-center text-5xl text-[#A1502E]"
-              aria-hidden="true"
-            >{{ d.icon }}</span>
-            <span class="pointer-events-none absolute inset-3 border border-[#F6F2EA]/15" aria-hidden="true" />
-            <span class="atl-numeral absolute left-4 top-3 font-serif text-2xl text-[#F6F2EA]/80">
+            <span class="pointer-events-none absolute inset-3 border border-[#F8FAFC]/15" aria-hidden="true" />
+            <span class="atl-numeral absolute left-4 top-3 font-serif text-2xl text-[#F8FAFC]/80">
               {{ String(i + 1).padStart(2, '0') }}
             </span>
           </button>
@@ -64,17 +58,17 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
           <div class="mt-5 flex items-start justify-between gap-4">
             <div class="min-w-0">
               <h3 class="font-serif text-2xl leading-snug">{{ t(d.item.name) }}</h3>
-              <p class="mt-1.5 line-clamp-2 font-serif text-[15px] leading-relaxed text-[#F6F2EA]/55">
+              <p class="mt-1.5 line-clamp-2 font-serif text-[15px] leading-relaxed text-[#F8FAFC]/55">
                 {{ t(d.item.description) }}
               </p>
             </div>
-            <span class="shrink-0 font-serif text-xl">{{ fmt(d.item.price) }}<span class="ml-0.5 text-[#A1502E]">֏</span></span>
+            <span class="shrink-0 font-serif text-xl">{{ fmt(d.item.price) }}<span class="ml-0.5 text-[#C65D3A]">֏</span></span>
           </div>
 
           <button
             v-if="brand.ordering"
             type="button"
-            class="mt-4 self-start border-b border-[#F6F2EA]/40 pb-0.5 font-display text-[10px] uppercase tracking-[0.22em] text-[#F6F2EA] transition-colors hover:border-[#A1502E] hover:text-[#A1502E]"
+            class="mt-4 self-start border-b border-[#F8FAFC]/40 pb-0.5 font-display text-[10px] uppercase tracking-[0.22em] text-[#F8FAFC] transition-colors hover:border-[#C65D3A] hover:text-[#C65D3A]"
             @click="order.add(d.item.id)"
           >
             Add to table +

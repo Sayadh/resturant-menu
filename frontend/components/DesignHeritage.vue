@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <div class="flex min-h-screen flex-col bg-[#F1F0EA]">
     <TheHeader />
 
     <CategoryNav
@@ -130,10 +130,10 @@ onBeforeUnmount(() => {
     />
 
     <main class="relative mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-6 sm:px-5 sm:pt-10">
-      <IconWheat class="pointer-events-none absolute right-1 top-20 hidden h-28 w-28 rotate-12 text-caramel opacity-[0.07] lg:block" />
-      <DecorSprig class="pointer-events-none absolute -left-3 top-1/3 hidden h-28 w-28 -rotate-12 scale-x-[-1] text-herb opacity-[0.07] lg:block" />
-      <IconWheat class="pointer-events-none absolute -left-2 bottom-24 hidden h-24 w-24 -rotate-[20deg] scale-x-[-1] text-caramel opacity-[0.06] lg:block" />
-      <DecorSprig class="pointer-events-none absolute right-2 bottom-1/3 hidden h-24 w-24 rotate-12 text-herb opacity-[0.06] lg:block" />
+      <IconWheat class="pointer-events-none absolute right-1 top-20 hidden h-28 w-28 rotate-12 text-[#A47B45] opacity-[0.07] lg:block" />
+      <DecorSprig class="pointer-events-none absolute -left-3 top-1/3 hidden h-28 w-28 -rotate-12 scale-x-[-1] text-[#4F6B58] opacity-[0.07] lg:block" />
+      <IconWheat class="pointer-events-none absolute -left-2 bottom-24 hidden h-24 w-24 -rotate-[20deg] scale-x-[-1] text-[#A47B45] opacity-[0.06] lg:block" />
+      <DecorSprig class="pointer-events-none absolute right-2 bottom-1/3 hidden h-24 w-24 rotate-12 text-[#4F6B58] opacity-[0.06] lg:block" />
 
       <div v-if="hasResults" class="flex flex-col gap-10 sm:gap-14">
         <MenuSection
@@ -145,26 +145,26 @@ onBeforeUnmount(() => {
       </div>
 
       <div v-else class="flex flex-col items-center py-20 text-center">
-        <IconSearch class="h-10 w-10 text-caramel/50" />
-        <p class="mt-4 font-serif text-lg text-brown-soft">{{ t(ui.noResults) }}</p>
+        <IconSearch class="h-10 w-10 text-[#64734D]/50" />
+        <p class="mt-4 font-serif text-lg text-[#706F68]">{{ t(ui.noResults) }}</p>
       </div>
     </main>
 
-    <footer class="relative overflow-hidden border-t border-caramel/25 bg-card/70">
-      <IconWheat class="pointer-events-none absolute -left-2 bottom-0 h-24 w-24 -rotate-12 text-caramel opacity-10" />
-      <IconWheat class="pointer-events-none absolute -right-2 bottom-0 h-24 w-24 rotate-12 scale-x-[-1] text-caramel opacity-10" />
+    <footer class="relative overflow-hidden border-t border-[#D5D1C6] bg-[#FCFBF7]/70">
+      <IconWheat class="pointer-events-none absolute -left-2 bottom-0 h-24 w-24 -rotate-12 text-[#A47B45] opacity-10" />
+      <IconWheat class="pointer-events-none absolute -right-2 bottom-0 h-24 w-24 rotate-12 scale-x-[-1] text-[#A47B45] opacity-10" />
       <div class="relative mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-9 text-center">
-        <p class="font-display text-xl font-bold uppercase tracking-[0.2em] text-brown">{{ brand.name }}</p>
+        <p class="font-display text-xl font-bold uppercase tracking-[0.2em] text-[#292A27]">{{ brand.name }}</p>
         <div class="flex items-center gap-3" aria-hidden="true">
-          <span class="h-px w-8 bg-caramel/60" />
-          <span class="h-1.5 w-1.5 rotate-45 bg-caramel" />
-          <span class="h-px w-8 bg-caramel/60" />
+          <span class="h-px w-8 bg-[#A47B45]/60" />
+          <span class="h-1.5 w-1.5 rotate-45 bg-[#A47B45]" />
+          <span class="h-px w-8 bg-[#A47B45]/60" />
         </div>
-        <p v-if="t(brand.tagline)" class="font-serif text-base italic text-brown-soft">{{ t(brand.tagline) }}</p>
-        <p v-if="brand.address || brand.hours" class="font-serif text-sm text-brown/70">{{ [brand.address, brand.hours].filter(Boolean).join(' · ') }}</p>
+        <p v-if="t(brand.tagline)" class="font-serif text-base italic text-[#706F68]">{{ t(brand.tagline) }}</p>
+        <p v-if="brand.address || brand.hours" class="font-serif text-sm text-[#292A27]/70">{{ [brand.address, brand.hours].filter(Boolean).join(' · ') }}</p>
       </div>
     </footer>
 
-    <ImageLightbox :item="selected" @close="selected = null" />
+    <ImageLightbox :item="selected" theme="heritage" @close="selected = null" />
   </div>
 </template>

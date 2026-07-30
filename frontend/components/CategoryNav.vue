@@ -34,7 +34,7 @@ watch(
 </script>
 
 <template>
-  <div data-nav class="sticky top-0 z-30 border-b border-caramel/20 bg-cream/95 backdrop-blur">
+  <div data-nav class="sticky top-0 z-30 border-b border-[#D5D1C6] bg-[#F1F0EA]/95 backdrop-blur">
     <div class="mx-auto flex max-w-6xl flex-col gap-2.5 px-4 py-2.5">
       <!-- Level 1: Food / Drinks -->
       <LevelTabs :active-level="activeLevel" @select="emit('select-level', $event)" />
@@ -60,8 +60,8 @@ watch(
           class="inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200"
           :class="
             activeId === cat.id
-              ? 'border-caramel bg-caramel text-white shadow-gold'
-              : 'border-caramel/30 bg-white/70 text-brown hover:border-caramel/60 hover:bg-white'
+              ? 'border-[#64734D] bg-[#64734D] text-white shadow-[0_6px_18px_-6px_rgba(100,115,77,0.45)]'
+              : 'border-[#D5D1C6] bg-[#FCFBF7] text-[#292A27] hover:border-[#64734D]/60 hover:bg-[#E2E6D8]'
           "
           @click="emit('select', cat.id)"
         >
@@ -76,17 +76,17 @@ watch(
       <!-- Search -->
       <div class="relative">
         <span
-          class="pointer-events-none absolute left-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-caramel/15"
+          class="pointer-events-none absolute left-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-[#64734D]/12"
           aria-hidden="true"
         >
-          <IconSearch class="h-[18px] w-[18px] text-caramel-dark" />
+          <IconSearch class="h-[18px] w-[18px] text-[#64734D]" />
         </span>
         <input
           :value="search"
           type="search"
           inputmode="search"
           :placeholder="t(ui.searchPlaceholder)"
-          class="w-full rounded-full border border-caramel/30 bg-white py-3 pl-12 pr-4 font-serif text-base text-brown placeholder:text-brown-soft/70 shadow-sm outline-none transition focus:border-caramel focus:ring-2 focus:ring-caramel/25"
+          class="w-full rounded-full border border-[#D5D1C6] bg-[#FCFBF7] py-3 pl-12 pr-4 font-serif text-base text-[#292A27] placeholder:text-[#95938D] shadow-sm outline-none transition focus:border-[#64734D] focus:ring-2 focus:ring-[#B49A70]/40"
           @input="emit('update:search', ($event.target as HTMLInputElement).value)"
         />
       </div>

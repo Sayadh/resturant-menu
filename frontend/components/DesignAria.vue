@@ -333,7 +333,7 @@ onBeforeUnmount(() => {
                 </span>
                 <div>
                   <h2 class="font-display text-2xl font-bold uppercase tracking-[0.12em] drop-shadow sm:text-3xl" :class="cat.bannerTextColor === 'dark' ? 'text-[#3E2723]' : 'text-[#FFF9EF]'">{{ t(cat.title) }}</h2>
-                  <p class="font-serif text-sm" :class="cat.bannerTextColor === 'dark' ? 'text-[#3E2723]/85' : 'text-[#FFF9EF]/85'">{{ cat.items.length }} {{ t(ui.dishCount) }}</p>
+                  <p class="flex items-end gap-[3px] font-serif font-semibold" :class="cat.bannerTextColor === 'dark' ? 'text-[#3E2723]/90' : 'text-[#FFF9EF]/90'"><span class="text-[18px]">{{ cat.items.length }}</span><span class="text-[14px]">{{ t(ui.dishCount) }}</span></p>
                 </div>
               </div>
             </div>
@@ -345,28 +345,18 @@ onBeforeUnmount(() => {
               v-for="item in cat.items"
               :key="item.id"
               class="group flex flex-col overflow-hidden rounded-[22px] border border-[#E4D6C2] bg-[#FFF9EF] shadow-[0_6px_20px_-10px_rgba(62,39,35,0.25)] transition-all duration-300 hover:-translate-y-1 hover:border-[#C69A5A]/50 hover:shadow-[0_22px_40px_-16px_rgba(62,39,35,0.4)]"
-              :class="{ 'opacity-80': item.available === false }"
+              :class="{ 'opacity-80': item.available === false, 'self-end': !item.image }"
             >
-              <!-- Image -->
-              <div class="relative aspect-[4/3] w-full overflow-hidden">
+              <!-- Image (rendered only when the product has a photo) -->
+              <div v-if="item.image" class="relative aspect-[4/3] w-full overflow-hidden">
                 <button type="button" class="block h-full w-full" :aria-label="t(item.name)" @click="selected = item">
                   <img
-                    v-if="item.image"
                     :src="item.image"
                     :alt="t(item.name)"
                     loading="lazy"
                     class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
                     :class="{ grayscale: item.available === false }"
                   />
-                  <!-- elegant placeholder -->
-                  <div v-else class="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-[#FBF3E5] to-[#F0E6D2]">
-                    <span class="aria-motif absolute inset-0 opacity-50" aria-hidden="true" />
-                    <span class="absolute inset-2 rounded-2xl border border-[#C69A5A]/35" aria-hidden="true" />
-                    <span class="relative flex flex-col items-center gap-1 px-2 text-center">
-                      <span class="text-3xl" aria-hidden="true">{{ cat.icon }}</span>
-                      <span class="font-serif text-[11px] font-semibold leading-tight text-[#A87E42]">{{ t(item.name) }}</span>
-                    </span>
-                  </div>
                 </button>
 
                 <!-- Badge -->
@@ -380,6 +370,11 @@ onBeforeUnmount(() => {
 
               <!-- Body -->
               <div class="flex flex-1 flex-col p-3 sm:p-4">
+                <!-- Preserve badge / sold-out on image-less cards -->
+                <div v-if="!item.image && (item.badge || item.available === false)" class="mb-2 flex items-center gap-2">
+                  <MenuBadge v-if="item.badge" :badge="item.badge" />
+                  <span v-if="item.available === false" class="rounded-full bg-[#3E2723]/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#FFF9EF]">{{ t(ui.soldOut) }}</span>
+                </div>
                 <h3 class="font-serif text-base font-semibold leading-snug text-[#3E2723] sm:text-lg">{{ t(item.name) }}</h3>
                 <p class="mt-1 line-clamp-2 font-serif text-xs leading-relaxed text-[#7A6654] sm:text-sm">{{ t(item.description) }}</p>
 

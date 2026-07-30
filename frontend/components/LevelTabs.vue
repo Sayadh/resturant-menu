@@ -18,8 +18,8 @@ const { levels } = storeToRefs(store)
       class="flex flex-1 items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-bold uppercase tracking-[0.1em] transition-all duration-200"
       :class="
         activeLevel === lvl.id
-          ? 'border-caramel bg-caramel text-white shadow-gold'
-          : 'border-caramel/30 bg-card text-brown hover:border-caramel/60 hover:bg-white'
+          ? 'border-[#64734D] bg-[#64734D] text-white shadow-[0_6px_18px_-6px_rgba(100,115,77,0.45)]'
+          : 'border-[#D5D1C6] bg-[#FCFBF7] text-[#292A27] hover:border-[#64734D]/60 hover:bg-[#E2E6D8]'
       "
       @click="emit('select', lvl.id)"
     >

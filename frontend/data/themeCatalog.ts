@@ -63,10 +63,10 @@ export const THEMES: Theme[] = [
   {
     id: 'noir',
     name: 'Noir',
-    description: 'Մուգ, ժամանակակից և արտահայտիչ',
-    bestFor: 'Բարերի և երեկոյան հաստատությունների համար',
+    description: 'Մուգ, շքեղ և զուսպ',
+    bestFor: 'Fine dining, սթեյքհաուսների, գինու բարերի և լաունջների համար',
     screenshot: '',
-    accent: '#1A1A1A',
-    available: false,
+    accent: '#B8B4AC',
+    available: true,
   },
 ]

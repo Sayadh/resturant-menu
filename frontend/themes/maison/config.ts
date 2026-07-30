@@ -19,15 +19,15 @@ export const maisonThemeId = 'maison' as const
 /** Warm ivory / chocolate / soft-gold palette — intentionally unlike Aria & Atelier. */
 // Organic-family palette: warm cream, sage-green accent, natural walnut wood.
 export const maisonColors = {
-  ivory: '#F4EEE2', // page background (warm cream)
-  warmWhite: '#FBF8F1', // elevated light surfaces
-  chocolate: '#3A322A', // warm bark — body text
-  espresso: '#4A3A29', // walnut wood — dark bands/surfaces
+  ivory: '#F5EFF1', // page background (warm cream)
+  warmWhite: '#FFFBFC', // elevated light surfaces
+  chocolate: '#2C1B22', // warm bark — body text
+  espresso: '#541C2E', // walnut wood — dark bands/surfaces
   gold: '#7E8C57', // sage green — botanical accent
   goldSoft: '#A7B37B', // light sage
   olive: '#7E8C57', // sage
-  warmGray: '#877E70', // muted text
-  line: '#E4DDCC', // hairlines
+  warmGray: '#74656B', // muted text
+  line: '#DDCED3', // hairlines
 } as const
 
 /** Restaurant branding shown across the Maison experience. */
@@ -61,22 +61,6 @@ export const maisonHero = {
   welcome: { AM: 'Բարի գալուստ', EN: 'Welcome to', RU: 'Добро пожаловать в' } satisfies LocalizedText,
   enter: { AM: 'Բացել ընտրացանկը', EN: 'Enter the menu', RU: 'Открыть меню' } satisfies LocalizedText,
   scroll: { AM: 'Թերթեք', EN: 'Scroll to explore', RU: 'Листайте' } satisfies LocalizedText,
-} as const
-
-/** The restaurant's story chapter. */
-export const maisonStory = {
-  chapter: { AM: 'Մեր պատմությունը', EN: 'Our Story', RU: 'Наша история' } satisfies LocalizedText,
-  title: {
-    AM: 'Ամեն ուտեստ՝ մի հիշողություն',
-    EN: 'Every dish, a memory',
-    RU: 'Каждое блюдо — это воспоминание',
-  } satisfies LocalizedText,
-  body: {
-    AM: 'Քսանհինգ տարի մենք պատրաստում ենք հայկական խոհանոցի ամենասիրված ուտեստները՝ ձեռքով, ամեն օր։ Բաղադրատոմսերը փոխանցվել են տատիկներից, իսկ սերը՝ մնում է անփոփոխ։',
-    EN: 'For twenty-five years we have prepared the most beloved dishes of Armenian cuisine by hand, every single day. The recipes were passed down from our grandmothers, and the love has never changed.',
-    RU: 'Двадцать пять лет мы готовим самые любимые блюда армянской кухни вручную, каждый день. Рецепты передались от наших бабушек, а любовь осталась неизменной.',
-  } satisfies LocalizedText,
-  signature: { AM: 'Շեֆ-խոհարար', EN: 'Head Chef', RU: 'Шеф-повар' } satisfies LocalizedText,
 } as const
 
 /** "Today's recommendation" + "Chef's selection" section copy. */

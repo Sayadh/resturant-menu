@@ -22,7 +22,7 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
 </script>
 
 <template>
-  <div class="relative mx-auto h-[40svh] min-h-[260px] w-[calc(100%-2rem)] max-w-6xl overflow-hidden rounded-[2rem] shadow-[0_30px_60px_-32px_rgba(74,58,41,0.45)] sm:h-[62svh] sm:min-h-[400px] sm:w-[calc(100%-3rem)]">
+  <div class="relative mx-auto h-[40svh] min-h-[260px] w-[calc(100%-2rem)] max-w-6xl overflow-hidden rounded-[2rem] shadow-[0_30px_60px_-32px_rgba(84,28,46,0.45)] sm:h-[62svh] sm:min-h-[400px] sm:w-[calc(100%-3rem)]">
     <!-- Background (desktop) -->
     <img
       v-if="image"
@@ -44,31 +44,31 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
     <div
       v-if="!image && !mobileSrc"
       class="absolute inset-0"
-      style="background: radial-gradient(circle at 50% 30%, #55402E, #55402E)"
+      style="background: radial-gradient(circle at 50% 30%, #541C2E, #541C2E)"
       aria-hidden="true"
     />
     <div
       class="absolute inset-0"
-      style="background: linear-gradient(180deg, rgba(74, 58, 41,0.55), rgba(74, 58, 41,0.4) 45%, rgba(74, 58, 41,0.78))"
+      style="background: linear-gradient(180deg, rgba(84, 28, 46,0.55), rgba(84, 28, 46,0.4) 45%, rgba(84, 28, 46,0.78))"
       aria-hidden="true"
     />
 
     <!-- Content -->
-    <div class="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center text-[#FCF8F0]">
+    <div class="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center text-[#FFFBFC]">
       <span v-reveal class="ms-gold-text font-display text-4xl sm:text-6xl">{{ num }}</span>
       <h2 v-reveal="1" class="mt-3 text-balance font-serif text-3xl leading-tight sm:mt-4 sm:text-6xl">
         {{ t(category.title) }}
       </h2>
-      <div v-reveal="2" class="mt-4 flex items-center gap-3 font-sans text-[11px] tracking-[0.24em] text-[#FCF8F0]/75 sm:mt-6">
-        <span class="h-px w-8 bg-[#E0B27C]/60" aria-hidden="true" />
+      <div v-reveal="2" class="mt-4 flex items-center gap-3 font-sans text-[11px] tracking-[0.24em] text-[#FFFBFC]/75 sm:mt-6">
+        <span class="h-px w-8 bg-[#B99768]/60" aria-hidden="true" />
         {{ category.items.length }} {{ t(maisonCategories.dishesWord).toUpperCase() }}
-        <span class="h-px w-8 bg-[#E0B27C]/60" aria-hidden="true" />
+        <span class="h-px w-8 bg-[#B99768]/60" aria-hidden="true" />
       </div>
 
       <button
         v-reveal="3"
         type="button"
-        class="group mt-6 inline-flex items-center gap-3 border border-[#FCF8F0]/40 px-8 py-3 font-sans text-[11px] tracking-[0.26em] transition-colors duration-500 hover:border-[#E0B27C] hover:bg-[#E0B27C] hover:text-[#4A3B2E] sm:mt-9"
+        class="group mt-6 inline-flex items-center gap-3 border border-[#FFFBFC]/40 px-8 py-3 font-sans text-[11px] tracking-[0.26em] transition-colors duration-500 hover:border-[#B99768] hover:bg-[#B99768] hover:text-[#2C1B22] sm:mt-9"
         @click="$emit('explore')"
       >
         {{ t(maisonCategories.explore).toUpperCase() }}

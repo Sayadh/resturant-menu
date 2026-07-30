@@ -69,7 +69,7 @@ onBeforeUnmount(() => {
       <Transition name="ms-fade">
         <div
           v-if="open"
-          class="fixed inset-0 z-50 bg-[#55402E]/45 backdrop-blur-sm"
+          class="fixed inset-0 z-50 bg-[#541C2E]/45 backdrop-blur-sm"
           @click="emit('close')"
         />
       </Transition>
@@ -78,19 +78,19 @@ onBeforeUnmount(() => {
       <Transition name="ms-drawer">
         <aside
           v-if="open"
-          class="maison-theme fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-md flex-col bg-[#F4EEE2] sm:inset-y-0"
+          class="maison-theme fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-md flex-col bg-[#F5EFF1] sm:inset-y-0"
           role="dialog"
           aria-modal="true"
         >
           <!-- Header -->
-          <header class="flex items-start justify-between border-b border-[#E7DDCB] px-7 py-6">
+          <header class="flex items-start justify-between border-b border-[#DDCED3] px-7 py-6">
             <div>
-              <p class="ms-eyebrow font-sans text-[10px] text-[#C4693F]">{{ t(maisonOrder.subtitle) }}</p>
-              <h2 class="mt-2 font-serif text-3xl text-[#4A3B2E]">{{ t(maisonOrder.title) }}</h2>
+              <p class="ms-eyebrow font-sans text-[10px] text-[#8C304A]">{{ t(maisonOrder.subtitle) }}</p>
+              <h2 class="mt-2 font-serif text-3xl text-[#2C1B22]">{{ t(maisonOrder.title) }}</h2>
             </div>
             <button
               type="button"
-              class="mt-1 text-[#8A7C6B] transition-colors hover:text-[#4A3B2E]"
+              class="mt-1 text-[#74656B] transition-colors hover:text-[#2C1B22]"
               aria-label="Close"
               @click="emit('close')"
             >
@@ -102,17 +102,17 @@ onBeforeUnmount(() => {
 
           <!-- Empty -->
           <div v-if="rows.length === 0" class="flex flex-1 flex-col items-center justify-center px-10 text-center">
-            <svg viewBox="0 0 24 24" class="h-12 w-12 text-[#E7DDCB]" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="h-12 w-12 text-[#DDCED3]" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
               <path d="M6 7h12l-1 13H7L6 7z" stroke-linejoin="round" />
               <path d="M9 7a3 3 0 0 1 6 0" stroke-linecap="round" />
             </svg>
-            <p class="mt-6 font-serif text-lg leading-relaxed text-[#8A7C6B]">{{ t(maisonOrder.empty) }}</p>
+            <p class="mt-6 font-serif text-lg leading-relaxed text-[#74656B]">{{ t(maisonOrder.empty) }}</p>
           </div>
 
           <!-- Lines -->
           <template v-else>
             <div class="ms-scroll flex-1 overflow-y-auto px-7">
-              <div class="divide-y divide-[#E7DDCB]">
+              <div class="divide-y divide-[#DDCED3]">
                 <div v-for="row in rows" :key="row.id" class="flex items-center gap-4 py-5">
                   <!-- thumb -->
                   <div class="h-16 w-16 shrink-0 overflow-hidden rounded-2xl">
@@ -125,49 +125,49 @@ onBeforeUnmount(() => {
                     <div
                       v-else
                       class="flex h-full w-full items-center justify-center"
-                      style="background: radial-gradient(circle at 50% 35%, #F0E7D5, #E7D6BB)"
+                      style="background: radial-gradient(circle at 50% 35%, #EEDDE3, #DDCED3)"
                       aria-hidden="true"
                     >
-                      <span class="font-display text-2xl text-[#C4693F]/50">{{ row.initial }}</span>
+                      <span class="font-display text-2xl text-[#8C304A]/50">{{ row.initial }}</span>
                     </div>
                   </div>
 
                   <div class="min-w-0 flex-1">
-                    <h3 class="truncate font-serif text-lg text-[#4A3B2E]">{{ row.name }}</h3>
-                    <p class="mt-0.5 font-serif text-sm text-[#C4693F]">{{ fmt(row.price) }} {{ ui.currency[lang] }}</p>
+                    <h3 class="truncate font-serif text-lg text-[#2C1B22]">{{ row.name }}</h3>
+                    <p class="mt-0.5 font-serif text-sm text-[#8C304A]">{{ fmt(row.price) }} {{ ui.currency[lang] }}</p>
                   </div>
 
                   <!-- stepper -->
-                  <div class="flex items-center gap-3 border border-[#55402E]/15 px-3 py-1.5">
-                    <button type="button" class="text-base leading-none text-[#4A3B2E] hover:opacity-60" aria-label="−" @click="order.dec(row.id)">−</button>
-                    <span class="min-w-4 text-center font-serif text-sm text-[#4A3B2E]">{{ row.qty }}</span>
-                    <button type="button" class="text-base leading-none text-[#4A3B2E] hover:opacity-60" aria-label="+" @click="order.add(row.id)">+</button>
+                  <div class="flex items-center gap-3 border border-[#541C2E]/15 px-3 py-1.5">
+                    <button type="button" class="text-base leading-none text-[#2C1B22] hover:opacity-60" aria-label="−" @click="order.dec(row.id)">−</button>
+                    <span class="min-w-4 text-center font-serif text-sm text-[#2C1B22]">{{ row.qty }}</span>
+                    <button type="button" class="text-base leading-none text-[#2C1B22] hover:opacity-60" aria-label="+" @click="order.add(row.id)">+</button>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Footer -->
-            <footer class="border-t border-[#E7DDCB] px-7 py-6">
+            <footer class="border-t border-[#DDCED3] px-7 py-6">
               <div v-if="brand.showCartTotal">
                 <template v-if="serviceAmount > 0">
-                  <div class="flex items-center justify-between font-sans text-sm text-[#8A7C6B]">
+                  <div class="flex items-center justify-between font-sans text-sm text-[#74656B]">
                     <span>{{ t(ui.subtotal) }}</span><span>{{ fmt(subtotal) }} {{ ui.currency[lang] }}</span>
                   </div>
-                  <div class="mt-1 flex items-center justify-between font-sans text-sm text-[#8A7C6B]">
+                  <div class="mt-1 flex items-center justify-between font-sans text-sm text-[#74656B]">
                     <span>{{ t(ui.service) }} ({{ brand.serviceChargePercent }}%)</span><span>+{{ fmt(serviceAmount) }} {{ ui.currency[lang] }}</span>
                   </div>
                 </template>
                 <div class="mt-1 flex items-end justify-between">
-                  <span class="ms-eyebrow-sm font-sans text-[11px] text-[#8A7C6B]">{{ t(ui.total) }}</span>
-                  <span class="font-serif text-3xl text-[#4A3B2E]">{{ fmt(total) }}<span class="ml-1 text-xl text-[#C4693F]">{{ ui.currency[lang] }}</span></span>
+                  <span class="ms-eyebrow-sm font-sans text-[11px] text-[#74656B]">{{ t(ui.total) }}</span>
+                  <span class="font-serif text-3xl text-[#2C1B22]">{{ fmt(total) }}<span class="ml-1 text-xl text-[#8C304A]">{{ ui.currency[lang] }}</span></span>
                 </div>
-                <p v-if="brand.serviceChargeEnabled && brand.serviceChargeMode === 'text'" class="mt-1 font-serif text-xs italic text-[#8A7C6B]">{{ t(ui.serviceNote) }}</p>
+                <p v-if="brand.serviceChargeEnabled && brand.serviceChargeMode === 'text'" class="mt-1 font-serif text-xs italic text-[#74656B]">{{ t(ui.serviceNote) }}</p>
               </div>
 
               <button
                 type="button"
-                class="mt-5 w-full border border-[#55402E]/25 py-3.5 font-sans text-[11px] tracking-[0.18em] text-[#4A3B2E] transition-colors hover:border-[#C4693F] hover:text-[#C4693F]"
+                class="mt-5 w-full border border-[#541C2E]/25 py-3.5 font-sans text-[11px] tracking-[0.18em] text-[#2C1B22] transition-colors hover:border-[#8C304A] hover:text-[#8C304A]"
                 @click="order.clear()"
               >
                 {{ t(ui.clearOrder).toUpperCase() }}

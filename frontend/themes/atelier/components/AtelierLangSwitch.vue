@@ -9,13 +9,13 @@ const { lang, languages, setLang } = useLanguage()
       <button
         type="button"
         class="px-1 py-0.5 transition-colors duration-300"
-        :class="lang === l ? 'text-[#A1502E]' : 'text-[#16130F]/45 hover:text-[#16130F]'"
+        :class="lang === l ? 'text-[#C65D3A]' : 'text-[#172033]/45 hover:text-[#172033]'"
         :aria-pressed="lang === l"
         @click="setLang(l)"
       >
         {{ l }}
       </button>
-      <span v-if="i < languages.length - 1" class="text-[#16130F]/20" aria-hidden="true">·</span>
+      <span v-if="i < languages.length - 1" class="text-[#172033]/20" aria-hidden="true">·</span>
     </template>
   </div>
 </template>

@@ -9,9 +9,9 @@ const mono = computed(() => {
 </script>
 
 <template>
-  <div class="maison-theme pointer-events-none fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[#F4EEE2]">
-    <span class="ms-pulse font-display text-5xl tracking-[0.3em] text-[#4A3B2E]">{{ mono }}</span>
+  <div class="maison-theme pointer-events-none fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[#F5EFF1]">
+    <span class="ms-pulse font-display text-5xl tracking-[0.3em] text-[#2C1B22]">{{ mono }}</span>
     <div class="ms-skeleton mt-8 h-px w-40" aria-hidden="true" />
-    <span class="ms-eyebrow mt-6 font-sans text-[10px] text-[#8A7C6B]">{{ brand.name }}</span>
+    <span class="ms-eyebrow mt-6 font-sans text-[10px] text-[#74656B]">{{ brand.name }}</span>
   </div>
 </template>

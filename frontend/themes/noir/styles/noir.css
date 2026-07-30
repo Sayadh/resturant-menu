@@ -1,0 +1,180 @@
+/* ───────────────────────────────────────────────────────────────────────
+   Noir theme — global styles
+   Everything is scoped under `.noir-theme` so it never leaks into Aria,
+   Atelier, Maison, Heritage or the admin. Imported from
+   layouts/NoirMenu.vue.
+
+   Design language: private dining room. Black marble, smoked glass, matte
+   metal, very fine platinum detailing. Depth is built by layering blacks —
+   never by glow, neon or heavy gold.
+   ─────────────────────────────────────────────────────────────────────── */
+
+.noir-theme {
+  --nr-obsidian: #0b0c0e; /* page background */
+  --nr-carbon: #121417; /* primary dark surface */
+  --nr-graphite: #191b1f; /* cards / raised surfaces */
+  --nr-smoked: #202329; /* modals, drawers */
+  --nr-polished: #272a30; /* hover surface */
+  --nr-pressed: #30333a; /* pressed surface */
+
+  --nr-ivory: #f1eee8; /* primary text */
+  --nr-platinum-text: #a8a8a5; /* secondary text */
+  --nr-silver: #777a7e; /* faint text */
+
+  --nr-line: #303339; /* primary border */
+  --nr-hairline: #25282d; /* subtle divider */
+
+  --nr-platinum: #b8b4ac; /* main accent */
+  --nr-pale: #d0cbc1; /* premium accent */
+  --nr-burnished: #9a8060; /* rare warm metal */
+  --nr-focus: #c7c2b8; /* focus outline */
+
+  --nr-emerald: #668b78; /* success */
+  --nr-garnet: #a45b5b; /* error / unavailable */
+
+  background-color: var(--nr-obsidian);
+  color: var(--nr-ivory);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Widely letter-spaced uppercase eyebrow. */
+.nr-eyebrow {
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+.nr-eyebrow-sm {
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+/* Hairline platinum rule used to separate chapters. */
+.nr-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--nr-platinum) 55%, transparent),
+    transparent
+  );
+}
+
+/* Hide scrollbars on horizontal rails. */
+.nr-scroll {
+  scrollbar-width: none;
+}
+.nr-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Lining numerals for indices and prices. */
+.nr-numeral {
+  font-feature-settings: 'lnum' 1;
+  line-height: 0.85;
+}
+
+/* Text selection + scrollbar, scoped to the theme. */
+.noir-theme ::selection {
+  background: var(--nr-platinum);
+  color: var(--nr-obsidian);
+}
+.noir-theme ::-webkit-scrollbar-track {
+  background: var(--nr-carbon);
+}
+.noir-theme ::-webkit-scrollbar-thumb {
+  background: var(--nr-line);
+}
+.noir-theme ::-webkit-scrollbar-thumb:hover {
+  background: var(--nr-silver);
+}
+
+/* ── Scroll reveal (driven by v-reveal directive) ───────────────────────── */
+.noir-theme .nr-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--nr-reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.noir-theme .nr-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .noir-theme .nr-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Loading skeletons — layered blacks, no glow ─────────────────────────── */
+@keyframes nr-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.noir-theme .nr-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--nr-graphite);
+}
+.noir-theme .nr-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--nr-polished), transparent);
+  animation: nr-shimmer 1.7s ease-in-out infinite;
+}
+
+/* ── Named transitions (keys from animations.ts) ─────────────────────────── */
+.nr-fade-enter-active,
+.nr-fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+.nr-fade-enter-from,
+.nr-fade-leave-to {
+  opacity: 0;
+}
+
+.nr-drawer-enter-active,
+.nr-drawer-leave-active {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nr-drawer-enter-from,
+.nr-drawer-leave-to {
+  transform: translateX(100%);
+}
+@media (max-width: 640px) {
+  .nr-drawer-enter-from,
+  .nr-drawer-leave-to {
+    transform: translateY(100%);
+  }
+}
+
+.nr-dock-enter-active,
+.nr-dock-leave-active {
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease;
+}
+.nr-dock-enter-from,
+.nr-dock-leave-to {
+  transform: translateY(160%);
+  opacity: 0;
+}
+
+.nr-modal-enter-active,
+.nr-modal-leave-active {
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease;
+}
+.nr-modal-enter-from,
+.nr-modal-leave-to {
+  transform: translateY(24px) scale(0.985);
+  opacity: 0;
+}

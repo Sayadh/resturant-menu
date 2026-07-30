@@ -11,22 +11,22 @@ const mono = computed(() => {
 <template>
   <header class="relative overflow-hidden">
     <!-- Decorative Armenian food elements (very subtle) -->
-    <IconWheat class="pointer-events-none absolute -left-3 top-10 h-28 w-28 -rotate-[18deg] text-caramel opacity-[0.10]" />
-    <IconWheat class="pointer-events-none absolute -right-3 top-14 h-28 w-28 rotate-[18deg] scale-x-[-1] text-caramel opacity-[0.10]" />
-    <DecorSprig class="pointer-events-none absolute left-8 bottom-2 hidden h-20 w-20 -rotate-12 text-herb opacity-[0.10] sm:block" />
-    <DecorSprig class="pointer-events-none absolute right-8 bottom-2 hidden h-20 w-20 rotate-12 scale-x-[-1] text-herb opacity-[0.10] sm:block" />
+    <IconWheat class="pointer-events-none absolute -left-3 top-10 h-28 w-28 -rotate-[18deg] text-[#A47B45] opacity-[0.10]" />
+    <IconWheat class="pointer-events-none absolute -right-3 top-14 h-28 w-28 rotate-[18deg] scale-x-[-1] text-[#A47B45] opacity-[0.10]" />
+    <DecorSprig class="pointer-events-none absolute left-8 bottom-2 hidden h-20 w-20 -rotate-12 text-[#4F6B58] opacity-[0.10] sm:block" />
+    <DecorSprig class="pointer-events-none absolute right-8 bottom-2 hidden h-20 w-20 rotate-12 scale-x-[-1] text-[#4F6B58] opacity-[0.10] sm:block" />
 
     <div class="mx-auto max-w-6xl px-5 pb-7 pt-4 sm:pb-9 sm:pt-6">
       <!-- Top bar: language switcher -->
       <div class="flex justify-end">
-        <LanguageSwitcher />
+        <LanguageSwitcher theme="heritage" />
       </div>
 
       <!-- Logo / brand -->
       <div class="mt-1 flex flex-col items-center text-center">
         <!-- Monogram crest -->
         <div
-          class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-caramel bg-card font-display text-2xl font-bold text-brown shadow-gold sm:h-20 sm:w-20 sm:text-3xl"
+          class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-[#A47B45] bg-[#FCFBF7] font-display text-2xl font-bold text-[#292A27] shadow-[0_6px_18px_-6px_rgba(100,115,77,0.45)] sm:h-20 sm:w-20 sm:text-3xl"
           aria-hidden="true"
         >
           <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full rounded-full object-cover" />
@@ -34,41 +34,41 @@ const mono = computed(() => {
         </div>
 
         <h1
-          class="mt-4 font-display text-4xl font-bold uppercase leading-tight tracking-[0.2em] text-brown sm:text-5xl md:text-6xl"
+          class="mt-4 font-display text-4xl font-bold uppercase leading-tight tracking-[0.2em] text-[#292A27] sm:text-5xl md:text-6xl"
         >
           {{ brand.name }}
         </h1>
 
-        <p class="mt-3 font-serif text-lg italic text-brown-soft sm:text-xl">
+        <p class="mt-3 font-serif text-lg italic text-[#706F68] sm:text-xl">
           {{ t(brand.tagline) }}
         </p>
 
         <!-- Rating (only if set) -->
         <div v-if="brand.rating" class="mt-4 flex items-center gap-2">
-          <div class="flex text-caramel" aria-hidden="true">
+          <div class="flex text-[#A47B45]" aria-hidden="true">
             <IconStar v-for="n in 5" :key="n" class="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
           </div>
-          <span class="font-display text-base font-bold text-brown sm:text-lg">{{ brand.rating }}</span>
+          <span class="font-display text-base font-bold text-[#292A27] sm:text-lg">{{ brand.rating }}</span>
         </div>
 
         <!-- Caramel divider -->
         <div class="mt-5 flex items-center gap-3" aria-hidden="true">
-          <span class="h-px w-10 bg-caramel/60" />
-          <span class="h-1.5 w-1.5 rotate-45 bg-caramel" />
-          <span class="h-px w-10 bg-caramel/60" />
+          <span class="h-px w-10 bg-[#A47B45]/60" />
+          <span class="h-1.5 w-1.5 rotate-45 bg-[#A47B45]" />
+          <span class="h-px w-10 bg-[#A47B45]/60" />
         </div>
 
         <!-- Restaurant info (each shown only when filled) -->
         <div
           v-if="brand.address || brand.hours"
-          class="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2.5 font-serif text-[15px] text-brown/85"
+          class="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2.5 font-serif text-[15px] text-[#292A27]/85"
         >
           <span v-if="brand.address" class="inline-flex items-center gap-1.5">
-            <IconPin class="h-4 w-4 text-caramel" />
+            <IconPin class="h-4 w-4 text-[#A47B45]" />
             {{ brand.address }}
           </span>
           <span v-if="brand.hours" class="inline-flex items-center gap-1.5">
-            <IconClock class="h-4 w-4 text-caramel" />
+            <IconClock class="h-4 w-4 text-[#A47B45]" />
             {{ brand.hours }}
           </span>
         </div>

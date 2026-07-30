@@ -1,35 +1,32 @@
 <script setup lang="ts">
 // ─────────────────────────────────────────────────────────────────────────
-// Atelier — root layout
+// Noir — root layout
 //
-// Orchestrates the whole editorial experience and owns the page state. All
+// Owns the page state and orchestrates the dark fine-dining experience. All
 // menu DATA, language, search and order LOGIC come from the shared stores and
-// composables, exactly like the other themes — only the presentation differs.
+// composables — exactly like Aria, Atelier, Maison and Heritage — only the
+// presentation differs. Flow: Arrival → Navigation → Courses → Selection.
 // ─────────────────────────────────────────────────────────────────────────
-import { type MenuItem, type MenuCategory, type LocalizedText } from '~/data/menu'
-import { atelierAlcoholTitle, atelierIndexTitle } from '~/themes/atelier/config'
-import { vReveal } from '~/themes/atelier/animations'
-import '~/themes/atelier/styles/atelier.css'
+import { ui, type MenuItem, type MenuCategory, type LocalizedText } from '~/data/menu'
+import { noirAlcoholTitle } from '~/themes/noir/config'
+import { vReveal } from '~/themes/noir/animations'
+import '~/themes/noir/styles/noir.css'
 
-import AtelierHeader from '../components/AtelierHeader.vue'
-import AtelierHero from '../components/AtelierHero.vue'
-import AtelierNav from '../components/AtelierNav.vue'
-import AtelierSignature from '../components/AtelierSignature.vue'
-import AtelierMenuRow from '../components/AtelierMenuRow.vue'
-import AtelierProductDetail from '../components/AtelierProductDetail.vue'
-import AtelierBill from '../components/AtelierBill.vue'
-import AtelierBasketBar from '../components/AtelierBasketBar.vue'
-import AtelierEmpty from '../components/AtelierEmpty.vue'
-import AtelierSkeleton from '../components/AtelierSkeleton.vue'
-import AtelierFooter from '../components/AtelierFooter.vue'
+import NoirHero from '../components/NoirHero.vue'
+import NoirNav from '../components/NoirNav.vue'
+import NoirProductCard from '../components/NoirProductCard.vue'
+import NoirProductDetail from '../components/NoirProductDetail.vue'
+import NoirOrderDrawer from '../components/NoirOrderDrawer.vue'
+import NoirBasketBar from '../components/NoirBasketBar.vue'
+import NoirEmpty from '../components/NoirEmpty.vue'
+import NoirFooter from '../components/NoirFooter.vue'
 
 const { t } = useLanguage()
 const store = useMenuStore()
-const order = useOrderStore()
 const brand = useBrand() // ordering (cart) = paid plans only
 
-// Three top tabs derived from the data (no data change):
-// Food → level food · Drinks → drinks/soft · Cellar → drinks/alcohol.
+// Section tabs derived from the data (no data change):
+// each level is a tab; Drinks splits into soft + cellar.
 interface View {
   key: string
   title: LocalizedText
@@ -41,7 +38,7 @@ const views = computed<View[]>(() => {
   for (const lv of store.levels) {
     if (lv.id === 'drinks') {
       out.push({ key: 'drinks-soft', title: lv.title, level: lv.id, group: 'soft' })
-      out.push({ key: 'drinks-alcohol', title: atelierAlcoholTitle, level: lv.id, group: 'alcohol' })
+      out.push({ key: 'drinks-alcohol', title: noirAlcoholTitle, level: lv.id, group: 'alcohol' })
     } else {
       out.push({ key: lv.id, title: lv.title, level: lv.id })
     }
@@ -54,13 +51,13 @@ const activeView = computed(() => views.value.find((v) => v.key === activeKey.va
 
 const search = ref('')
 const selected = ref<MenuItem | null>(null)
-const billOpen = ref(false)
-const ready = ref(true)
+const orderOpen = ref(false)
 
 const baseCategories = computed(() =>
   activeView.value ? store.categoriesOf(activeView.value.level, activeView.value.group) : [],
 )
 
+// Search across name + description in every language.
 const categories = computed<MenuCategory[]>(() => {
   const q = search.value.trim().toLowerCase()
   if (!q) return baseCategories.value
@@ -78,29 +75,10 @@ const categories = computed<MenuCategory[]>(() => {
 })
 
 const hasResults = computed(() => categories.value.length > 0)
-const isSearching = computed(() => search.value.trim().length > 0)
-
-// Chef's signatures: badged dishes from the active view — this editorial band
-// only ever shows dishes that actually have a photo; image-less dishes still
-// appear normally in the regular printed-menu rows below.
-const featured = computed(() => {
-  const out: { item: MenuItem }[] = []
-  for (const cat of baseCategories.value) {
-    for (const item of cat.items) {
-      if (item.badge && item.available !== false && item.image) out.push({ item })
-    }
-  }
-  return out.slice(0, 3)
-})
-
 const activeId = ref('')
-const iconForSelected = computed(() =>
-  selected.value ? (store.findItem(selected.value.id)?.category.icon ?? '🍽') : '🍽',
-)
 const pad = (n: number) => String(n + 1).padStart(2, '0')
 
-// Scroll a section so its header sits just below the sticky nav (uses the live
-// nav height, so it stays correct as the nav grows/shrinks).
+// Scroll a section so its header clears the sticky nav.
 const scrollToId = (id: string) => {
   const el = document.getElementById(id)
   if (!el) return
@@ -120,18 +98,16 @@ const selectView = (key: string) => {
   search.value = ''
   const firstId = baseCategories.value[0]?.id ?? ''
   activeId.value = firstId
-  // Wait for the new sections to render, then bring the first one's header
-  // right below the sticky nav.
   nextTick(() => {
     if (firstId) scrollToId(firstId)
     else window.scrollTo({ top: 0, behavior: 'smooth' })
   })
 }
 
-// Sticky nav height → scroll offset (CSS var consumed by section scroll-margin)
+// Keep the sticky nav height in a CSS var for section scroll-margin.
 const updateNavHeight = () => {
   const nav = document.querySelector<HTMLElement>('[data-nav]')
-  if (nav) document.documentElement.style.setProperty('--atl-nav-h', `${nav.offsetHeight + 16}px`)
+  if (nav) document.documentElement.style.setProperty('--nr-nav-h', `${nav.offsetHeight + 16}px`)
 }
 
 let observer: IntersectionObserver | null = null
@@ -155,13 +131,12 @@ const setupObserver = async () => {
   })
 }
 
-// Keep the active chip centered in the rail — scrolling ONLY the horizontal
-// rail (never the window), so it can't fight the user's vertical scroll.
+// Centre the active chip in the rail — scroll ONLY the rail, never the window.
 watch(activeId, async (id) => {
   if (!id) return
   await nextTick()
   const chip = document.querySelector<HTMLElement>(`[data-chip="${id}"]`)
-  const rail = chip?.closest<HTMLElement>('.atl-scroll')
+  const rail = chip?.closest<HTMLElement>('.nr-scroll')
   if (!chip || !rail) return
   const c = chip.getBoundingClientRect()
   const r = rail.getBoundingClientRect()
@@ -170,11 +145,12 @@ watch(activeId, async (id) => {
 
 onMounted(() => {
   activeId.value = baseCategories.value[0]?.id ?? ''
+  // Defensive: clear any body scroll-lock a previous overlay/theme may have left.
   if (import.meta.client) document.body.style.overflow = ''
   setupObserver()
   window.addEventListener('resize', updateNavHeight)
 })
-watch(categories, () => ready.value && setupObserver(), { flush: 'post' })
+watch(categories, setupObserver, { flush: 'post' })
 watch(
   () => store.levels,
   () => {
@@ -189,26 +165,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="atelier-theme atl-grain relative flex min-h-screen flex-col overflow-x-clip font-serif">
-    <!-- growing content wrapper — pushes the footer to the bottom on short pages -->
+  <div class="noir-theme relative flex min-h-screen flex-col overflow-x-clip font-serif">
     <div class="flex-1 pb-28">
-    <!-- everything sits above the fixed grain layer -->
-    <AtelierHeader />
-    <AtelierHero />
+      <!-- 1 · Arrival -->
+      <NoirHero />
 
-    <!-- Loading beat -->
-    <AtelierSkeleton v-if="!ready" />
-
-    <template v-else>
-      <!-- Chef's signatures (hidden while searching) -->
-      <AtelierSignature
-        v-if="featured.length && !isSearching"
-        :dishes="featured"
-        @open="selected = $event"
-      />
-
-      <!-- Sticky navigation -->
-      <AtelierNav
+      <!-- 2 · Navigation -->
+      <NoirNav
         data-nav
         :views="views"
         :active-key="activeKey"
@@ -220,59 +183,53 @@ onBeforeUnmount(() => {
         @scroll-to-category="scrollToCategory"
       />
 
-      <!-- Menu sections -->
-      <main class="relative z-[1] mx-auto max-w-6xl px-5 sm:px-8">
+      <!-- 3 · Courses -->
+      <main class="mx-auto max-w-6xl px-5 sm:px-8">
         <template v-if="hasResults">
           <section
             v-for="(cat, i) in categories"
             :id="cat.id"
             :key="cat.id"
             class="py-12 sm:py-16"
-            style="scroll-margin-top: var(--atl-nav-h, 9rem)"
+            style="scroll-margin-top: var(--nr-nav-h, 9rem)"
           >
-            <!-- Editorial section header -->
-            <header v-reveal class="flex items-baseline gap-5 border-b border-[#172033] pb-5">
-              <span class="atl-numeral font-serif text-4xl text-[#172033]/15 sm:text-5xl" aria-hidden="true">
+            <!-- Section header -->
+            <header v-reveal class="flex items-baseline gap-5 border-b border-[#25282D] pb-5">
+              <span class="nr-numeral font-serif text-4xl text-[#25282D] sm:text-5xl" aria-hidden="true">
                 {{ pad(i) }}
               </span>
               <div class="min-w-0">
-                <p class="atl-eyebrow font-display text-[10px] text-[#C65D3A]">{{ t(atelierIndexTitle) }}</p>
-                <h2 class="mt-1.5 font-serif text-3xl italic leading-tight text-[#172033] sm:text-4xl">
+                <h2 class="font-serif text-3xl italic leading-tight text-[#F1EEE8] sm:text-4xl">
                   {{ t(cat.title) }}
                 </h2>
               </div>
-              <span class="ml-auto shrink-0 font-display text-[11px] tracking-[0.16em] text-[#667085]">
-                {{ String(cat.items.length).padStart(2, '0') }}
+              <span class="nr-numeral ml-auto shrink-0 font-display text-[11px] tracking-[0.16em] text-[#777A7E]">
+                {{ String(cat.items.length).padStart(2, '0') }} {{ t(ui.dishCount) }}
               </span>
             </header>
 
-            <!-- Printed-menu rows -->
-            <div class="divide-y divide-[#DCE2EA]">
-              <div v-for="(item, j) in cat.items" :key="item.id" v-reveal="j">
-                <AtelierMenuRow
-                  :item="item"
-                  :category-icon="cat.icon"
-                  @open="selected = $event"
-                />
-              </div>
+            <!-- Dishes -->
+            <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <NoirProductCard
+                v-for="(item, j) in cat.items"
+                :key="item.id"
+                v-reveal="j"
+                :item="item"
+                @open="selected = $event"
+              />
             </div>
           </section>
         </template>
 
-        <AtelierEmpty v-else />
+        <NoirEmpty v-else />
       </main>
-    </template>
     </div>
 
-    <AtelierFooter />
+    <NoirFooter />
 
     <!-- Overlays -->
-    <AtelierBasketBar v-if="brand.ordering" @open="billOpen = true" />
-    <AtelierBill v-if="brand.ordering" :open="billOpen" @close="billOpen = false" />
-    <AtelierProductDetail
-      :item="selected"
-      :category-icon="iconForSelected"
-      @close="selected = null"
-    />
+    <NoirBasketBar v-if="brand.ordering" @open="orderOpen = true" />
+    <NoirOrderDrawer v-if="brand.ordering" :open="orderOpen" @close="orderOpen = false" />
+    <NoirProductDetail :item="selected" @close="selected = null" />
   </div>
 </template>

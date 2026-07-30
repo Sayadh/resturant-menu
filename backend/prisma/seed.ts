@@ -36,7 +36,7 @@ async function seedThemes() {
     { key: 'atelier', name: 'Atelier', description: 'Editorial fine-dining' },
     { key: 'maison', name: 'Maison', description: 'Luxe, immersive' },
     { key: 'heritage', name: 'Heritage', description: 'Warm, traditional' },
-    { key: 'noir', name: 'Noir', description: 'Dark, dramatic', isActive: false },
+    { key: 'noir', name: 'Noir', description: 'Dark, dramatic', isActive: true },
   ]
   for (const t of themes) {
     await prisma.theme.upsert({ where: { key: t.key }, update: t, create: t })

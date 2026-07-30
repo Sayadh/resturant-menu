@@ -9,7 +9,7 @@
     <div class="atl-skeleton mt-5 h-10 w-64 rounded-[2px]" />
 
     <div class="mt-12 flex flex-col">
-      <div v-for="n in 5" :key="n" class="flex items-start gap-5 border-b border-[#D4C9B8] py-6">
+      <div v-for="n in 5" :key="n" class="flex items-start gap-5 border-b border-[#DCE2EA] py-6">
         <div class="atl-skeleton h-20 w-20 rounded-[2px] sm:h-24 sm:w-24" />
         <div class="flex-1">
           <div class="atl-skeleton h-5 w-1/2 rounded-[2px]" />

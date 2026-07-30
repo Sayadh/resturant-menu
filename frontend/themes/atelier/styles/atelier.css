@@ -5,12 +5,12 @@
    ─────────────────────────────────────────────────────────────────────── */
 
 .atelier-theme {
-  --atl-ink: #16130f;
-  --atl-bone: #eae3d6;
-  --atl-paper: #f6f2ea;
-  --atl-clay: #a1502e;
-  --atl-line: #d4c9b8;
-  --atl-muted: #857b6c;
+  --atl-ink: #172033;
+  --atl-bone: #f8fafc;
+  --atl-paper: #ffffff;
+  --atl-clay: #c65d3a;
+  --atl-line: #dce2ea;
+  --atl-muted: #667085;
 
   background-color: var(--atl-bone);
   color: var(--atl-ink);

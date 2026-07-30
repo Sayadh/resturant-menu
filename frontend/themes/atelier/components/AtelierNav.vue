@@ -45,14 +45,14 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 <template>
   <div
     ref="navEl"
-    class="sticky top-0 z-30 border-y border-[#16130F] bg-[#EAE3D6]/95 backdrop-blur transition-shadow duration-300"
-    :class="stuck ? 'shadow-[0_16px_36px_-22px_rgba(22,19,15,0.6)]' : 'shadow-none'"
+    class="sticky top-0 z-30 border-y border-[#172033] bg-[#F8FAFC]/95 backdrop-blur transition-shadow duration-300"
+    :class="stuck ? 'shadow-[0_16px_36px_-22px_rgba(17,24,39,0.6)]' : 'shadow-none'"
   >
     <div class="mx-auto max-w-6xl px-5 sm:px-8">
       <!-- Tabs + search -->
       <div class="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex items-center gap-1.5">
-          <span class="mr-2 hidden atl-eyebrow font-display text-[9px] text-[#857B6C] sm:inline">
+          <span class="mr-2 hidden atl-eyebrow font-display text-[9px] text-[#667085] sm:inline">
             {{ t(atelierTabKicker) }}
           </span>
           <nav class="flex items-center gap-1" role="tablist">
@@ -63,13 +63,13 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
               role="tab"
               :aria-selected="props.activeKey === v.key"
               class="relative px-3 py-1.5 font-display text-[12px] tracking-[0.16em] uppercase transition-colors duration-300"
-              :class="props.activeKey === v.key ? 'text-[#16130F]' : 'text-[#16130F]/40 hover:text-[#16130F]/70'"
+              :class="props.activeKey === v.key ? 'text-[#172033]' : 'text-[#172033]/40 hover:text-[#172033]/70'"
               @click="emit('select-view', v.key)"
             >
               {{ t(v.title) }}
               <span
                 v-if="props.activeKey === v.key"
-                class="absolute -bottom-[2px] left-3 right-3 h-px bg-[#A1502E]"
+                class="absolute -bottom-[2px] left-3 right-3 h-px bg-[#C65D3A]"
                 aria-hidden="true"
               />
             </button>
@@ -77,8 +77,8 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
         </div>
 
         <!-- Search -->
-        <div class="relative flex items-center border-b border-[#16130F]/30 focus-within:border-[#A1502E] sm:w-64">
-          <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0 text-[#857B6C]" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <div class="relative flex items-center border-b border-[#172033]/30 focus-within:border-[#C65D3A] sm:w-64">
+          <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0 text-[#667085]" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="7" />
             <path d="m21 21-4.3-4.3" />
           </svg>
@@ -86,29 +86,29 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
             :value="props.search"
             type="search"
             :placeholder="t(atelierSearchPlaceholder)"
-            class="w-full bg-transparent px-2.5 py-2 font-serif text-base text-[#16130F] placeholder:text-[#857B6C]/70 focus:outline-none"
+            class="w-full bg-transparent px-2.5 py-2 font-serif text-base text-[#172033] placeholder:text-[#667085]/70 focus:outline-none"
             @input="emit('update:search', ($event.target as HTMLInputElement).value)"
           />
         </div>
       </div>
 
       <!-- Numbered category rail -->
-      <nav class="atl-scroll -mx-1 flex items-stretch gap-6 overflow-x-auto border-t border-[#D4C9B8] px-1 py-2.5">
+      <nav class="atl-scroll -mx-1 flex items-stretch gap-6 overflow-x-auto border-t border-[#DCE2EA] px-1 py-2.5">
         <button
           v-for="(cat, i) in props.categories"
           :key="cat.id"
           type="button"
           :data-chip="cat.id"
           class="group flex shrink-0 items-baseline gap-2 whitespace-nowrap transition-colors duration-300"
-          :class="props.activeId === cat.id ? 'text-[#16130F]' : 'text-[#16130F]/45 hover:text-[#16130F]/80'"
+          :class="props.activeId === cat.id ? 'text-[#172033]' : 'text-[#172033]/45 hover:text-[#172033]/80'"
           @click="emit('scroll-to-category', cat.id)"
         >
           <span
             class="atl-numeral font-display text-[10px]"
-            :class="props.activeId === cat.id ? 'text-[#A1502E]' : 'text-[#857B6C]/60'"
+            :class="props.activeId === cat.id ? 'text-[#C65D3A]' : 'text-[#667085]/60'"
           >{{ pad(i) }}</span>
           <span class="font-serif text-[15px] italic">{{ t(cat.title) }}</span>
-          <span class="font-display text-[10px] text-[#857B6C]/60">{{ cat.items.length }}</span>
+          <span class="font-display text-[10px] text-[#667085]/60">{{ cat.items.length }}</span>
         </button>
       </nav>
     </div>

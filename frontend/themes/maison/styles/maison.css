@@ -8,15 +8,15 @@
    ─────────────────────────────────────────────────────────────────────── */
 
 .maison-theme {
-  --ms-ivory: #f4eee2; /* warm cream page */
-  --ms-warm-white: #FCF8F0; /* elevated surfaces */
-  --ms-chocolate: #4A3B2E; /* warm bark — body text */
-  --ms-espresso: #55402E; /* walnut wood — dark bands/surfaces */
-  --ms-gold: #C4693F; /* sage — botanical accent */
-  --ms-gold-soft: #E0B27C; /* light sage */
-  --ms-olive: #C4693F; /* sage */
-  --ms-warm-gray: #8A7C6B; /* muted text */
-  --ms-line: #E7DDCB; /* hairlines */
+  --ms-ivory: #f5eff1; /* warm cream page */
+  --ms-warm-white: #FFFBFC; /* elevated surfaces */
+  --ms-chocolate: #2C1B22; /* warm bark — body text */
+  --ms-espresso: #541C2E; /* walnut wood — dark bands/surfaces */
+  --ms-gold: #8C304A; /* sage — botanical accent */
+  --ms-gold-soft: #B99768; /* light sage */
+  --ms-olive: #8C304A; /* sage */
+  --ms-warm-gray: #74656B; /* muted text */
+  --ms-line: #DDCED3; /* hairlines */
 
   background-color: var(--ms-ivory);
   color: var(--ms-chocolate);

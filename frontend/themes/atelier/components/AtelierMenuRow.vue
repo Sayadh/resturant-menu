@@ -27,7 +27,7 @@ const soldOut = computed(() => props.item.available === false)
     <!-- Plated thumbnail -->
     <button
       type="button"
-      class="relative h-20 w-20 shrink-0 overflow-hidden rounded-[2px] bg-[#16130F] sm:h-24 sm:w-24"
+      class="relative h-20 w-20 shrink-0 overflow-hidden rounded-[2px] bg-[#111827] sm:h-24 sm:w-24"
       :aria-label="t(item.name)"
       @click="emit('open', item)"
     >
@@ -41,10 +41,10 @@ const soldOut = computed(() => props.item.available === false)
       />
       <span
         v-else
-        class="flex h-full w-full items-center justify-center bg-[#F6F2EA] text-2xl text-[#A1502E]"
+        class="flex h-full w-full items-center justify-center bg-[#FFFFFF] text-2xl text-[#C65D3A]"
         aria-hidden="true"
       >{{ categoryIcon }}</span>
-      <span class="pointer-events-none absolute inset-1.5 border border-[#F6F2EA]/20" aria-hidden="true" />
+      <span class="pointer-events-none absolute inset-1.5 border border-[#F8FAFC]/20" aria-hidden="true" />
     </button>
 
     <!-- Editorial copy -->
@@ -52,18 +52,18 @@ const soldOut = computed(() => props.item.available === false)
       <div class="flex items-end">
         <button
           type="button"
-          class="text-left font-serif text-xl font-medium leading-snug text-[#16130F] transition-colors group-hover:text-[#A1502E] sm:text-2xl"
+          class="text-left font-serif text-xl font-medium leading-snug text-[#172033] transition-colors group-hover:text-[#C65D3A] sm:text-2xl"
           @click="emit('open', item)"
         >
           {{ t(item.name) }}
         </button>
         <span class="atl-leader" aria-hidden="true" />
-        <span class="shrink-0 font-serif text-lg text-[#16130F] sm:text-xl">
-          {{ fmt(item.price) }}<span class="ml-0.5 text-[#A1502E]">֏</span>
+        <span class="shrink-0 font-serif text-lg text-[#172033] sm:text-xl">
+          {{ fmt(item.price) }}<span class="ml-0.5 text-[#C65D3A]">֏</span>
         </span>
       </div>
 
-      <p class="mt-1.5 max-w-prose font-serif text-[15px] leading-relaxed text-[#857B6C]">
+      <p class="mt-1.5 max-w-prose font-serif text-[15px] leading-relaxed text-[#667085]">
         {{ t(item.description) }}
       </p>
 
@@ -71,26 +71,26 @@ const soldOut = computed(() => props.item.available === false)
       <div class="mt-3 flex items-center gap-4">
         <span
           v-if="item.badge"
-          class="atl-eyebrow font-display text-[9px] text-[#A1502E]"
+          class="atl-eyebrow font-display text-[9px] text-[#C65D3A]"
         >
           {{ t(badgeLabels[item.badge].text) }}
         </span>
 
-        <span v-if="soldOut" class="atl-eyebrow font-display text-[9px] text-[#857B6C]">
+        <span v-if="soldOut" class="atl-eyebrow font-display text-[9px] text-[#667085]">
           {{ t(ui.soldOut) }}
         </span>
 
         <!-- Add / stepper (ordering = paid plans only) -->
         <template v-if="brand.ordering">
           <div v-if="order.qtyOf(item.id) > 0" class="ml-auto flex items-center gap-3">
-            <button type="button" class="flex h-7 w-7 items-center justify-center rounded-full border border-[#16130F]/30 font-display text-base text-[#16130F] transition hover:border-[#A1502E] hover:text-[#A1502E]" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
-            <span class="w-4 text-center font-serif text-base font-semibold text-[#16130F]">{{ order.qtyOf(item.id) }}</span>
-            <button type="button" class="flex h-7 w-7 items-center justify-center rounded-full bg-[#16130F] font-display text-base text-[#F6F2EA] transition hover:bg-[#A1502E]" aria-label="Ավելացնել" @click="order.add(item.id)">+</button>
+            <button type="button" class="flex h-7 w-7 items-center justify-center rounded-full border border-[#172033]/30 font-display text-base text-[#172033] transition hover:border-[#C65D3A] hover:text-[#C65D3A]" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
+            <span class="w-4 text-center font-serif text-base font-semibold text-[#172033]">{{ order.qtyOf(item.id) }}</span>
+            <button type="button" class="flex h-7 w-7 items-center justify-center rounded-full bg-[#111827] font-display text-base text-[#F8FAFC] transition hover:bg-[#C65D3A]" aria-label="Ավելացնել" @click="order.add(item.id)">+</button>
           </div>
           <button
             v-else-if="!soldOut"
             type="button"
-            class="flex items-center gap-2 border-b border-[#16130F] pb-0.5 font-display text-[10px] uppercase tracking-[0.22em] text-[#16130F] transition-colors hover:border-[#A1502E] hover:text-[#A1502E]"
+            class="flex items-center gap-2 border-b border-[#172033] pb-0.5 font-display text-[10px] uppercase tracking-[0.22em] text-[#172033] transition-colors hover:border-[#C65D3A] hover:text-[#C65D3A]"
             @click="order.add(item.id)"
           >
             {{ t(atelierAdd) }}
