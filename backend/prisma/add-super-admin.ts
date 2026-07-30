@@ -14,7 +14,20 @@ import * as bcrypt from 'bcrypt'
 const prisma = new PrismaClient()
 
 const EMAIL = (process.env.EMAIL || 'superadmin@platform.test').toLowerCase().trim()
-const PASSWORD = process.env.PASSWORD || 'password123'
+// No fallback: a shared default here would create a platform-wide
+// SUPER_ADMIN with a guessable password. Fail loudly instead.
+function requirePassword(): string {
+  const value = process.env.PASSWORD
+  if (!value || value.length < 12) {
+    console.error(
+      'PASSWORD env var is required (min 12 chars). Example:\n' +
+        '  PASSWORD="$(openssl rand -base64 24)" npm run add:superadmin',
+    )
+    process.exit(1)
+  }
+  return value
+}
+const PASSWORD = requirePassword()
 
 async function main() {
   const passwordHash = await bcrypt.hash(PASSWORD, 10)

@@ -2,6 +2,7 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { UserRole } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import { PrismaService } from '../prisma/prisma.service'
+import { generateInitialPassword } from '../common/utils/password'
 import { CreateRestaurantDto } from './dto/create-restaurant.dto'
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto'
 
@@ -78,7 +79,11 @@ export class SuperAdminService {
     })
 
     const email = dto.ownerEmail?.toLowerCase().trim() || `owner@${slug}.test`
-    const password = dto.ownerPassword || 'password123'
+    // No shared constant here: a fixed fallback plus the predictable
+    // `owner@<slug>.test` address and the public restaurant list would make
+    // every auto-provisioned tenant takeover-able. The generated value is
+    // returned once (below) for the super-admin to hand over.
+    const password = dto.ownerPassword || generateInitialPassword()
     await this.prisma.user.create({
       data: {
         email,

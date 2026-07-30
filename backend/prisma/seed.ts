@@ -15,8 +15,29 @@ import * as bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
-// Demo owner password (every seeded owner uses this). Change in real setups.
-const DEMO_PASSWORD = 'password123'
+// Development password shared by every seeded account. Override with
+// SEED_PASSWORD for any environment that isn't a throwaway local database.
+const DEMO_PASSWORD = process.env.SEED_PASSWORD || 'dev-only-password'
+
+/**
+ * These scripts create accounts with a well-known password so local
+ * development stays frictionless. That is exactly why they must never touch a
+ * production database (HIGH-2): a seeded `superadmin@platform.test` would be a
+ * platform-wide takeover. Override the password with SEED_PASSWORD when
+ * seeding any shared environment.
+ */
+function assertNotProduction(script: string): void {
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SEED_IN_PRODUCTION !== 'yes') {
+    console.error(
+      `Refusing to run ${script} with NODE_ENV=production.\n` +
+        'It creates accounts with a shared development password.\n' +
+        'If you really mean it, set ALLOW_SEED_IN_PRODUCTION=yes and SEED_PASSWORD=<strong-secret>.',
+    )
+    process.exit(1)
+  }
+}
+
+assertNotProduction('prisma/seed.ts')
 
 async function seedLanguages() {
   const langs = [
@@ -169,7 +190,7 @@ async function seedRestaurant(opts: RestaurantInfo & { langs: { id: string; code
     }
   }
 
-  // owner user — login with: owner@<slug>.test / password123
+  // owner user — login with: owner@<slug>.test / DEMO_PASSWORD
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10)
   await prisma.user.upsert({
     where: { email: `owner@${opts.slug}.test` },
@@ -425,7 +446,7 @@ async function main() {
     await seedMenu(restaurant.id, langs, badgeIdByKey, t.menu, sectionMap)
   }
 
-  // Platform super-admin — login with: superadmin@platform.test / password123
+  // Platform super-admin — login with: superadmin@platform.test / DEMO_PASSWORD
   // Not tied to any restaurant (restaurantId null); can create restaurants.
   const superHash = await bcrypt.hash(DEMO_PASSWORD, 10)
   await prisma.user.upsert({

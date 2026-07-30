@@ -4,12 +4,13 @@
  *   SLUG=my-cafe NAME="My Cafe" npm run add:restaurant
  *
  * Optional env: THEME (default 'aria'), DEFAULT_LANG ('hy'|'en'|'ru', default 'hy'),
- *               PASSWORD (default 'password123'), EMAIL, ADDRESS.
+ *               PASSWORD (random if omitted; printed at the end), EMAIL, ADDRESS.
  * Idempotent on slug (re-running updates the restaurant + ensures sections).
  * After it runs, log into /admin with:  owner@<slug>.test / <password>
  * ─────────────────────────────────────────────────────────────────────────── */
 import { PrismaClient, UserRole, SectionType } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
+import { generateInitialPassword } from '../src/common/utils/password'
 
 const prisma = new PrismaClient()
 
@@ -17,7 +18,9 @@ const SLUG = process.env.SLUG
 const NAME = process.env.NAME
 const THEME = process.env.THEME || 'aria'
 const DEFAULT_LANG = process.env.DEFAULT_LANG || 'hy'
-const PASSWORD = process.env.PASSWORD || 'password123'
+// Generated when not supplied — never a shared constant (see HIGH-2).
+// The value is printed once at the end of the script.
+const PASSWORD = process.env.PASSWORD || generateInitialPassword()
 const EMAIL = process.env.EMAIL
 const ADDRESS = process.env.ADDRESS
 

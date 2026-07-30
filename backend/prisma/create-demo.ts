@@ -14,6 +14,29 @@ import * as bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
+// Development password for the demo tenant. Override with SEED_PASSWORD.
+const DEMO_PASSWORD = process.env.SEED_PASSWORD || 'dev-only-password'
+
+/**
+ * These scripts create accounts with a well-known password so local
+ * development stays frictionless. That is exactly why they must never touch a
+ * production database (HIGH-2): a seeded `superadmin@platform.test` would be a
+ * platform-wide takeover. Override the password with SEED_PASSWORD when
+ * seeding any shared environment.
+ */
+function assertNotProduction(script: string): void {
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_SEED_IN_PRODUCTION !== 'yes') {
+    console.error(
+      `Refusing to run ${script} with NODE_ENV=production.\n` +
+        'It creates accounts with a shared development password.\n' +
+        'If you really mean it, set ALLOW_SEED_IN_PRODUCTION=yes and SEED_PASSWORD=<strong-secret>.',
+    )
+    process.exit(1)
+  }
+}
+
+assertNotProduction('prisma/create-demo.ts')
+
 const SOURCE_SLUG = process.env.CLONE_SOURCE || 'tun-lahmajo'
 const DEMO_SLUG = 'demo'
 const DEMO_NAME = 'Ձեր մենյուն'
@@ -151,9 +174,9 @@ async function main() {
     })
   }
 
-  // owner login (optional but consistent): owner@demo.test / password123
+  // owner login: owner@demo.test / DEMO_PASSWORD (see top of file)
   const email = `owner@${DEMO_SLUG}.test`
-  const passwordHash = await bcrypt.hash('password123', 10)
+  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10)
   await prisma.user.upsert({
     where: { email },
     update: { passwordHash, restaurantId: demo.id },
