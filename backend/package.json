@@ -5,6 +5,9 @@
   "description": "QR Menu Platform — multi-tenant SaaS backend (NestJS)",
   "scripts": {
     "build": "nest build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:test": "tsc -p tsconfig.test.json",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",

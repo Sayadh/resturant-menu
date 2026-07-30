@@ -64,7 +64,7 @@ export class SectionsService {
     })
     // Best-effort: drop the previous image object if it was replaced/cleared.
     if (dto.imageUrl !== undefined && existing.imageUrl && existing.imageUrl !== dto.imageUrl) {
-      await this.uploads.removeByUrl(existing.imageUrl)
+      await this.uploads.removeOwnByUrl(restaurantId, existing.imageUrl)
     }
     if (dto.translations) {
       const translations = await mapTranslations(this.prisma, dto.translations)

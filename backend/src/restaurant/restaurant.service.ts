@@ -76,10 +76,10 @@ export class RestaurantService {
     // Best-effort: if logo/cover was replaced or cleared, drop the old objects.
     const b = before as unknown as { logoUrl?: string | null; coverImageUrl?: string | null }
     if (dto.logoUrl !== undefined && b.logoUrl && b.logoUrl !== dto.logoUrl) {
-      await this.uploads.removeByUrl(b.logoUrl)
+      await this.uploads.removeOwnByUrl(restaurantId, b.logoUrl)
     }
     if (dto.coverImageUrl !== undefined && b.coverImageUrl && b.coverImageUrl !== dto.coverImageUrl) {
-      await this.uploads.removeByUrl(b.coverImageUrl)
+      await this.uploads.removeOwnByUrl(restaurantId, b.coverImageUrl)
     }
 
     return updated

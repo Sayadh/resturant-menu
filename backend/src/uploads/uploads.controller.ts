@@ -42,7 +42,7 @@ export class UploadsController {
     @RestaurantId() rid: string,
     @Query('url') url: string,
   ): Promise<{ ok: true }> {
-    await this.uploads.removeOwnByUrl(rid, url)
+    await this.uploads.removeOwnByUrlOrFail(rid, url)
     return { ok: true }
   }
 }

@@ -136,13 +136,13 @@ export class CategoriesService {
     }
     // Best-effort: if an image was replaced/cleared, drop the old storage object.
     if (dto.imageUrl !== undefined && cat.imageUrl && cat.imageUrl !== dto.imageUrl) {
-      await this.uploads.removeByUrl(cat.imageUrl)
+      await this.uploads.removeOwnByUrl(restaurantId, cat.imageUrl)
     }
     if (dto.iconUrl !== undefined && cat.iconUrl && cat.iconUrl !== dto.iconUrl) {
-      await this.uploads.removeByUrl(cat.iconUrl)
+      await this.uploads.removeOwnByUrl(restaurantId, cat.iconUrl)
     }
     if (dto.mobileImageUrl !== undefined && cat.mobileImageUrl && cat.mobileImageUrl !== dto.mobileImageUrl) {
-      await this.uploads.removeByUrl(cat.mobileImageUrl)
+      await this.uploads.removeOwnByUrl(restaurantId, cat.mobileImageUrl)
     }
     return this.get(restaurantId, id)
   }

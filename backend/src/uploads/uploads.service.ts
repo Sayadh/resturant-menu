@@ -1,11 +1,13 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { randomUUID } from 'node:crypto'
+import { resolveOwnedKey, TENANT_PREFIX } from './storage-key'
 
 /** Allowed image mime-types → file extension. */
 const ALLOWED: Record<string, string> = {
@@ -61,7 +63,7 @@ export class UploadsService {
     if (!ext) throw new BadRequestException('Unsupported image type (use JPG, PNG, WebP or GIF)')
     if (file.size > MAX_BYTES) throw new BadRequestException('Image too large (max 5MB)')
 
-    const storageKey = `restaurants/${restaurantId}/${randomUUID()}.${ext}`
+    const storageKey = `${TENANT_PREFIX}/${restaurantId}/${randomUUID()}.${ext}`
     const res = await fetch(
       `${this.url}/storage/v1/object/${this.bucket}/${storageKey}`,
       {
@@ -84,8 +86,12 @@ export class UploadsService {
     return { url, storageKey }
   }
 
-  /** Best-effort delete of a previously uploaded object (orphan cleanup). */
-  async remove(storageKey: string | null | undefined): Promise<void> {
+  /**
+   * Low-level delete. PRIVATE on purpose: every caller must go through
+   * `removeOwnByUrl` / `removeManyOwnByUrl`, which enforce tenant ownership.
+   * Bypassing this would re-open the cross-tenant deletion hole.
+   */
+  private async remove(storageKey: string | null | undefined): Promise<void> {
     if (!storageKey || !this.url || !this.key) {
       this.logger.warn(`Storage delete skipped (missing key/config): key=${storageKey}`)
       return
@@ -109,32 +115,49 @@ export class UploadsService {
     }
   }
 
-  /** Extract the object key from one of OUR public URLs; null for foreign URLs. */
-  private keyFromUrl(url: string | null | undefined): string | null {
-    if (!url || !this.url) return null
-    const prefix = `${this.url}/storage/v1/object/public/${this.bucket}/`
-    return url.startsWith(prefix) ? url.slice(prefix.length) : null
+  /**
+   * Delete by public URL, but ONLY when the object provably belongs to
+   * `restaurantId` (key is exactly `restaurants/<restaurantId>/...`).
+   *
+   * `restaurantId` MUST come from the authenticated request context
+   * (JWT → RestaurantScopeGuard → req.restaurantId) — never from a DTO,
+   * query param or anything else the client controls.
+   *
+   * Returns whether a delete was actually attempted, so explicit user-facing
+   * endpoints can surface an authorization failure while best-effort cleanup
+   * paths can simply carry on (a missing/foreign old file must never break a
+   * DB update that already succeeded).
+   */
+  async removeOwnByUrl(
+    restaurantId: string | null | undefined,
+    url: string | null | undefined,
+  ): Promise<boolean> {
+    const result = resolveOwnedKey(this.url, this.bucket, restaurantId, url)
+    if (!result.ok) {
+      // Deliberately terse: never echo another tenant's key/URL back to a caller.
+      this.logger.warn(`Storage delete rejected (${result.reason}) rid=${restaurantId ?? 'none'}`)
+      return false
+    }
+    await this.remove(result.key)
+    return true
   }
 
-  /** Best-effort delete by public URL (ignores links that aren't ours). */
-  async removeByUrl(url: string | null | undefined): Promise<void> {
-    await this.remove(this.keyFromUrl(url))
-  }
-
-  async removeManyByUrl(urls: (string | null | undefined)[]): Promise<void> {
-    await Promise.all(urls.map((u) => this.removeByUrl(u)))
+  /** Best-effort, tenant-scoped bulk cleanup (e.g. replaced product images). */
+  async removeManyOwnByUrl(
+    restaurantId: string | null | undefined,
+    urls: (string | null | undefined)[],
+  ): Promise<void> {
+    await Promise.all(urls.map((u) => this.removeOwnByUrl(restaurantId, u)))
   }
 
   /**
-   * Delete by URL, but ONLY if the object belongs to `restaurantId` (its key is
-   * under `restaurants/<id>/`). Prevents a tenant from deleting another's files.
+   * Explicit, user-initiated delete (admin "remove image" button). Unlike the
+   * best-effort cleanup paths this reports an authorization failure instead of
+   * silently succeeding — with a generic message that leaks nothing about the
+   * owning tenant.
    */
-  async removeOwnByUrl(restaurantId: string, url: string | null | undefined): Promise<void> {
-    const key = this.keyFromUrl(url)
-    if (key && key.startsWith(`restaurants/${restaurantId}/`)) {
-      await this.remove(key)
-    } else {
-      this.logger.warn(`Storage delete rejected (out of scope): url=${url} key=${key} rid=${restaurantId}`)
-    }
+  async removeOwnByUrlOrFail(restaurantId: string | null | undefined, url: string | null | undefined): Promise<void> {
+    const deleted = await this.removeOwnByUrl(restaurantId, url)
+    if (!deleted) throw new ForbiddenException('This image cannot be deleted')
   }
 }

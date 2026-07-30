@@ -167,7 +167,10 @@ export class ProductsService {
       ])
       // Best-effort: drop storage objects for images no longer referenced.
       const keep = new Set(dto.images.map((im) => im.url))
-      await this.uploads.removeManyByUrl(old.filter((o) => !keep.has(o.url)).map((o) => o.url))
+      await this.uploads.removeManyOwnByUrl(
+        restaurantId,
+        old.filter((o) => !keep.has(o.url)).map((o) => o.url),
+      )
     }
 
     return this.get(restaurantId, id)

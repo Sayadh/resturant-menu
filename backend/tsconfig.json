@@ -21,5 +21,8 @@
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  // Tests import with explicit .ts extensions (required by Node's built-in
+  // type-stripping runner) and are typechecked via tsconfig.test.json instead.
+  "exclude": ["node_modules", "dist", "test"]
 }
