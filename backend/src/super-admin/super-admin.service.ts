@@ -148,7 +148,22 @@ export class SuperAdminService {
       const patch: Record<string, unknown> = {}
       if (newEmail) patch.email = newEmail
       if (passwordHash) patch.passwordHash = passwordHash
-      if (Object.keys(patch).length) await this.prisma.user.update({ where: { id: owner.id }, data: patch })
+      if (!Object.keys(patch).length) return
+
+      // A credential change must evict every existing session (HIGH-3):
+      //  • passwordChangedAt invalidates already-issued ACCESS tokens
+      //  • revoking the refresh tokens stops them being rotated forever
+      // Both run with the credential write in ONE transaction so we can never
+      // end up with a new password but still-valid old sessions (or vice versa).
+      const changedAt = new Date()
+      patch.passwordChangedAt = changedAt
+      await this.prisma.$transaction([
+        this.prisma.user.update({ where: { id: owner.id }, data: patch }),
+        this.prisma.refreshToken.updateMany({
+          where: { userId: owner.id, revokedAt: null },
+          data: { revokedAt: changedAt },
+        }),
+      ])
       return
     }
 

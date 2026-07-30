@@ -251,6 +251,10 @@ model User {
   role         UserRole  @default(OWNER)
   isActive     Boolean   @default(true)
   lastLoginAt  DateTime?
+  /// Set whenever the password (or login email) changes. Access tokens issued
+  /// before this instant are rejected; refresh tokens are revoked in the same
+  /// transaction. NULL = credentials never changed.
+  passwordChangedAt DateTime?
   deletedAt    DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

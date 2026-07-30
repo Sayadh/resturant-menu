@@ -8,17 +8,25 @@ import { Reflector } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator'
 import { RequestContext } from '../context/request-context'
+import { PrismaService } from '../../prisma/prisma.service'
+import { isTokenStale } from '../../auth/token-freshness'
 import type { AuthUser } from '../types/auth.types'
 
 /**
  * Global guard. Allows @Public() routes; otherwise verifies the Bearer access
  * token and attaches the decoded user to the request + request context.
+ *
+ * Beyond signature/expiry it also enforces token FRESHNESS (HIGH-3): an access
+ * token minted before the user's last credential change is rejected, so a
+ * password reset takes effect immediately instead of after the 15-minute TTL.
+ * This costs one primary-key lookup per authenticated request.
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly jwt: JwtService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -34,13 +42,26 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Missing access token')
     }
 
+    let payload: AuthUser
     try {
-      const payload = await this.jwt.verifyAsync<AuthUser>(header.slice(7))
-      req.user = payload
-      RequestContext.set({ user: payload })
-      return true
+      payload = await this.jwt.verifyAsync<AuthUser>(header.slice(7))
     } catch {
       throw new UnauthorizedException('Invalid or expired token')
     }
+
+    // Token must not predate the user's last credential change.
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { passwordChangedAt: true },
+    })
+    // A token for a user that no longer exists is not usable either.
+    if (!user) throw new UnauthorizedException('Invalid or expired token')
+    if (isTokenStale(payload.iat, user.passwordChangedAt)) {
+      throw new UnauthorizedException('Session expired, please sign in again')
+    }
+
+    req.user = payload
+    RequestContext.set({ user: payload })
+    return true
   }
 }
