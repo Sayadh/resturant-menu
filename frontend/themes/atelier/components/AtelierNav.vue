@@ -51,18 +51,19 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
     <div class="mx-auto max-w-6xl px-5 sm:px-8">
       <!-- Tabs + search -->
       <div class="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-1.5">
-          <span class="mr-2 hidden atl-eyebrow font-display text-[9px] text-[#667085] sm:inline">
+        <div class="flex min-w-0 items-center gap-1.5">
+          <span class="mr-2 hidden shrink-0 atl-eyebrow font-display text-[9px] text-[#667085] sm:inline">
             {{ t(atelierTabKicker) }}
           </span>
-          <nav class="flex items-center gap-1" role="tablist">
+          <!-- Scrolls horizontally when there are more sections than fit. -->
+          <nav class="atl-scroll -mx-1 flex items-center gap-1 overflow-x-auto px-1" role="tablist">
             <button
               v-for="v in props.views"
               :key="v.key"
               type="button"
               role="tab"
               :aria-selected="props.activeKey === v.key"
-              class="relative px-3 py-1.5 font-display text-[12px] tracking-[0.16em] uppercase transition-colors duration-300"
+              class="relative shrink-0 whitespace-nowrap px-3 py-1.5 font-display text-[12px] tracking-[0.16em] uppercase transition-colors duration-300"
               :class="props.activeKey === v.key ? 'text-[#172033]' : 'text-[#172033]/40 hover:text-[#172033]/70'"
               @click="emit('select-view', v.key)"
             >

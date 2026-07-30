@@ -51,18 +51,19 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
     <div class="mx-auto max-w-6xl px-5 sm:px-8">
       <!-- Section tabs + search -->
       <div class="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-1.5">
-          <span class="nr-eyebrow mr-2 hidden font-display text-[9px] text-[#777A7E] sm:inline">
+        <div class="flex min-w-0 items-center gap-1.5">
+          <span class="nr-eyebrow mr-2 hidden shrink-0 font-display text-[9px] text-[#777A7E] sm:inline">
             {{ t(noirNavKicker) }}
           </span>
-          <nav class="flex items-center gap-1" role="tablist">
+          <!-- Scrolls horizontally when there are more sections than fit. -->
+          <nav class="nr-scroll -mx-1 flex items-center gap-1 overflow-x-auto px-1" role="tablist">
             <button
               v-for="v in props.views"
               :key="v.key"
               type="button"
               role="tab"
               :aria-selected="props.activeKey === v.key"
-              class="relative px-3 py-1.5 font-display text-[12px] uppercase tracking-[0.16em] transition-colors duration-300 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#C7C2B8]"
+              class="relative shrink-0 whitespace-nowrap px-3 py-1.5 font-display text-[12px] uppercase tracking-[0.16em] transition-colors duration-300 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#C7C2B8]"
               :class="props.activeKey === v.key ? 'text-[#F1EEE8]' : 'text-[#777A7E] hover:text-[#A8A8A5]'"
               @click="emit('select-view', v.key)"
             >

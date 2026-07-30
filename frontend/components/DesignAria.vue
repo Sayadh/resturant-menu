@@ -375,7 +375,9 @@ onBeforeUnmount(() => {
                   <MenuBadge v-if="item.badge" :badge="item.badge" />
                   <span v-if="item.available === false" class="rounded-full bg-[#3E2723]/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#FFF9EF]">{{ t(ui.soldOut) }}</span>
                 </div>
-                <h3 class="font-serif text-base font-semibold leading-snug text-[#3E2723] sm:text-lg">{{ t(item.name) }}</h3>
+                <h3 class="font-serif text-base font-semibold leading-snug text-[#3E2723] sm:text-lg">
+                  <button type="button" class="w-full text-left" @click="selected = item">{{ t(item.name) }}</button>
+                </h3>
                 <p class="mt-1 line-clamp-2 font-serif text-xs leading-relaxed text-[#7A6654] sm:text-sm">{{ t(item.description) }}</p>
 
                 <div class="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-2 pt-3">

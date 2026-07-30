@@ -222,12 +222,14 @@ onBeforeUnmount(() => {
 
       <!-- Sticky chapter selector — stays pinned so guests can always switch -->
       <div class="sticky top-[64px] z-30 mt-8 border-y border-[#DDCED3]/70 bg-[#F5EFF1]/85 backdrop-blur-md sm:top-[72px]">
-        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-7 gap-y-1.5 px-5 py-3.5 sm:gap-x-9 sm:px-8">
+        <!-- Scrolls horizontally when there are more chapters than fit. -->
+        <div class="ms-scroll mx-auto max-w-6xl overflow-x-auto px-5 py-3.5 sm:px-8">
+          <div class="mx-auto flex w-max min-w-full items-center justify-center gap-x-7 sm:gap-x-9">
           <button
             v-for="view in views"
             :key="view.key"
             type="button"
-            class="relative pb-1 font-serif text-lg transition-colors duration-300 sm:text-xl"
+            class="relative shrink-0 whitespace-nowrap pb-1 font-serif text-lg transition-colors duration-300 sm:text-xl"
             :class="activeKey === view.key ? 'text-[#2C1B22]' : 'text-[#9B9094] hover:text-[#74656B]'"
             @click="selectView(view.key)"
           >
@@ -238,6 +240,7 @@ onBeforeUnmount(() => {
               aria-hidden="true"
             />
           </button>
+          </div>
         </div>
       </div>
 

@@ -8,14 +8,17 @@ const { levels } = storeToRefs(store)
 </script>
 
 <template>
-  <div class="flex items-center gap-2.5" role="tablist" aria-label="Menu sections">
+  <!-- Scrolls horizontally when there are more sections than fit; when they do
+       fit, `min-w-full` keeps the original full-width stretched layout. -->
+  <div class="-mx-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+  <div class="flex w-max min-w-full items-center gap-2.5" role="tablist" aria-label="Menu sections">
     <button
       v-for="lvl in levels"
       :key="lvl.id"
       type="button"
       role="tab"
       :aria-selected="activeLevel === lvl.id"
-      class="flex flex-1 items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-bold uppercase tracking-[0.1em] transition-all duration-200"
+      class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border px-4 py-2.5 text-sm font-bold uppercase tracking-[0.1em] transition-all duration-200"
       :class="
         activeLevel === lvl.id
           ? 'border-[#64734D] bg-[#64734D] text-white shadow-[0_6px_18px_-6px_rgba(100,115,77,0.45)]'
@@ -29,5 +32,6 @@ const { levels } = storeToRefs(store)
       <span v-else class="text-base leading-none" aria-hidden="true">{{ lvl.icon }}</span>
       <span>{{ t(lvl.title) }}</span>
     </button>
+  </div>
   </div>
 </template>

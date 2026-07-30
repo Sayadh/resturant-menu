@@ -63,7 +63,9 @@ const hasPhoto = computed(() => !!props.item.image && !imgFailed.value)
     <!-- Content -->
     <div class="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
       <h3 class="font-serif text-base font-semibold leading-snug text-[#292A27] sm:text-xl">
-        {{ t(item.name) }}
+        <button type="button" class="w-full text-left" @click="emit('open', item)">
+          {{ t(item.name) }}
+        </button>
       </h3>
       <p
         class="mt-1 line-clamp-2 font-serif text-sm leading-relaxed text-[#706F68] sm:text-[15px] sm:line-clamp-3"

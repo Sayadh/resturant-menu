@@ -8,14 +8,16 @@ const { t } = useLanguage()
 </script>
 
 <template>
-  <div class="flex items-center gap-2" role="tablist" aria-label="Drink groups">
+  <!-- Scrolls horizontally when the groups don't fit. -->
+  <div class="-mx-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+  <div class="flex w-max min-w-full items-center gap-2" role="tablist" aria-label="Drink groups">
     <button
       v-for="grp in drinkGroups"
       :key="grp.id"
       type="button"
       role="tab"
       :aria-selected="activeGroup === grp.id"
-      class="inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-semibold transition-all duration-200"
+      class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 py-1.5 text-sm font-semibold transition-all duration-200"
       :class="
         activeGroup === grp.id
           ? 'border-[#26382F] bg-[#26382F] text-white shadow-sm'
@@ -26,5 +28,6 @@ const { t } = useLanguage()
       <span class="text-base leading-none" aria-hidden="true">{{ grp.icon }}</span>
       <span>{{ t(grp.title) }}</span>
     </button>
+  </div>
   </div>
 </template>
