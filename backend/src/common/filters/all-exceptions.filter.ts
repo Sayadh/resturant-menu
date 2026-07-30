@@ -8,11 +8,14 @@ import {
 } from '@nestjs/common'
 import type { Response } from 'express'
 import type { ApiError, ApiResponse } from '../interfaces/api-response.interface'
+import { RequestContext } from '../context/request-context'
+import { sanitizeUnexpectedError } from './error-sanitizer'
 
 /** Maps any thrown error to the standard error envelope (HTTP status preserved). */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name)
+  private readonly isProduction = process.env.NODE_ENV === 'production'
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const res = host.switchToHttp().getResponse<Response>()
@@ -37,9 +40,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
         }
         if (b.errors) errors = b.errors
       }
-    } else if (exception instanceof Error) {
-      message = exception.message
-      this.logger.error(exception.message, exception.stack)
+    } else {
+      // Unexpected (Prisma / driver / TypeError). Its message can name tables,
+      // columns and constraints, so it never leaves the server in production —
+      // the request id ties the client's response to the full log entry.
+      const requestId = RequestContext.get()?.requestId
+      const { clientMessage, logMessage } = sanitizeUnexpectedError(exception, this.isProduction)
+      message = clientMessage
+      this.logger.error(
+        `[${requestId ?? 'no-request-id'}] ${logMessage}`,
+        exception instanceof Error ? exception.stack : undefined,
+      )
+      if (requestId) errors = [{ code: 'REQUEST_ID', message: requestId }]
     }
 
     const payload: ApiResponse<null> = {
