@@ -47,8 +47,9 @@ resturant-menu/
 │   └── CLAUDE.md     frontend-ի արագ ուղեցույց
 │
 ├── docs/             📖 մանրամասն փաստաթղթեր (տես ներքև)
-├── DEPLOY-VPS.md     production deploy (menus.am)
-├── DEPLOY-STAGING.md staging deploy (staging.menus.am)
+├── DEPLOY.md         ⭐ deploy runbook — ՄԻԱԿ ճշմարտության աղբյուրը
+├── DEPLOY-VPS.md     (միայն առաջին setup) production Nginx/Certbot/PM2
+├── DEPLOY-STAGING.md (միայն առաջին setup) staging Nginx/Certbot/PM2
 └── package.json      root convenience scripts
 ```
 
@@ -67,6 +68,7 @@ Backend և frontend **անկախ** npm փաթեթներ են (ամեն մեկն 
 | [docs/AUTH.md](./docs/AUTH.md) | JWT, refresh, role-եր, guard-եր, multi-tenant անվտանգություն |
 | [docs/THEMES.md](./docs/THEMES.md) | Թեմաների համակարգ, ինչպես ավելացնել նոր թեմա |
 | [docs/AI-GUIDE.md](./docs/AI-GUIDE.md) | «Ինչպես փոխել X»-ի recipe-ներ AI/մշակողի համար |
+| [docs/SECURITY-AUDIT-2026-07.md](./docs/SECURITY-AUDIT-2026-07.md) | Անվտանգության audit՝ գտնված/ուղղված խնդիրներ, մնացած backlog, false positive-ներ |
 
 ## Արագ մեկնարկ (local)
 
@@ -102,8 +104,24 @@ npm run build:front    # → frontend/.output
 ## Deploy
 
 Ինքնա-հոսթ մեկ VPS-ի վրա (`91.195.254.29`)՝ Nginx reverse proxy (same-origin, no
-CORS) + PM2 + Let's Encrypt, բազան՝ Supabase։ Տես [DEPLOY-VPS.md](./DEPLOY-VPS.md)
-(production) և [DEPLOY-STAGING.md](./DEPLOY-STAGING.md) (staging)։
+CORS) + PM2 + Let's Encrypt, բազան՝ Supabase։
+
+**Ամենօրյա deploy → [DEPLOY.md](./DEPLOY.md)** (ստուգված ինֆրակառուցվածք,
+migration-ի կանոններ, smoke test, rollback)։
+
+Սերվերին **երկու deployment** կա, **առանձին բազաներով**․
+
+| | Production | Staging |
+|---|---|---|
+| Path | `/var/www/resturant-menu` | `/var/www/menus-staging` |
+| PM2 | `api` · `web` | `api-staging` · `web-staging` |
+| Branch | `staging` ⚠️ | `staging` |
+
+`DEPLOY-VPS.md` և `DEPLOY-STAGING.md`-ը մնում են միայն **առաջին անգամ** setup-ի
+համար (Nginx, Certbot, PM2 process-երի ստեղծում)։
+
+Անվտանգության audit-ը և մնացած backlog-ը՝
+[docs/SECURITY-AUDIT-2026-07.md](./docs/SECURITY-AUDIT-2026-07.md)։
 
 ## Կարևոր սկզբունքներ (կարճ)
 

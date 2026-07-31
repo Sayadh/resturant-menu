@@ -1,5 +1,15 @@
 # Production deploy (menus.am) — self-hosted VPS
 
+> ## ⚠️ Այս ֆայլը ՄԻԱՅՆ առաջին անգամ setup-ի համար է
+>
+> Ամենօրյա deploy-ի համար օգտագործիր **[`DEPLOY.md`](./DEPLOY.md)** — այնտեղ է
+> ստուգված ինֆրակառուցվածքը, migration-ի կանոնները և rollback-ը։
+>
+> **Հնացած տեղեկություն ներքևում.** գրված է, թե production-ը `main` branch-ից է —
+> դա այլևս ճիշt չէ, `/var/www/resturant-menu`-ն ներկայում `staging` branch-ի վրա է
+> (ստուգված 2026-07-31)։ Օգտակարը մնում է Nginx / Certbot / PM2-ի սկզբնական setup-ը։
+
+
 Everything runs on one VPS (`91.195.254.29`) behind Nginx: same origin, no CORS.
 PM2 keeps processes alive; Certbot handles SSL. Supabase hosts PostgreSQL.
 

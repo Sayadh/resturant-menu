@@ -1,5 +1,14 @@
 # Staging environment (staging.menus.am)
 
+> ## ⚠️ Այս ֆայլը ՄԻԱՅՆ առաջին անգամ setup-ի համար է
+>
+> Ամենօրյա deploy-ի համար օգտագործիր **[`DEPLOY.md`](./DEPLOY.md)**։
+>
+> **Հնացած տեղեկություն ներքևում.** ներքևի աղյուսակը գրում է, թե production-ը
+> `main`-ից է — երկու deployment-ն էլ ներկայում `staging` branch-ի վրա են
+> (ստուգված 2026-07-31)։ Բազաները իսկապես **առանձին** են։
+
+
 A safe second copy of the app on the **same VPS**, fully isolated from production.
 
 > Monorepo layout: the repo now has `backend/` and `frontend/` side by side.
