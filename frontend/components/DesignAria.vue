@@ -6,7 +6,6 @@ import { ui, type MenuItem, type MenuCategory, type LocalizedText } from '~/data
 import {
   ariaSearchPlaceholder,
   ariaBasketLabel,
-  ariaItemsWord,
 } from '~/themes/aria/config'
 
 const { t } = useLanguage()
@@ -41,6 +40,16 @@ const orderOpen = ref(false)
 const baseCategories = computed(() =>
   activeView.value ? store.categoriesOf(activeView.value.level, activeView.value.group) : [],
 )
+
+const categoryHasImages = (
+    category: {
+      items: readonly {
+        image?: string | null;
+      }[];
+    },
+) => {
+  return category.items.some((item) => Boolean(item.image));
+};
 
 const categories = computed<MenuCategory[]>(() => {
   const q = search.value.trim().toLowerCase()
@@ -302,106 +311,303 @@ onBeforeUnmount(() => {
       <div v-if="hasResults" class="flex flex-col gap-12">
         <section v-for="cat in categories" :id="cat.id" :key="cat.id" class="scroll-mt-2">
           <!-- Premium category banner -->
-          <div class="group relative mb-5 h-36 overflow-hidden rounded-[22px] shadow-[0_14px_34px_-16px_rgba(62,39,35,0.55)] ring-1 ring-[#C69A5A]/25 sm:h-44">
+          <div
+              class="group relative mb-5 h-40 overflow-hidden rounded-[22px] shadow-[0_14px_34px_-16px_rgba(62,39,35,0.55)] ring-1 ring-[#C69A5A]/25 sm:h-44"
+          >
             <div class="absolute inset-0 bg-gradient-to-br from-[#5A4038] to-[#3E2723]" />
-            <!-- desktop banner -->
+
+            <!-- Desktop banner -->
             <img
-              v-if="bannerOf(cat)"
-              :src="bannerOf(cat)"
-              :alt="t(cat.title)"
-              loading="lazy"
-              class="absolute inset-0 hidden h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:block"
+                v-if="bannerOf(cat)"
+                :src="bannerOf(cat)"
+                :alt="t(cat.title)"
+                loading="lazy"
+                class="absolute inset-0 hidden h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:block"
             />
-            <!-- mobile banner -->
+
+            <!-- Mobile banner -->
             <img
-              v-if="mobileBannerOf(cat)"
-              :src="mobileBannerOf(cat)"
-              :alt="t(cat.title)"
-              loading="lazy"
-              class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:hidden"
+                v-if="mobileBannerOf(cat)"
+                :src="mobileBannerOf(cat)"
+                :alt="t(cat.title)"
+                loading="lazy"
+                class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:hidden"
             />
-            <div v-if="!bannerOf(cat) && !mobileBannerOf(cat)" class="aria-motif absolute inset-0 opacity-30" />
-            <!-- scrim adapts to the chosen title colour so the text always reads -->
-            <div class="absolute inset-0 bg-gradient-to-t" :class="cat.bannerTextColor === 'dark' ? 'from-[#FFF9EF]/95 via-[#FFF9EF]/55 to-transparent' : 'from-[#2C1A16]/92 via-[#3E2723]/45 to-transparent'" />
-            <!-- thin inner gold frame -->
-            <span class="pointer-events-none absolute inset-3 rounded-2xl border border-[#DBBA82]/30" aria-hidden="true" />
-            <div class="absolute inset-0 flex flex-col justify-end p-5">
-              <div class="flex items-center gap-3">
-                <span class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-[#DBBA82]/60 bg-[#3E2723]/40 text-2xl backdrop-blur-sm" aria-hidden="true">
-                  <img v-if="iconOf(cat)" :src="iconOf(cat)" alt="" class="h-full w-full object-cover" />
-                  <template v-else>{{ cat.icon }}</template>
-                </span>
-                <div>
-                  <h2 class="font-display text-2xl font-bold uppercase tracking-[0.12em] drop-shadow sm:text-3xl" :class="cat.bannerTextColor === 'dark' ? 'text-[#3E2723]' : 'text-[#FFF9EF]'">{{ t(cat.title) }}</h2>
-                  <p class="flex items-end gap-[3px] font-serif font-semibold" :class="cat.bannerTextColor === 'dark' ? 'text-[#3E2723]/90' : 'text-[#FFF9EF]/90'"><span class="text-[18px]">{{ cat.items.length }}</span><span class="text-[14px]">{{ t(ui.dishCount) }}</span></p>
+
+            <div
+                v-if="!bannerOf(cat) && !mobileBannerOf(cat)"
+                class="aria-motif absolute inset-0 opacity-30"
+            />
+
+            <!-- Scrim -->
+            <div
+                class="absolute inset-0 bg-gradient-to-t"
+                :class="
+      cat.bannerTextColor === 'dark'
+        ? 'from-[#FFF9EF]/95 via-[#FFF9EF]/55 to-transparent'
+        : 'from-[#2C1A16]/92 via-[#3E2723]/45 to-transparent'
+    "
+            />
+
+            <!-- Thin inner gold frame -->
+            <span
+                class="pointer-events-none absolute inset-3 rounded-2xl border border-[#DBBA82]/30"
+                aria-hidden="true"
+            />
+
+            <!-- Content -->
+            <div class="absolute inset-0 flex flex-col justify-end p-4 sm:p-5">
+              <div class="flex min-w-0 items-end gap-3">
+                <!-- Icon -->
+                <span
+                    class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#DBBA82]/60 bg-[#3E2723]/40 text-xl backdrop-blur-sm sm:h-12 sm:w-12 sm:text-2xl"
+                    aria-hidden="true"
+                >
+        <img
+            v-if="iconOf(cat)"
+            :src="iconOf(cat)"
+            alt=""
+            class="h-full w-full object-cover"
+        />
+
+        <template v-else>
+          {{ cat.icon }}
+        </template>
+      </span>
+
+                <!-- Text -->
+                <div class="min-w-0 flex-1">
+                  <h2
+                      class="max-w-full whitespace-normal break-words font-display text-xl font-bold uppercase leading-[1.08] tracking-[0.06em] drop-shadow sm:text-2xl sm:leading-[1.1] sm:tracking-[0.09em] lg:text-3xl"
+                      :class="
+            cat.bannerTextColor === 'dark'
+              ? 'text-[#3E2723]'
+              : 'text-[#FFF9EF]'
+          "
+                  >
+                    {{ t(cat.title).replaceAll('/', '/\u200B') }}
+                  </h2>
+
+                  <p
+                      class="mt-2 flex flex-wrap items-baseline gap-x-1 font-serif font-semibold leading-none"
+                      :class="
+            cat.bannerTextColor === 'dark'
+              ? 'text-[#3E2723]/90'
+              : 'text-[#FFF9EF]/90'
+          "
+                  >
+          <span class="text-[18px]">
+            {{ cat.items.length }}
+          </span>
+
+                    <span class="text-[14px]">
+            {{ t(ui.dishCount) }}
+          </span>
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-
           <!-- Product grid -->
-          <div class="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+          <div class="grid auto-rows-fr grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
             <article
-              v-for="item in cat.items"
-              :key="item.id"
-              class="group flex flex-col overflow-hidden rounded-[22px] border border-[#E4D6C2] bg-[#FFF9EF] shadow-[0_6px_20px_-10px_rgba(62,39,35,0.25)] transition-all duration-300 hover:-translate-y-1 hover:border-[#C69A5A]/50 hover:shadow-[0_22px_40px_-16px_rgba(62,39,35,0.4)]"
-              :class="{ 'opacity-80': item.available === false, 'self-end': !item.image }"
+                v-for="item in cat.items"
+                :key="item.id"
+                class="group flex h-full flex-col overflow-hidden rounded-[22px] border border-[#E4D6C2] bg-[#FFF9EF] shadow-[0_6px_20px_-10px_rgba(62,39,35,0.25)] transition-all duration-300 hover:-translate-y-1 hover:border-[#C69A5A]/50 hover:shadow-[0_22px_40px_-16px_rgba(62,39,35,0.4)]"
+                :class="{ 'opacity-80': item.available === false }"
             >
-              <!-- Image (rendered only when the product has a photo) -->
-              <div v-if="item.image" class="relative aspect-[4/3] w-full overflow-hidden">
-                <button type="button" class="block h-full w-full" :aria-label="t(item.name)" @click="selected = item">
+              <!--
+                Եթե բաժնում գոնե մեկ ապրանք ունի նկար,
+                բոլոր քարտերի համար պահպանում ենք նկարի հատվածը։
+              -->
+              <div
+                  v-if="categoryHasImages(cat)"
+                  class="relative aspect-[4/3] w-full shrink-0 overflow-hidden"
+              >
+                <!-- Product image -->
+                <button
+                    v-if="item.image"
+                    type="button"
+                    class="block h-full w-full"
+                    :aria-label="t(item.name)"
+                    @click="selected = item"
+                >
                   <img
-                    :src="item.image"
-                    :alt="t(item.name)"
-                    loading="lazy"
-                    class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
-                    :class="{ grayscale: item.available === false }"
+                      :src="item.image"
+                      :alt="t(item.name)"
+                      loading="lazy"
+                      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                      :class="{ grayscale: item.available === false }"
                   />
                 </button>
 
+                <!-- Placeholder when image is missing -->
+                <div
+                    v-else
+                    class="relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-[#F5EBDD] via-[#EFE0CA] to-[#E7D3B5]"
+                    aria-hidden="true"
+                >
+                  <!-- Decorative motif -->
+                  <div class="aria-motif absolute inset-0 opacity-[0.12]" />
+
+                  <div class="absolute inset-0 bg-gradient-to-t from-[#3E2723]/10 via-transparent to-white/20" />
+
+                  <!-- Plate icon -->
+                  <div class="relative flex h-16 w-16 items-center justify-center rounded-full border border-[#C69A5A]/35 bg-[#FFF9EF]/70 shadow-[0_12px_30px_-14px_rgba(62,39,35,0.45)] backdrop-blur-sm sm:h-20 sm:w-20">
+                    <svg
+                        viewBox="0 0 64 64"
+                        class="h-9 w-9 text-[#A87E42]/75 sm:h-11 sm:w-11"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                      <circle cx="32" cy="32" r="23" />
+                      <circle cx="32" cy="32" r="15" opacity="0.55" />
+
+                      <path
+                          d="M14 13v17M10 13v9M18 13v9M14 30v21"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                      />
+
+                      <path
+                          d="M50 13c-5 5-6 12-2 18v20"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
                 <!-- Badge -->
-                <span v-if="item.badge" class="absolute left-2 top-2"><MenuBadge :badge="item.badge" /></span>
+                <span
+                    v-if="item.badge"
+                    class="absolute left-2 top-2"
+                >
+        <MenuBadge :badge="item.badge" />
+      </span>
 
                 <!-- Sold out -->
-                <div v-if="item.available === false" class="absolute inset-0 flex items-center justify-center bg-[#3E2723]/45">
-                  <span class="rounded-full border border-[#FFF9EF]/40 bg-[#3E2723]/90 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#FFF9EF]">{{ t(ui.soldOut) }}</span>
+                <div
+                    v-if="item.available === false"
+                    class="absolute inset-0 flex items-center justify-center bg-[#3E2723]/45"
+                >
+        <span class="rounded-full border border-[#FFF9EF]/40 bg-[#3E2723]/90 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#FFF9EF]">
+          {{ t(ui.soldOut) }}
+        </span>
                 </div>
               </div>
 
               <!-- Body -->
               <div class="flex flex-1 flex-col p-3 sm:p-4">
-                <!-- Preserve badge / sold-out on image-less cards -->
-                <div v-if="!item.image && (item.badge || item.available === false)" class="mb-2 flex items-center gap-2">
-                  <MenuBadge v-if="item.badge" :badge="item.badge" />
-                  <span v-if="item.available === false" class="rounded-full bg-[#3E2723]/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#FFF9EF]">{{ t(ui.soldOut) }}</span>
+                <!--
+                  Եթե ամբողջ բաժնում նկարներ չկան,
+                  badge-ը և sold-out նշանը ցուցադրում ենք քարտի մարմնում։
+                -->
+                <div
+                    v-if="
+          !categoryHasImages(cat) &&
+          (item.badge || item.available === false)
+        "
+                    class="mb-2 flex items-center gap-2"
+                >
+                  <MenuBadge
+                      v-if="item.badge"
+                      :badge="item.badge"
+                  />
+
+                  <span
+                      v-if="item.available === false"
+                      class="rounded-full bg-[#3E2723]/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#FFF9EF]"
+                  >
+          {{ t(ui.soldOut) }}
+        </span>
                 </div>
+
                 <h3 class="font-serif text-base font-semibold leading-snug text-[#3E2723] sm:text-lg">
-                  <button type="button" class="w-full text-left" @click="selected = item">{{ t(item.name) }}</button>
+                  <button
+                      type="button"
+                      class="w-full text-left"
+                      @click="selected = item"
+                  >
+                    {{ t(item.name) }}
+                  </button>
                 </h3>
-                <p class="mt-1 line-clamp-2 font-serif text-xs leading-relaxed text-[#7A6654] sm:text-sm">{{ t(item.description) }}</p>
+
+                <p class="mt-1 line-clamp-2 font-serif text-xs leading-relaxed text-[#7A6654] sm:text-sm">
+                  {{ t(item.description) }}
+                </p>
 
                 <div class="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-2 pt-3">
                   <p class="font-display text-base font-bold text-[#A87E42] sm:text-xl">
-                    {{ fmt(item.price) }}<span class="ml-0.5 text-[#C69A5A]">֏</span>
+                    {{ fmt(item.price) }}
+
+                    <span class="ml-0.5 text-[#C69A5A]">
+            ֏
+          </span>
                   </p>
 
-                  <!-- Add / stepper (ordering = paid plans only) -->
+                  <!-- Add / stepper -->
                   <template v-if="brand.ordering">
-                    <div v-if="order.qtyOf(item.id) > 0" class="flex items-center gap-1 rounded-full border border-[#E4D6C2] bg-[#FFF9EF] p-1 shadow-[0_4px_12px_-6px_rgba(62,39,35,0.3)]">
-                      <button type="button" class="grid h-7 w-7 place-items-center rounded-full text-lg font-bold leading-none text-[#3E2723] transition hover:bg-[#F0E6D2] sm:h-8 sm:w-8" aria-label="Պակասեցնել" @click="order.dec(item.id)">−</button>
-                      <span class="min-w-[1.25rem] text-center font-display text-sm font-bold text-[#3E2723] sm:text-base">{{ order.qtyOf(item.id) }}</span>
-                      <button type="button" class="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] text-white shadow-[0_4px_10px_-3px_rgba(198,154,90,0.7)] transition hover:brightness-105 active:scale-90 sm:h-8 sm:w-8" aria-label="Ավելացնել" @click="order.add(item.id)">
-                        <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round" /></svg>
+                    <div
+                        v-if="order.qtyOf(item.id) > 0"
+                        class="flex items-center gap-1 rounded-full border border-[#E4D6C2] bg-[#FFF9EF] p-1 shadow-[0_4px_12px_-6px_rgba(62,39,35,0.3)]"
+                    >
+                      <button
+                          type="button"
+                          class="grid h-7 w-7 place-items-center rounded-full text-lg font-bold leading-none text-[#3E2723] transition hover:bg-[#F0E6D2] sm:h-8 sm:w-8"
+                          aria-label="Պակասեցնել"
+                          @click="order.dec(item.id)"
+                      >
+                        −
+                      </button>
+
+                      <span class="min-w-[1.25rem] text-center font-display text-sm font-bold text-[#3E2723] sm:text-base">
+              {{ order.qtyOf(item.id) }}
+            </span>
+
+                      <button
+                          type="button"
+                          class="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] text-white shadow-[0_4px_10px_-3px_rgba(198,154,90,0.7)] transition hover:brightness-105 active:scale-90 sm:h-8 sm:w-8"
+                          aria-label="Ավելացնել"
+                          @click="order.add(item.id)"
+                      >
+                        <svg
+                            viewBox="0 0 24 24"
+                            class="h-3.5 w-3.5 sm:h-4 sm:w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.6"
+                            aria-hidden="true"
+                        >
+                          <path
+                              d="M12 5v14M5 12h14"
+                              stroke-linecap="round"
+                          />
+                        </svg>
                       </button>
                     </div>
+
                     <button
-                      v-else-if="item.available !== false"
-                      type="button"
-                      class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] text-white shadow-[0_8px_18px_-6px_rgba(198,154,90,0.8)] ring-1 ring-white/40 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-6px_rgba(198,154,90,0.95)] active:translate-y-0 active:scale-90 sm:h-10 sm:w-10"
-                      aria-label="Ավելացնել պատվերին"
-                      @click="order.add(item.id)"
+                        v-else-if="item.available !== false"
+                        type="button"
+                        class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] text-white shadow-[0_8px_18px_-6px_rgba(198,154,90,0.8)] ring-1 ring-white/40 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-6px_rgba(198,154,90,0.95)] active:translate-y-0 active:scale-90 sm:h-10 sm:w-10"
+                        aria-label="Ավելացնել պատվերին"
+                        @click="order.add(item.id)"
                     >
-                      <svg viewBox="0 0 24 24" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round" /></svg>
+                      <svg
+                          viewBox="0 0 24 24"
+                          class="h-4 w-4 sm:h-5 sm:w-5"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                          aria-hidden="true"
+                      >
+                        <path
+                            d="M12 5v14M5 12h14"
+                            stroke-linecap="round"
+                        />
+                      </svg>
                     </button>
                   </template>
                 </div>
