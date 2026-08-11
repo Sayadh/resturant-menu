@@ -11,7 +11,6 @@
 import { type MenuItem, type MenuCategory, type LocalizedText } from '~/data/menu'
 import {
   maisonAlcoholTitle,
-  maisonChefSelection,
   maisonCategories,
 } from '~/themes/maison/config'
 import { vReveal } from '~/themes/maison/animations'
@@ -20,7 +19,6 @@ import '~/themes/maison/styles/maison.css'
 import MaisonLoading from '../components/MaisonLoading.vue'
 import MaisonHeader from '../components/MaisonHeader.vue'
 import MaisonHero from '../components/MaisonHero.vue'
-import MaisonFeaturedDish from '../components/MaisonFeaturedDish.vue'
 import MaisonCategorySection from '../components/MaisonCategorySection.vue'
 import MaisonProductLayout from '../components/MaisonProductLayout.vue'
 import MaisonBasket from '../components/MaisonBasket.vue'
@@ -88,31 +86,6 @@ const filteredCategories = computed<MenuCategory[]>(() => {
 const isSearching = computed(() => search.value.trim().length > 0)
 const hasResults = computed(() => filteredCategories.value.length > 0)
 
-// Featured (badged, available) dishes for the active chapter — the editorial
-// Chef's Selection band only ever shows dishes that actually have a photo;
-// image-less dishes still appear normally in the regular product grid below.
-const featured = computed(() => {
-  const out: MenuItem[] = []
-  for (const cat of baseCategories.value) {
-    for (const item of cat.items) {
-      if (item.badge && item.available !== false && item.image) out.push(item)
-    }
-  }
-  // Fallback: first few photographed dishes so the band isn't sparse.
-  if (out.length === 0) {
-    for (const cat of baseCategories.value) {
-      for (const item of cat.items) {
-        if (item.available !== false && item.image) out.push(item)
-        if (out.length >= 4) break
-      }
-      if (out.length >= 4) break
-    }
-  }
-  return out
-})
-
-const chefSelection = computed(() => featured.value.slice(0, 3))
-
 // Category's own uploaded banner takes priority; only fall back to a product
 // photo (then a texture) if the category has no image of its own.
 const categoryImage = (cat: MenuCategory) => {
@@ -125,7 +98,7 @@ const categoryImage = (cat: MenuCategory) => {
 const scrollToId = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
-const enterMenu = () => scrollToId(chefSelection.value.length ? 'ms-chef' : 'ms-collection')
+const enterMenu = () => scrollToId('ms-collection')
 const exploreCategory = (cat: MenuCategory) => scrollToId(`ms-products-${cat.id}`)
 
 const selectView = (key: string) => {
@@ -185,29 +158,6 @@ onBeforeUnmount(() => {
 
     <!-- When searching, collapse the editorial chapters and show results. -->
     <template v-if="!isSearching">
-      <!-- Chef's Selection (warm beige band) -->
-      <section v-if="chefSelection.length" id="ms-chef" class="bg-[#EEDDE3] py-20 sm:py-28">
-        <div class="mx-auto max-w-6xl px-5 sm:px-8">
-          <header v-reveal class="mb-16 text-center">
-            <p class="ms-eyebrow font-sans text-[11px] font-semibold text-[#8C304A]">{{ t(maisonChefSelection.kicker) }}</p>
-            <h2 class="mt-5 text-balance font-serif text-4xl font-semibold text-[#2C1B22] sm:text-5xl">
-              {{ t(maisonChefSelection.title) }}
-            </h2>
-            <div class="ms-rule mx-auto mt-8 w-32" aria-hidden="true" />
-          </header>
-
-          <div class="flex flex-col gap-20 sm:gap-28">
-            <MaisonFeaturedDish
-              v-for="(dish, i) in chefSelection"
-              :key="dish.id"
-              :item="dish"
-              tone="light"
-              :reversed="i % 2 === 1"
-              :index="i"
-            />
-          </div>
-        </div>
-      </section>
     </template>
 
     <!-- 5 · Categories + 6 · Products -->
