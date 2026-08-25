@@ -238,10 +238,9 @@ useHead({
       </Transition>
     </main>
 
-    <!-- The colophon closes a menu the guest has read through. On the home
-         screen the section cards ARE the page, so a footer repeating the
-         house name directly under them only pads the scroll. -->
-    <OpalineFooter v-if="level !== 'home'" />
+    <!-- The colophon closes a menu the guest has read through, on every
+         screen including the home one. -->
+    <OpalineFooter />
 
     <!-- Overlays -->
     <OpalineProductDetail :item="selected" @close="selected = null" />
