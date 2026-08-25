@@ -104,6 +104,8 @@ export class PublicService {
         address: r.address,
         workingHoursText: r.workingHoursText,
         rating: r.rating,
+        wifiName: r.wifiName,
+        wifiPassword: r.wifiPassword,
         currency: r.currency,
         ordering,
         showCartTotal: r.showCartTotal,
@@ -213,8 +215,11 @@ export class PublicService {
           sortOrder: p.sortOrder,
           name: t?.name ?? '',
           description: t?.description ?? '',
-          image: main?.url ?? null,
-          images: p.images.map((i) => i.url),
+          // The admin can turn the picture off per dish. When off the public
+          // menu gets no image at all -- not even the placeholder.
+          showImage: p.showImage,
+          image: p.showImage ? (main?.url ?? null) : null,
+          images: p.showImage ? p.images.map((i) => i.url) : [],
           badges: p.badges.map((pb) => pb.badge.key),
         }
       }),

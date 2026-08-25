@@ -35,6 +35,13 @@ export class UpdateRestaurantDto {
   @IsOptional() @IsNumber() @Min(0) @Max(5)
   rating?: number
 
+  // Guest Wi-Fi, shown on the public menu (all plans — plain free-text).
+  @IsOptional() @IsString() @MaxLength(80)
+  wifiName?: string
+
+  @IsOptional() @IsString() @MaxLength(80)
+  wifiPassword?: string
+
   @IsOptional() @IsString() @MaxLength(8)
   currency?: string
 

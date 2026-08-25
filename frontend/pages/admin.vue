@@ -541,6 +541,7 @@ const prodDraft = reactive<ProductDraft>({
   description: blankTr(),
   price: 0,
   image: '',
+  showImage: true,
   badges: [],
   active: true,
   available: true,
@@ -559,6 +560,9 @@ const openAddProduct = () => {
     description: blankTr(),
     price: 0,
     image: '',
+    // A new dish starts with its picture switched on, so the menu keeps its
+    // usual look unless the owner deliberately turns the image off.
+    showImage: true,
     badges: [],
     active: true,
     available: true,
@@ -575,6 +579,7 @@ const openEditProduct = (p: Product) => {
     description: { ...p.description },
     price: p.price,
     image: p.image,
+    showImage: p.showImage ?? true,
     badges: [...p.badges],
     active: p.active,
     available: p.available,
@@ -1288,6 +1293,13 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             <label class="block"><span class="lbl">{{ t('addressLabel') }}</span><input v-model="restaurant.address" class="inp" /></label>
             <label class="block"><span class="lbl">{{ t('ratingLabel') }}</span><input v-model.number="restaurant.rating" type="number" step="0.1" min="0" max="5" class="inp" /></label>
 
+            <!-- Guest Wi-Fi (all plans) — shown on the public menu via a floating button -->
+            <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+              <label class="block"><span class="lbl">{{ t('wifiNameLabel') }}</span><input v-model="restaurant.wifiName" class="inp" placeholder="Restaurant_WiFi" /></label>
+              <label class="block"><span class="lbl">{{ t('wifiPasswordLabel') }}</span><input v-model="restaurant.wifiPassword" class="inp" placeholder="••••••••" /></label>
+              <p class="text-[11px] leading-relaxed text-slate-400">{{ t('wifiHint') }}</p>
+            </div>
+
             <!-- Cart / ordering settings (paid plans only) -->
             <div v-if="isPaidPlan" class="space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
               <p class="text-sm font-semibold text-slate-700">{{ t('cartSettings') }}</p>
@@ -1689,8 +1701,18 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           </div>
         </div>
         <div>
-          <span class="lbl">{{ t('image') }}</span>
-          <div class="mt-1.5 flex items-center gap-3">
+          <!-- Picture switch. On by default; turning it off means the public
+               menu shows this dish with no image at all, not even a
+               placeholder, so the upload controls are hidden with it. -->
+          <label class="flex cursor-pointer items-start gap-2.5">
+            <input v-model="prodDraft.showImage" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              <span class="lbl !mb-0">{{ t('showImage') }}</span>
+              <span class="mt-0.5 block text-xs leading-snug text-slate-500">{{ t('showImageHint') }}</span>
+            </span>
+          </label>
+
+          <div v-if="prodDraft.showImage" class="mt-3 flex items-center gap-3">
             <div class="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100">
               <img v-if="prodDraft.image" :src="prodDraft.image" alt="" class="h-full w-full object-cover" />
             </div>

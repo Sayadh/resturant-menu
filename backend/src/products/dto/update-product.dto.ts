@@ -27,6 +27,8 @@ export class UpdateProductDto {
   @IsOptional() @IsBoolean() isPopular?: boolean
   @IsOptional() @IsBoolean() isNew?: boolean
   @IsOptional() @IsBoolean() isRecommended?: boolean
+  /** Show a picture for this dish on the public menu. Defaults to true. */
+  @IsOptional() @IsBoolean() showImage?: boolean
 
   @IsOptional() @IsInt() @Min(0)
   sortOrder?: number

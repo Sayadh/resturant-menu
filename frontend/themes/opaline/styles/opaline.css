@@ -1,0 +1,264 @@
+/* ───────────────────────────────────────────────────────────────────────
+   Opaline theme — global styles
+
+   Everything is scoped under `.opaline-theme` so it can never leak into
+   Aria, Atelier, Maison, Heritage, Noir or the admin panel. Imported from
+   layouts/OpalineMenu.vue.
+
+   Design language: porcelain paper. A near-white page, hairline rules, one
+   restrained coral accent, high-contrast editorial serif headings over a
+   quiet sans interface, and a great deal of air.
+   ─────────────────────────────────────────────────────────────────────── */
+
+.opaline-theme {
+  /* surfaces */
+  --op-porcelain: #fafaf8; /* page background */
+  --op-paper: #ffffff; /* cards / raised surfaces */
+  --op-pearl: #f5f5f2; /* secondary surface, hover */
+
+  /* text */
+  --op-ink: #172033; /* primary text */
+  --op-slate: #747d90; /* secondary text */
+  --op-silver: #a1a6b0; /* faint text */
+
+  /* accent — used only in small, meaningful places */
+  --op-coral: #d85f3d;
+  --op-coral-deep: #bf4f31;
+  --op-coral-mist: #fbede8;
+
+  /* lines */
+  --op-line: #e2e5e8; /* primary hairline */
+  --op-line-strong: #ccd1d7; /* emphasised border */
+
+  /* states */
+  --op-sage: #557a65; /* available */
+  --op-garnet: #a04f4f; /* unavailable */
+  --op-overlay: rgba(23, 32, 51, 0.42);
+  --op-ink-hover: #222d43;
+
+  /* typography — Latin/Cyrillic face first, Armenian fallback second, so
+     Armenian glyphs resolve to a visually compatible Noto face. */
+  --op-serif: 'Playfair Display', 'Noto Serif Armenian', 'Times New Roman', Georgia, serif;
+  --op-sans: 'Inter', 'Noto Sans Armenian', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, Helvetica, Arial, sans-serif;
+
+  background-color: var(--op-porcelain);
+  color: var(--op-ink);
+  font-family: var(--op-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Typography roles — Opaline never uses the global `font-serif` /
+   `font-display` utilities, so its type system stays fully isolated. */
+.opaline-theme .op-serif {
+  font-family: var(--op-serif);
+  font-weight: 400;
+  letter-spacing: -0.005em;
+}
+.opaline-theme .op-sans {
+  font-family: var(--op-sans);
+}
+
+/* Small tracked interface label. Restrained (0.16em) — deliberately not the
+   wide 0.3em+ eyebrow used by the darker themes. */
+.opaline-theme .op-label {
+  font-family: var(--op-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 500;
+}
+
+/* Tabular, lining figures for prices and counts. */
+.opaline-theme .op-figure {
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+}
+
+/* Hairline rule, optionally fading at both ends. */
+.opaline-theme .op-rule {
+  height: 1px;
+  background-color: var(--op-line);
+}
+.opaline-theme .op-rule-soft {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--op-line-strong), transparent);
+}
+
+/* Two-line clamp for card copy. */
+.opaline-theme .op-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Hide scrollbars on horizontal rails. */
+.opaline-theme .op-scroll {
+  scrollbar-width: none;
+}
+.opaline-theme .op-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Respect the device safe area for the floating dock / sticky footers. */
+.opaline-theme .op-safe-b {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Selection + scrollbar, scoped to the theme. */
+.opaline-theme ::selection {
+  background: var(--op-coral-mist);
+  color: var(--op-ink);
+}
+.opaline-theme ::-webkit-scrollbar-track {
+  background: var(--op-pearl);
+}
+.opaline-theme ::-webkit-scrollbar-thumb {
+  background: var(--op-line-strong);
+}
+.opaline-theme ::-webkit-scrollbar-thumb:hover {
+  background: var(--op-silver);
+}
+
+/* ── Shared Wi-Fi widget, re-tuned for porcelain ────────────────────────── */
+/* The floating Wi-Fi mark is one shared component across all six themes, and
+   its default drop shadow is calibrated for the dark themes (75% black). On
+   Opaline's near-white page that reads as a bruise, so the theme softens the
+   shadow to its own porcelain depth. Colour still comes from the component's
+   own theme map — only the elevation is restated here, and only inside
+   `.opaline-theme`, so the other five themes are untouched. */
+.opaline-theme .wifi-fab {
+  box-shadow: 0 14px 30px -14px rgba(23, 32, 51, 0.45);
+}
+.opaline-theme .wifi-surface {
+  box-shadow: 0 24px 50px -20px rgba(23, 32, 51, 0.42);
+}
+
+/* ── Scroll reveal (driven by the v-reveal directive) ───────────────────── */
+.opaline-theme .op-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--op-reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.opaline-theme .op-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Loading skeleton — porcelain, no glow ──────────────────────────────── */
+@keyframes op-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.opaline-theme .op-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--op-pearl);
+}
+.opaline-theme .op-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  animation: op-shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── Named transitions (keys from animations.ts) ────────────────────────── */
+.op-fade-enter-active,
+.op-fade-leave-active {
+  transition: opacity 0.28s ease;
+}
+.op-fade-enter-from,
+.op-fade-leave-to {
+  opacity: 0;
+}
+
+/* Level-to-level page change (home → section → category). */
+.op-page-enter-active {
+  transition:
+    opacity 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.op-page-leave-active {
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+.op-page-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.op-page-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.op-drawer-enter-active,
+.op-drawer-leave-active {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.op-drawer-enter-from,
+.op-drawer-leave-to {
+  transform: translateX(100%);
+}
+@media (max-width: 640px) {
+  .op-drawer-enter-from,
+  .op-drawer-leave-to {
+    transform: translateY(100%);
+  }
+}
+
+.op-dock-enter-active,
+.op-dock-leave-active {
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
+}
+.op-dock-enter-from,
+.op-dock-leave-to {
+  transform: translateY(150%);
+  opacity: 0;
+}
+
+.op-modal-enter-active,
+.op-modal-leave-active {
+  transition:
+    transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.28s ease;
+}
+.op-modal-enter-from,
+.op-modal-leave-to {
+  transform: translateY(18px) scale(0.99);
+  opacity: 0;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .opaline-theme .op-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .opaline-theme .op-skeleton::after {
+    animation: none;
+  }
+  .op-page-enter-active,
+  .op-page-leave-active,
+  .op-drawer-enter-active,
+  .op-drawer-leave-active,
+  .op-dock-enter-active,
+  .op-dock-leave-active,
+  .op-modal-enter-active,
+  .op-modal-leave-active,
+  .op-fade-enter-active,
+  .op-fade-leave-active {
+    transition-duration: 0.01ms !important;
+  }
+}

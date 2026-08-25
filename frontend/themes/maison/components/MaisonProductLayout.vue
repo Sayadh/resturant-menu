@@ -27,9 +27,10 @@ const soldOut = (item: MenuItem) => item.available === false
       :key="item.id"
       v-reveal="Math.min(i, 5)"
       class="group flex flex-col overflow-hidden rounded-[1.75rem] border border-[#DDCED3] bg-[#FFFBFC] shadow-[0_24px_44px_-30px_rgba(84,28,46,0.42)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_36px_64px_-30px_rgba(84,28,46,0.55)]"
+      :class="item.showImage === false ? 'self-start' : ''"
     >
       <!-- photo -->
-      <div class="relative overflow-hidden">
+      <div v-if="item.showImage !== false" class="relative overflow-hidden">
         <img
           v-if="item.image"
           :src="item.image"
@@ -60,6 +61,21 @@ const soldOut = (item: MenuItem) => item.available === false
 
       <!-- body -->
       <div class="flex flex-1 flex-col p-5">
+        <!-- badge / sold-out kept visible on image-less cards -->
+        <div
+          v-if="item.showImage === false && (item.badge || soldOut(item))"
+          class="mb-2.5 flex flex-wrap items-center gap-2"
+        >
+          <span
+            v-if="item.badge"
+            class="inline-flex items-center rounded-full bg-[#8C304A] px-2.5 py-1 font-sans text-[10px] font-bold tracking-wide text-[#FFFBFC]"
+          >{{ t(badgeLabels[item.badge].text) }}</span>
+          <span
+            v-if="soldOut(item)"
+            class="inline-flex items-center rounded-full bg-[#FFFBFC] px-2.5 py-1 font-sans text-[10px] font-bold tracking-wide text-[#A33D4C] ring-1 ring-[#A33D4C]/30"
+          >{{ t(ui.soldOut) }}</span>
+        </div>
+
         <h4 class="font-serif text-xl font-semibold leading-snug text-[#2C1B22]">{{ t(item.name) }}</h4>
         <p class="mt-2 line-clamp-2 font-sans text-[13px] leading-relaxed text-[#74656B]">{{ t(item.description) }}</p>
 

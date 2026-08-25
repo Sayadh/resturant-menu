@@ -37,20 +37,23 @@ function buildConfig() {
   const cornerStyle: CornerType = c ? opts.cornerStyle : 'square'
   const useLogo = c && opts.useLogo
   return {
-    width: 320,
-    height: 320,
+    // High-res source canvas — the on-screen preview is CSS-scaled down, but
+    // downloaded PNGs (used for print/stickers) come out crisp instead of
+    // pixelated. Same proportions as before (320px), just 1000px now.
+    width: 1000,
+    height: 1000,
     type: 'svg' as const,
     data: props.url, // ← never changes with design
     // Always send `image` (undefined clears it) — omitting the key leaves the
     // previous logo in place on update(), so the toggle wouldn't work.
     image: useLogo && props.logo ? props.logo : undefined,
-    margin: 8,
+    margin: 24,
     qrOptions: { errorCorrectionLevel: 'H' as const }, // high ECC → logo-safe
     dotsOptions: { color: dotColor, type: dotStyle },
     backgroundOptions: { color: bgColor },
     cornersSquareOptions: { color: dotColor, type: cornerStyle },
     cornersDotOptions: { color: dotColor },
-    imageOptions: { crossOrigin: 'anonymous', margin: 6, imageSize: 0.32 },
+    imageOptions: { crossOrigin: 'anonymous', margin: 18, imageSize: 0.32 },
   }
 }
 
@@ -83,7 +86,7 @@ const download = (ext: 'png' | 'svg') => qr?.download({ name: 'menus-qr', extens
   <div class="grid gap-6 sm:grid-cols-[auto_1fr]">
     <!-- preview -->
     <div class="flex flex-col items-center gap-3">
-      <div ref="holder" class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" />
+      <div ref="holder" class="qr-holder h-72 w-72 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" />
       <div class="flex gap-2">
         <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700" @click="download('png')">{{ t('downloadPng') }}</button>
         <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" @click="download('svg')">{{ t('downloadSvg') }}</button>
@@ -136,3 +139,15 @@ const download = (ext: 'png' | 'svg') => qr?.download({ name: 'menus-qr', extens
     </div>
   </div>
 </template>
+
+<style>
+/* qr-code-styling injects a raw <svg> directly into the ref'd div (not
+   through Vue's template), so this must be a global — not scoped — rule.
+   The library sets width/height=1000 on the <svg>; scale it down to fit the
+   preview box while the underlying vector (and PNG export) stay high-res. */
+.qr-holder svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+</style>

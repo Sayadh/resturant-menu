@@ -134,6 +134,8 @@ model Restaurant {
   address       String? // simple free-text address (v1; no maps/coordinates)
   workingHoursText String? // human-readable label, e.g. "09:00 – 23:00" (structured hours live in RestaurantWorkingHour)
   rating           Float? // editable display rating (0–5)
+  wifiName      String? // guest Wi-Fi network name (SSID), shown on the public menu
+  wifiPassword  String? // guest Wi-Fi password, shown on the public menu (plain text — same trust level as a printed table card)
   currency      String    @default("AMD")
   timezone      String    @default("Asia/Yerevan")
 
@@ -401,6 +403,7 @@ model Product {
   isPopular     Boolean   @default(false)
   isNew         Boolean   @default(false)
   isRecommended Boolean   @default(false)
+  showImage     Boolean   @default(true) // admin toggle: show a picture for this dish on the public menu
   sortOrder     Int       @default(0)
   deletedAt     DateTime?
   createdAt     DateTime  @default(now())

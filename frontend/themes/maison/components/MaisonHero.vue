@@ -16,7 +16,10 @@ const menu = useMenuStore()
 // Hero photo: the restaurant's cover if set, otherwise the first real dish
 // photo from the menu (so the hero always shows appetising, on-brand food).
 const heroImage = computed(
-  () => brand.cover || menu.categories.flatMap((c) => c.items).find((i) => i.image)?.image || '',
+  () =>
+    brand.cover ||
+    menu.categories.flatMap((c) => c.items).find((i) => i.showImage !== false && i.image)?.image ||
+    '',
 )
 </script>
 

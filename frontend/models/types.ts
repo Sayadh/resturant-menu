@@ -21,7 +21,7 @@ export interface Translation {
 export type Badge = 'hit' | 'new' | 'recommended' | 'spicy' | 'vegan' | 'affordable'
 
 /** Available public theme identifiers. */
-export type ThemeId = 'aria' | 'atelier' | 'maison' | 'heritage' | 'noir'
+export type ThemeId = 'aria' | 'atelier' | 'maison' | 'heritage' | 'noir' | 'opaline'
 
 // ── Menu ────────────────────────────────────────────────────────────────
 /** A dynamic, per-restaurant top-level section (Food, Drinks, …). */
@@ -66,6 +66,8 @@ export interface Product {
   /** Price in minor-less AMD (whole drams). */
   price: number
   image: string
+  /** Show a picture for this dish on the public menu. Off = no image at all. */
+  showImage: boolean
   badges: Badge[]
   active: boolean
   available: boolean
@@ -133,6 +135,9 @@ export interface Restaurant {
   address: string
   workingHours: string
   rating: number
+  /** Guest Wi-Fi, shown on the public menu (all plans). Empty = hidden. */
+  wifiName: string
+  wifiPassword: string
   defaultLanguage: LangCode
   activeLanguages: LangCode[]
   /** Subscription tier (set by super-admin). Gates paid features like AI. */

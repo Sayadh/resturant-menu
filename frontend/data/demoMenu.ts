@@ -18,6 +18,8 @@ export const demoRestaurant: Restaurant = {
   address: 'Երևան, Հյուսիսային պողոտա 1',
   workingHours: '10:00 – 23:00',
   rating: 4.9,
+  wifiName: '',
+  wifiPassword: '',
   defaultLanguage: 'hy',
   activeLanguages: ['hy', 'en', 'ru'],
   ordering: true, // demo shows the full design incl. cart

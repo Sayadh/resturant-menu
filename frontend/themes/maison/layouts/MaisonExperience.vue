@@ -90,13 +90,18 @@ const hasResults = computed(() => filteredCategories.value.length > 0)
 // photo (then a texture) if the category has no image of its own.
 const categoryImage = (cat: MenuCategory) => {
   if (cat.image) return cat.image
-  const withPhoto = cat.items.find((i) => i.image)
+  const withPhoto = cat.items.find((i) => i.showImage !== false && i.image)
   return withPhoto?.image || fallbackTexture
 }
 
 // ── interactions ─────────────────────────────────────────────
 const scrollToId = (id: string) => {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const el = document.getElementById(id)
+  if (!el) return
+  // Account for global MaisonHeader (64px) + sticky chapter selector (approx 60px)
+  const navH = window.innerWidth < 640 ? 120 : 130
+  const top = window.scrollY + el.getBoundingClientRect().top - navH - 12
+  window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' })
 }
 const enterMenu = () => scrollToId('ms-collection')
 const exploreCategory = (cat: MenuCategory) => scrollToId(`ms-products-${cat.id}`)
@@ -105,7 +110,11 @@ const selectView = (key: string) => {
   if (key === activeKey.value) return
   activeKey.value = key
   search.value = ''
-  nextTick(() => scrollToId('ms-collection'))
+  const firstId = baseCategories.value[0]?.id ?? ''
+  nextTick(() => {
+    if (firstId) scrollToId(`ms-products-${firstId}`)
+    else scrollToId('ms-collection')
+  })
 }
 
 // Show the slim header only after the hero is scrolled past.
@@ -229,5 +238,6 @@ onBeforeUnmount(() => {
     <!-- Overlays -->
     <MaisonBasket @open="orderOpen = true" />
     <MaisonOrderDrawer :open="orderOpen" @close="orderOpen = false" />
+    <WifiButton theme="maison" />
   </div>
 </template>

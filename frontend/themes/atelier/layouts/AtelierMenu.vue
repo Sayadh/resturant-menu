@@ -7,7 +7,7 @@
 // composables, exactly like the other themes — only the presentation differs.
 // ─────────────────────────────────────────────────────────────────────────
 import { type MenuItem, type MenuCategory, type LocalizedText } from '~/data/menu'
-import { atelierAlcoholTitle, atelierIndexTitle } from '~/themes/atelier/config'
+import { atelierAlcoholTitle } from '~/themes/atelier/config'
 import { vReveal } from '~/themes/atelier/animations'
 import '~/themes/atelier/styles/atelier.css'
 
@@ -87,7 +87,7 @@ const featured = computed(() => {
   const out: { item: MenuItem }[] = []
   for (const cat of baseCategories.value) {
     for (const item of cat.items) {
-      if (item.badge && item.available !== false && item.image) out.push({ item })
+      if (item.badge && item.available !== false && item.showImage !== false && item.image) out.push({ item })
     }
   }
   return out.slice(0, 3)
@@ -236,8 +236,7 @@ onBeforeUnmount(() => {
                 {{ pad(i) }}
               </span>
               <div class="min-w-0">
-                <p class="atl-eyebrow font-display text-[10px] text-[#C65D3A]">{{ t(atelierIndexTitle) }}</p>
-                <h2 class="mt-1.5 font-serif text-3xl italic leading-tight text-[#172033] sm:text-4xl">
+                <h2 class="font-serif text-[26px] italic leading-tight text-[#172033] sm:text-[32px]">
                   {{ t(cat.title) }}
                 </h2>
               </div>
@@ -274,5 +273,6 @@ onBeforeUnmount(() => {
       :category-icon="iconForSelected"
       @close="selected = null"
     />
+    <WifiButton theme="atelier" />
   </div>
 </template>

@@ -30,7 +30,10 @@ const qty = computed(() => order.qtyOf(props.item.id))
 const price = computed(() => props.item.price.toLocaleString('fr-FR'))
 
 const isDark = computed(() => props.tone === 'dark')
-const hasImage = computed(() => !!props.item.image)
+// `showImage: false` is the admin saying this dish shows NO picture at all --
+// so the media block is skipped entirely, placeholder included. When it is on
+// but no file was uploaded, the theme's usual placeholder still appears.
+const hasImage = computed(() => props.item.showImage !== false && !!props.item.image)
 </script>
 
 <template>

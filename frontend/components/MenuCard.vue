@@ -9,7 +9,11 @@ const formattedPrice = computed(() => props.item.price.toLocaleString('hy-AM'))
 // Show the photo only when one is set and loads; otherwise a branded tile.
 const imgFailed = ref(false)
 watch(() => props.item.image, () => (imgFailed.value = false))
-const hasPhoto = computed(() => !!props.item.image && !imgFailed.value)
+// `showImage: false` is the admin saying this dish shows NO picture at all --
+// so the media block is skipped entirely, placeholder included. When it is on
+// but no file was uploaded, the theme's usual placeholder still appears.
+const showMedia = computed(() => props.item.showImage !== false)
+const hasPhoto = computed(() => showMedia.value && !!props.item.image && !imgFailed.value)
 </script>
 
 <template>
@@ -19,6 +23,7 @@ const hasPhoto = computed(() => !!props.item.image && !imgFailed.value)
   >
     <!-- Image: square thumbnail on mobile, 4:3 banner on larger screens -->
     <button
+      v-if="showMedia"
       type="button"
       class="relative block h-28 w-28 shrink-0 overflow-hidden sm:h-auto sm:w-full sm:aspect-[4/3]"
       :aria-label="t(item.name)"

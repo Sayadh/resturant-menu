@@ -46,21 +46,33 @@ const selectLevel = (id: string) => {
   activeLevel.value = id
   if (id === 'drinks') activeGroup.value = 'soft'
   search.value = ''
-  activeId.value = levelCategories.value[0]?.id ?? ''
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  const firstId = levelCategories.value[0]?.id ?? ''
+  activeId.value = firstId
+  nextTick(() => {
+    if (firstId) scrollToCategory(firstId)
+    else window.scrollTo({ top: 0, behavior: 'smooth' })
+  })
 }
 
 const selectGroup = (id: DrinkGroup) => {
   if (id === activeGroup.value) return
   activeGroup.value = id
   search.value = ''
-  activeId.value = levelCategories.value[0]?.id ?? ''
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  const firstId = levelCategories.value[0]?.id ?? ''
+  activeId.value = firstId
+  nextTick(() => {
+    if (firstId) scrollToCategory(firstId)
+    else window.scrollTo({ top: 0, behavior: 'smooth' })
+  })
 }
 
 const scrollToCategory = (id: string) => {
   activeId.value = id
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const el = document.getElementById(id)
+  if (!el) return
+  const navH = navHeight.value || document.querySelector<HTMLElement>('[data-nav]')?.offsetHeight || 0
+  const top = window.scrollY + el.getBoundingClientRect().top - navH - 12
+  window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' })
 }
 
 const navHeight = ref(160)
@@ -166,5 +178,6 @@ onBeforeUnmount(() => {
     </footer>
 
     <ImageLightbox :item="selected" theme="heritage" @close="selected = null" />
+    <WifiButton theme="heritage" />
   </div>
 </template>

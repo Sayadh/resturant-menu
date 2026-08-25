@@ -28,10 +28,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
         <Transition name="atl-modal" appear>
           <div
             v-if="item"
-            class="atelier-theme relative grid max-h-[92vh] w-full max-w-3xl grid-rows-[auto_1fr] overflow-hidden rounded-t-[3px] bg-[#FFFFFF] shadow-2xl sm:grid-cols-2 sm:grid-rows-1 sm:rounded-[3px]"
+            class="atelier-theme relative grid max-h-[92vh] w-full max-w-3xl grid-rows-[auto_1fr] overflow-hidden rounded-t-[3px] bg-[#FFFFFF] shadow-2xl sm:grid-rows-1 sm:rounded-[3px]"
+            :class="item.showImage === false ? 'sm:max-w-xl sm:grid-cols-1' : 'sm:grid-cols-2'"
           >
             <!-- Image -->
-            <div class="relative aspect-[4/3] bg-[#111827] sm:aspect-auto sm:h-full">
+            <div v-if="item.showImage !== false" class="relative aspect-[4/3] bg-[#111827] sm:aspect-auto sm:h-full">
               <img
                 v-if="item.image"
                 :src="item.image"

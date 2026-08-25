@@ -117,6 +117,7 @@ export interface ApiMenuResponse {
     sortOrder: number
     name: string
     description: string | null
+    showImage?: boolean
     image: string | null
     images: string[]
     badges: string[]
@@ -168,6 +169,7 @@ export function buildMenu(payload: ApiMenuResponse): { levels: MenuLevel[]; cate
     if (!cat) continue
     cat.items.push({
       id: p.id,
+      showImage: p.showImage ?? true,
       image: p.image ?? p.images[0] ?? '',
       price: p.price,
       name: mirror(p.name),
@@ -233,6 +235,8 @@ export interface ApiRestaurantBySlug {
     address: string | null
     workingHoursText?: string | null
     rating?: number | null
+    wifiName?: string | null
+    wifiPassword?: string | null
     currency: string
     ordering?: boolean
     showCartTotal?: boolean
@@ -247,7 +251,7 @@ export interface ApiRestaurantBySlug {
 }
 
 const themeKeyToId = (key: string | null): ThemeId => {
-  const allowed: ThemeId[] = ['aria', 'atelier', 'maison', 'heritage', 'noir']
+  const allowed: ThemeId[] = ['aria', 'atelier', 'maison', 'heritage', 'noir', 'opaline']
   return (allowed.includes(key as ThemeId) ? key : 'aria') as ThemeId
 }
 
@@ -278,6 +282,8 @@ export function mapRestaurantSummary(r: ApiRestaurantSummary): Restaurant {
     address: '',
     workingHours: '',
     rating: 0,
+    wifiName: '',
+    wifiPassword: '',
     defaultLanguage: 'hy',
     activeLanguages: ['hy', 'en', 'ru'],
   }
@@ -302,6 +308,8 @@ export function mapRestaurant(r: ApiRestaurantBySlug): Restaurant {
     address: r.restaurant.address ?? '',
     workingHours: r.restaurant.workingHoursText ?? '',
     rating: r.restaurant.rating ?? 0,
+    wifiName: r.restaurant.wifiName ?? '',
+    wifiPassword: r.restaurant.wifiPassword ?? '',
     defaultLanguage: def ?? langs[0] ?? 'hy',
     activeLanguages: langs.length ? langs : ['hy'],
     ordering: r.restaurant.ordering ?? false,
@@ -322,6 +330,8 @@ export interface ApiAdminRestaurant {
   address: string | null
   workingHoursText: string | null
   rating: number | null
+  wifiName: string | null
+  wifiPassword: string | null
   logoUrl: string | null
   coverImageUrl: string | null
   currency: string
@@ -359,6 +369,8 @@ export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
     address: r.address ?? '',
     workingHours: r.workingHoursText ?? '',
     rating: r.rating ?? 0,
+    wifiName: r.wifiName ?? '',
+    wifiPassword: r.wifiPassword ?? '',
     defaultLanguage: def ?? codes[0] ?? 'hy',
     activeLanguages: codes.length ? codes : ['hy'],
     planKey: (r.plan?.key as Restaurant['planKey']) ?? 'free',
@@ -379,6 +391,8 @@ export function restaurantPatchToDto(patch: Partial<Restaurant>) {
   if (patch.address !== undefined) dto.address = patch.address || undefined
   if (patch.workingHours !== undefined) dto.workingHours = patch.workingHours || undefined
   if (patch.rating !== undefined) dto.rating = patch.rating
+  if (patch.wifiName !== undefined) dto.wifiName = patch.wifiName || undefined
+  if (patch.wifiPassword !== undefined) dto.wifiPassword = patch.wifiPassword || undefined
   // Send the raw value (incl. '' ) so the backend can CLEAR a removed image and
   // delete the old file from storage. `|| undefined` would swallow the clear.
   if (patch.logo !== undefined) dto.logoUrl = patch.logo
@@ -437,6 +451,7 @@ export interface ApiProductRow {
   isPopular: boolean
   isNew: boolean
   isRecommended: boolean
+  showImage?: boolean
   sortOrder: number
   translations: ApiTranslationRow[]
   images: { url: string; isMain: boolean }[]
@@ -455,6 +470,7 @@ export function mapProduct(p: ApiProductRow, sectionByCat: Map<string, string>):
     description: ltToTranslation(desc),
     price: p.price,
     image: main?.url ?? '',
+    showImage: p.showImage ?? true,
     badges: apiBadgesToBadges(p.badges.map((b) => b.badge.key)),
     active: p.isActive,
     available: p.isAvailable,
@@ -490,6 +506,7 @@ export function productDraftToDto(d: Omit<Product, 'id' | 'restaurantId'>) {
     isNew: keys.includes('new'),
     isRecommended: keys.includes('recommended'),
     sortOrder: d.sortOrder,
+    showImage: d.showImage,
     badges: keys.length ? keys : undefined,
     // [] (not undefined) so a removed product image is cleared + old file deleted.
     images: d.image ? [{ url: d.image, isMain: true }] : [],

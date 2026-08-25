@@ -17,6 +17,12 @@ export interface LocalizedText {
 export interface MenuItem {
   id: string
   image: string
+  /**
+   * Whether this dish shows a picture at all on the public menu (admin switch).
+   * `false` means the themes render NO image block -- not even the placeholder.
+   * Undefined is treated as true, so older payloads keep their behaviour.
+   */
+  showImage?: boolean
   price: number
   name: LocalizedText
   description: LocalizedText
@@ -56,6 +62,8 @@ export interface MenuLevel {
   id: MenuLevelId
   icon: string
   title: LocalizedText
+  /** Uploaded section image (set by buildMenu from the API). */
+  image?: string
 }
 
 export interface DrinkGroupInfo {
@@ -129,6 +137,11 @@ export const ui = {
     EN: 'Made with love and tradition',
     RU: 'Приготовлено с любовью и традицией',
   },
+  wifi: { AM: 'Wi-Fi', EN: 'Wi-Fi', RU: 'Wi-Fi' },
+  wifiNetwork: { AM: 'Ցանց', EN: 'Network', RU: 'Сеть' },
+  wifiPasswordLabel: { AM: 'Գաղտնաբառ', EN: 'Password', RU: 'Пароль' },
+  wifiCopy: { AM: 'Պատճենել', EN: 'Copy', RU: 'Копировать' },
+  wifiCopied: { AM: 'Պատճենվեց ✓', EN: 'Copied ✓', RU: 'Скопировано ✓' },
 } as const
 
 

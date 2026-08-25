@@ -231,5 +231,6 @@ onBeforeUnmount(() => {
     <NoirBasketBar v-if="brand.ordering" @open="orderOpen = true" />
     <NoirOrderDrawer v-if="brand.ordering" :open="orderOpen" @close="orderOpen = false" />
     <NoirProductDetail :item="selected" @close="selected = null" />
+    <WifiButton theme="noir" />
   </div>
 </template>

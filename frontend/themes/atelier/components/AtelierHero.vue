@@ -1,75 +1,49 @@
 <script setup lang="ts">
-// Editorial hero — asymmetric magazine cover: oversized serif headline and
-// editorial meta on the left, a tall framed signature photograph on the right.
-import { atelierBrand, atelierMeta } from '~/themes/atelier/config'
+// Compact title card — italic wordmark, an ornamental hairline rule (rating
+// sits in the middle when set, else a plain dot), then hours/address on one
+// quiet line — the address gets a small pin mark so it reads as a location
+// at a glance, not just a line of text.
+import { atelierMeta } from '~/themes/atelier/config'
 
 const { t } = useLanguage()
 const brand = useBrand()
-const menu = useMenuStore()
-
-// Real photo only: the restaurant's cover if set, otherwise the first dish
-// photo on the menu. No stock/placeholder image — if neither exists, the
-// framed photograph column is hidden entirely and the copy runs full width.
-const heroImage = computed(
-  () => brand.cover || menu.categories.flatMap((c) => c.items).find((i) => i.image)?.image || '',
-)
 </script>
 
 <template>
-  <section class="relative z-[1] mx-auto max-w-6xl px-5 pb-14 pt-10 sm:px-8 sm:pb-20 sm:pt-14">
-    <div class="grid items-center gap-10" :class="heroImage ? 'lg:grid-cols-[1.05fr_0.95fr] lg:gap-14' : ''">
-      <!-- Editorial copy -->
-      <div>
-        <p class="atl-eyebrow font-display text-[11px] text-[#C65D3A]">
-          {{ atelierBrand.established }}
-        </p>
+  <section class="relative z-[1] mx-auto max-w-2xl px-4 pb-6 pt-6 text-center sm:px-6 sm:pb-8 sm:pt-8">
+    <h1 class="font-serif text-4xl italic tracking-tight text-[#172033] sm:text-5xl">
+      {{ brand.name }}
+    </h1>
 
-        <h1 class="mt-6 font-serif text-[clamp(2.75rem,9vw,5.5rem)] font-medium leading-[0.95] tracking-[-0.01em] text-[#172033]">
-          {{ t(atelierBrand.kicker) }}
-          <span class="mt-1 block italic text-[#C65D3A]">{{ brand.name }}</span>
-        </h1>
-
-        <p class="mt-7 max-w-md font-serif text-lg leading-relaxed text-[#667085] sm:text-xl">
-          {{ t(brand.tagline) }}
-        </p>
-
-        <!-- Editorial meta row (each item shown only when filled) -->
-        <dl v-if="brand.rating || brand.hours || brand.address" class="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
-          <div v-if="brand.rating" class="flex flex-col">
-            <dt class="atl-eyebrow font-display text-[9px] text-[#667085]">{{ t(atelierMeta.rating) }}</dt>
-            <dd class="mt-1 flex items-baseline gap-1.5 font-serif text-[#172033]">
-              <span class="text-2xl font-semibold">{{ brand.rating }}</span>
-              <span class="text-sm text-[#667085]">/ 5</span>
-            </dd>
-          </div>
-          <div v-if="brand.hours" class="flex flex-col">
-            <dt class="atl-eyebrow font-display text-[9px] text-[#667085]">{{ t(atelierMeta.hours) }}</dt>
-            <dd class="mt-1 flex items-center gap-2 font-serif text-[#172033]">
-              <span class="text-base">{{ brand.hours }}</span>
-            </dd>
-          </div>
-          <div v-if="brand.address" class="flex flex-col">
-            <dt class="atl-eyebrow font-display text-[9px] text-[#667085]">{{ t(atelierMeta.location) }}</dt>
-            <dd class="mt-1 font-serif text-base text-[#172033]">{{ brand.address }}</dd>
-          </div>
-        </dl>
-      </div>
-
-      <!-- Framed photograph (rendered only when a real photo exists) -->
-      <figure v-if="heroImage" class="relative">
-        <div class="relative aspect-[16/11] overflow-hidden rounded-[2px] bg-[#111827] shadow-[0_40px_80px_-40px_rgba(17,24,39,0.6)] sm:aspect-[4/5]">
-          <img
-            :src="heroImage"
-            alt=""
-            class="h-full w-full object-cover"
-          />
-          <!-- inner hairline frame -->
-          <span class="pointer-events-none absolute inset-4 border border-[#F8FAFC]/25" aria-hidden="true" />
-        </div>
-        <!-- No caption tag: the address already sits in the meta row on the
-             left and the tagline directly under the headline — a caption here
-             could only echo one of them, so the frame speaks for itself. -->
-      </figure>
+    <div class="mx-auto mt-4 flex items-center justify-center gap-3">
+      <span class="h-px w-9 bg-[#DCE2EA]" aria-hidden="true" />
+      <span v-if="brand.rating" class="flex items-baseline gap-0.5 font-serif text-sm">
+        <span class="sr-only">{{ t(atelierMeta.rating) }}</span>
+        <span class="font-semibold text-[#C65D3A]">{{ brand.rating }}</span>
+        <span class="text-[#667085]">/5</span>
+      </span>
+      <span v-else class="h-1 w-1 rounded-full bg-[#C65D3A]" aria-hidden="true" />
+      <span class="h-px w-9 bg-[#DCE2EA]" aria-hidden="true" />
     </div>
+
+    <dl
+      v-if="brand.hours || brand.address"
+      class="mt-4 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1.5 font-serif text-sm text-[#667085]"
+    >
+      <div v-if="brand.hours">
+        <dt class="sr-only">{{ t(atelierMeta.hours) }}</dt>
+        <dd>{{ brand.hours }}</dd>
+      </div>
+      <span v-if="brand.hours && brand.address" class="text-[#DCE2EA]">·</span>
+
+      <div v-if="brand.address" class="flex items-center gap-1">
+        <dt class="sr-only">{{ t(atelierMeta.location) }}</dt>
+        <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 shrink-0 text-[#C65D3A]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21Z" />
+          <circle cx="12" cy="9.5" r="2.25" />
+        </svg>
+        <dd>{{ brand.address }}</dd>
+      </div>
+    </dl>
   </section>
 </template>

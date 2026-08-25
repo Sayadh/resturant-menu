@@ -18,6 +18,9 @@ export const useBrand = () => {
     address: computed<string>(() => r.value.address),
     rating: computed(() => r.value.rating),
     hours: computed(() => r.value.workingHours),
+    // Guest Wi-Fi (all plans). Empty = the public menu hides the widget.
+    wifiName: computed<string>(() => r.value.wifiName),
+    wifiPassword: computed<string>(() => r.value.wifiPassword),
     logo: computed<string>(() => r.value.logo),
     cover: computed<string>(() => r.value.coverImage),
     // Ordering/cart is a paid feature (Professional & Business only).

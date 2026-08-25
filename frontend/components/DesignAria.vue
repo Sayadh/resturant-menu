@@ -45,10 +45,11 @@ const categoryHasImages = (
     category: {
       items: readonly {
         image?: string | null;
+        showImage?: boolean;
       }[];
     },
 ) => {
-  return category.items.some((item) => Boolean(item.image));
+  return category.items.some((item) => item.showImage !== false && Boolean(item.image));
 };
 
 const categories = computed<MenuCategory[]>(() => {
@@ -71,7 +72,8 @@ const hasResults = computed(() => categories.value.length > 0)
 const activeId = ref('')
 const fmt = (n: number) => n.toLocaleString('hy-AM')
 // Desktop banner: the category's own image wins; fall back to a product photo.
-const bannerOf = (cat: MenuCategory) => cat.image || cat.items.find((i) => i.image)?.image || ''
+const bannerOf = (cat: MenuCategory) =>
+  cat.image || cat.items.find((i) => i.showImage !== false && i.image)?.image || ''
 // Mobile banner: dedicated mobile image, else the desktop banner.
 const mobileBannerOf = (cat: MenuCategory) => cat.mobileImage || bannerOf(cat)
 // The category's own small icon image (falls back to the emoji in templates).
@@ -89,13 +91,21 @@ const selectView = (key: string) => {
   if (key === activeKey.value) return
   activeKey.value = key
   search.value = ''
-  activeId.value = baseCategories.value[0]?.id ?? ''
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  const firstId = baseCategories.value[0]?.id ?? ''
+  activeId.value = firstId
+  nextTick(() => {
+    if (firstId) scrollToCategory(firstId)
+    else window.scrollTo({ top: 0, behavior: 'smooth' })
+  })
 }
 
 const scrollToCategory = (id: string) => {
   activeId.value = id
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const el = document.getElementById(id)
+  if (!el) return
+  const navH = document.querySelector<HTMLElement>('[data-nav]')?.offsetHeight ?? 0
+  const top = window.scrollY + el.getBoundingClientRect().top - navH - 12
+  window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' })
 }
 
 // sticky nav height → scroll offset
@@ -421,7 +431,7 @@ onBeforeUnmount(() => {
                 բոլոր քարտերի համար պահպանում ենք նկարի հատվածը։
               -->
               <div
-                  v-if="categoryHasImages(cat)"
+                  v-if="categoryHasImages(cat) && item.showImage !== false"
                   class="relative aspect-[4/3] w-full shrink-0 overflow-hidden"
               >
                 <!-- Product image -->
@@ -647,6 +657,7 @@ onBeforeUnmount(() => {
 
     <OrderSheet v-if="brand.ordering" :open="orderOpen" @close="orderOpen = false" />
     <ImageLightbox :item="selected" @close="selected = null" />
+    <WifiButton theme="aria" />
   </div>
 </template>
 

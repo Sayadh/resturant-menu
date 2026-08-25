@@ -4,7 +4,7 @@
 import { restaurantService, menuService } from '~/services'
 import type { Lang, LocalizedText } from '~/data/menu'
 
-const VALID_THEMES = ['aria', 'atelier', 'maison', 'heritage', 'noir']
+const VALID_THEMES = ['aria', 'atelier', 'maison', 'heritage', 'noir', 'opaline']
 const route = useRoute()
 const themeOverride = computed(() => {
   const q = String(route.query.theme || '').toLowerCase()

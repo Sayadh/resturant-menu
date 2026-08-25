@@ -20,7 +20,10 @@ const mono = computed(() => {
 
 // Real photography only — the restaurant's cover, else the first dish photo.
 const heroImage = computed(
-  () => brand.cover || menu.categories.flatMap((c) => c.items).find((i) => i.image)?.image || '',
+  () =>
+    brand.cover ||
+    menu.categories.flatMap((c) => c.items).find((i) => i.showImage !== false && i.image)?.image ||
+    '',
 )
 </script>
 

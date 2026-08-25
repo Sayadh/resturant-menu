@@ -19,7 +19,13 @@ themes/
 ```
 
 Ընթացիկ registry՝ `aria → DesignAria`, `atelier → AtelierMenu`,
-`maison → MaisonExperience`, `heritage → DesignHeritage`, fallback → DesignAria։
+`maison → MaisonExperience`, `heritage → DesignHeritage`, `noir → NoirMenu`,
+`opaline → OpalineMenu`, fallback → DesignAria։
+
+`opaline`-ը միակ թեման է, որ մենյուն ցույց է տալիս մակարդակներով
+(գլխավոր → բաժին → կատեգորիա)։ Մակարդակը պահվում է **նույն** `/<slug>` route-ի
+query-ում (`?s=<sectionId>&c=<categoryId>`) — նոր route չկա, slug/domain
+resolver-ը և locale-ը անփոփոխ են։
 
 ## Նոր թեմա ավելացնել
 

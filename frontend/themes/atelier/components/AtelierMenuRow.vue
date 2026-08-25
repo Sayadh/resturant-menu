@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Editorial menu row — a printed-menu line rather than a card. Name and price
-// joined by a dotted leader, a small plated thumbnail, and a quiet add control.
+// joined by a dotted leader, a large plated thumbnail, a two-line teaser (full
+// description lives in the click-triggered detail view), and a quiet add control.
 import { ui, badgeLabels, type MenuItem } from '~/data/menu'
 import { atelierAdd } from '~/themes/atelier/config'
 
@@ -17,6 +18,10 @@ const brand = useBrand() // ordering (cart) = paid plans only
 
 const fmt = (n: number) => n.toLocaleString('hy-AM')
 const soldOut = computed(() => props.item.available === false)
+// `showImage: false` is the admin saying this dish shows NO picture at all --
+// so the media block is skipped entirely, placeholder included. When it is on
+// but no file was uploaded, the theme's usual placeholder still appears.
+const showMedia = computed(() => props.item.showImage !== false)
 </script>
 
 <template>
@@ -26,8 +31,9 @@ const soldOut = computed(() => props.item.available === false)
   >
     <!-- Plated thumbnail -->
     <button
+      v-if="showMedia"
       type="button"
-      class="relative h-20 w-20 shrink-0 overflow-hidden rounded-[2px] bg-[#111827] sm:h-24 sm:w-24"
+      class="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl bg-[#F1F0EC] shadow-sm ring-1 ring-[#172033]/[0.06] sm:h-40 sm:w-40 md:h-44 md:w-44"
       :aria-label="t(item.name)"
       @click="emit('open', item)"
     >
@@ -41,10 +47,9 @@ const soldOut = computed(() => props.item.available === false)
       />
       <span
         v-else
-        class="flex h-full w-full items-center justify-center bg-[#FFFFFF] text-2xl text-[#C65D3A]"
+        class="flex h-full w-full items-center justify-center bg-[#FFFFFF] text-3xl text-[#C65D3A]"
         aria-hidden="true"
       >{{ categoryIcon }}</span>
-      <span class="pointer-events-none absolute inset-1.5 border border-[#F8FAFC]/20" aria-hidden="true" />
     </button>
 
     <!-- Editorial copy -->
@@ -52,18 +57,21 @@ const soldOut = computed(() => props.item.available === false)
       <div class="flex items-end">
         <button
           type="button"
-          class="text-left font-serif text-xl font-medium leading-snug text-[#172033] transition-colors group-hover:text-[#C65D3A] sm:text-2xl"
+          class="text-left font-serif text-lg font-medium leading-snug text-[#172033] transition-colors group-hover:text-[#C65D3A] sm:text-xl"
           @click="emit('open', item)"
         >
           {{ t(item.name) }}
         </button>
         <span class="atl-leader" aria-hidden="true" />
-        <span class="shrink-0 font-serif text-lg text-[#172033] sm:text-xl">
+        <span class="shrink-0 font-serif text-base text-[#172033] sm:text-lg">
           {{ fmt(item.price) }}<span class="ml-0.5 text-[#C65D3A]">֏</span>
         </span>
       </div>
 
-      <p class="mt-1.5 max-w-prose font-serif text-[15px] leading-relaxed text-[#667085]">
+      <p
+        v-if="t(item.description)"
+        class="line-clamp-2 mt-1.5 max-w-prose font-serif text-[13px] leading-relaxed text-[#667085]"
+      >
         {{ t(item.description) }}
       </p>
 

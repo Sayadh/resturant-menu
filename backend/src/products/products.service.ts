@@ -102,6 +102,7 @@ export class ProductsService {
         isPopular: dto.isPopular ?? false,
         isNew: dto.isNew ?? false,
         isRecommended: dto.isRecommended ?? false,
+        showImage: dto.showImage ?? true,
         sortOrder: dto.sortOrder ?? 0,
         translations: { create: translations },
         images: dto.images?.length
@@ -129,6 +130,7 @@ export class ProductsService {
         isPopular: dto.isPopular,
         isNew: dto.isNew,
         isRecommended: dto.isRecommended,
+        showImage: dto.showImage,
         sortOrder: dto.sortOrder,
       },
     })

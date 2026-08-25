@@ -133,6 +133,12 @@ const T: Dict = {
   price: { hy: 'Գին', ru: 'Цена', en: 'Price' },
   badges: { hy: 'Պիտակներ', ru: 'Бейджи', en: 'Badges' },
   image: { hy: 'Նկար', ru: 'Изображение', en: 'Image' },
+  showImage: { hy: 'Ցուցադրել նկար', ru: 'Показывать изображение', en: 'Show image' },
+  showImageHint: {
+    hy: 'Անջատելու դեպքում այս ուտեստը մենյուում կցուցադրվի առանց նկարի',
+    ru: 'Если выключить, блюдо будет показано в меню без изображения',
+    en: 'When off, this dish is shown on the menu without any image',
+  },
   newSection: { hy: 'Նոր բաժին', ru: 'Новый раздел', en: 'New section' },
   editSection: { hy: 'Խմբագրել բաժինը', ru: 'Изменить раздел', en: 'Edit section' },
   newCategory: { hy: 'Նոր կատեգորիա', ru: 'Новая категория', en: 'New category' },
@@ -160,6 +166,13 @@ const T: Dict = {
   workingHoursLabel: { hy: 'Աշխատանքային ժամեր', ru: 'Часы работы', en: 'Working hours' },
   addressLabel: { hy: 'Հասցե', ru: 'Адрес', en: 'Address' },
   ratingLabel: { hy: 'Գնահատական', ru: 'Рейтинг', en: 'Rating' },
+  wifiNameLabel: { hy: 'Wi-Fi ցանցի անուն', ru: 'Название сети Wi-Fi', en: 'Wi-Fi network name' },
+  wifiPasswordLabel: { hy: 'Wi-Fi գաղտնաբառ', ru: 'Пароль Wi-Fi', en: 'Wi-Fi password' },
+  wifiHint: {
+    hy: 'Ցուցադրվում է հաճախորդներին հրապարակային մենյուում՝ floating կոճակով։ Դատարկ թողնելու դեպքում կոճակը չի երևում։',
+    ru: 'Показывается гостям на публичном меню плавающей кнопкой. Если оставить пустым, кнопка не отображается.',
+    en: 'Shown to guests on the public menu via a floating button. Leave empty to hide it.',
+  },
   // Language names shown inside labels, in the admin's current language.
   langHy: { hy: 'Հայերեն', ru: 'Армянский', en: 'Armenian' },
   langRu: { hy: 'Ռուսերեն', ru: 'Русский', en: 'Russian' },

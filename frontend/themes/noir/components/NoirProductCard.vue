@@ -16,7 +16,10 @@ const brand = useBrand() // ordering (cart) = paid plans only
 
 const fmt = (n: number) => n.toLocaleString('hy-AM')
 const soldOut = computed(() => props.item.available === false)
-const hasImage = computed(() => !!props.item.image)
+// `showImage: false` is the admin saying this dish shows NO picture at all --
+// so the media block is skipped entirely, placeholder included. When it is on
+// but no file was uploaded, the theme's usual placeholder still appears.
+const hasImage = computed(() => props.item.showImage !== false && !!props.item.image)
 </script>
 
 <template>
