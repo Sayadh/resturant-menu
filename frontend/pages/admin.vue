@@ -812,6 +812,26 @@ const onLogoUpload = async (e: Event) => {
   }
 }
 
+// Restaurant cover-image upload (same pipeline as the logo). Only Opaline's
+// hero currently reads this field; other themes ignore it, so the control is
+// shown in the template only while Opaline is the active design.
+const uploadingCover = ref(false)
+const onCoverUpload = async (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  uploadingCover.value = true
+  try {
+    const { url } = await uploadService.uploadImage(file)
+    applyUpload(restaurant.value.coverImage, (u) => (restaurant.value.coverImage = u), url)
+  } catch {
+    flash('Չհաջողվեց վերբեռնել ֆոնը')
+  } finally {
+    uploadingCover.value = false
+    input.value = '' // allow re-selecting the same file
+  }
+}
+
 // Remove an image with a confirmation dialog. If the removed URL was an unsaved
 // upload → delete it from storage now; if it was already saved → clearing the
 // field + `persist` (or the modal's Save) lets the backend delete it. `persist`
@@ -1287,6 +1307,30 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 </div>
               </div>
             </div>
+
+            <!-- Opaline's hero can show a full-bleed cover photograph behind
+                 the restaurant name; every other theme ignores this field, so
+                 it's only offered here while Opaline is the active design. -->
+            <div v-if="restaurant.themeId === 'opaline'">
+              <span class="lbl">{{ t('coverImage') }}</span>
+              <div class="mt-1.5 flex items-start gap-4">
+                <div class="grid h-16 w-28 shrink-0 place-items-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                  <img v-if="restaurant.coverImage" :src="restaurant.coverImage" alt="cover" class="h-full w-full object-cover" />
+                  <span v-else class="text-xl text-slate-300">🖼️</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <label class="cursor-pointer rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50" :class="uploadingCover && 'pointer-events-none opacity-60'">
+                      {{ uploadingCover ? t('saving') : (restaurant.coverImage ? t('changeCoverImage') : t('uploadCoverImage')) }}
+                      <input type="file" accept="image/*" class="hidden" @change="onCoverUpload" />
+                    </label>
+                    <button v-if="restaurant.coverImage" type="button" class="rounded-lg px-2.5 py-2 text-xs font-medium text-rose-600 transition hover:bg-rose-50" @click="removeImage(() => restaurant.coverImage, (u) => (restaurant.coverImage = u), saveRestaurant)">Հեռացնել</button>
+                  </div>
+                  <p class="mt-2 text-[11px] leading-relaxed text-slate-400">{{ t('coverImageHint') }}</p>
+                </div>
+              </div>
+            </div>
+
             <label class="block"><span class="lbl">{{ t('name') }}</span><input v-model="restaurant.name" class="inp" /></label>
             <label v-for="l in formLangs" :key="l.code" class="block"><span class="lbl">{{ t('slogan') }} ({{ langLabel(l.code) }})</span><input v-model="restaurant.tagline[l.code]" class="inp" /></label>
             <label class="block"><span class="lbl">{{ t('workingHoursLabel') }}</span><input v-model="restaurant.workingHours" class="inp" placeholder="09:00 – 23:00" /></label>
@@ -1495,6 +1539,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
               </div>
             </div>
           </div>
+
         </section>
 
         <!-- LANGUAGES -->
