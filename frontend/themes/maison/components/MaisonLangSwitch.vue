@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Minimal Maison language switch — three understated letters with a gold
 // underline on the active language. Reads/sets the shared language state.
-const { lang, languages, setLang } = useLanguage()
+const { lang, languages, langDisplay, langLabel, setLang } = useLanguage()
 
 withDefaults(defineProps<{ tone?: 'light' | 'dark' }>(), { tone: 'dark' })
 </script>
@@ -24,7 +24,7 @@ withDefaults(defineProps<{ tone?: 'light' | 'dark' }>(), { tone: 'dark' })
       :aria-pressed="lang === l"
       @click="setLang(l)"
     >
-      {{ l }}
+      <span :class="langDisplay === 'flag' && 'text-[15px] leading-none tracking-normal'">{{ langLabel(l) }}</span>
       <span
         v-if="lang === l"
         class="absolute -bottom-0.5 left-1/2 h-px w-3 -translate-x-1/2"

@@ -237,6 +237,7 @@ export interface ApiRestaurantBySlug {
     rating?: number | null
     wifiName?: string | null
     wifiPassword?: string | null
+    languageDisplay?: string | null
     currency: string
     ordering?: boolean
     showCartTotal?: boolean
@@ -310,6 +311,7 @@ export function mapRestaurant(r: ApiRestaurantBySlug): Restaurant {
     rating: r.restaurant.rating ?? 0,
     wifiName: r.restaurant.wifiName ?? '',
     wifiPassword: r.restaurant.wifiPassword ?? '',
+    languageDisplay: r.restaurant.languageDisplay === 'flag' ? 'flag' : 'text',
     defaultLanguage: def ?? langs[0] ?? 'hy',
     activeLanguages: langs.length ? langs : ['hy'],
     ordering: r.restaurant.ordering ?? false,
@@ -332,6 +334,7 @@ export interface ApiAdminRestaurant {
   rating: number | null
   wifiName: string | null
   wifiPassword: string | null
+  languageDisplay?: string | null
   logoUrl: string | null
   coverImageUrl: string | null
   currency: string
@@ -371,6 +374,7 @@ export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
     rating: r.rating ?? 0,
     wifiName: r.wifiName ?? '',
     wifiPassword: r.wifiPassword ?? '',
+    languageDisplay: r.languageDisplay === 'flag' ? 'flag' : 'text',
     defaultLanguage: def ?? codes[0] ?? 'hy',
     activeLanguages: codes.length ? codes : ['hy'],
     planKey: (r.plan?.key as Restaurant['planKey']) ?? 'free',
@@ -400,6 +404,7 @@ export function restaurantPatchToDto(patch: Partial<Restaurant>) {
   if (patch.tagline !== undefined) dto.tagline = patch.tagline
   if (patch.activeLanguages !== undefined) dto.activeLanguages = patch.activeLanguages
   if (patch.defaultLanguage !== undefined) dto.defaultLanguage = patch.defaultLanguage
+  if (patch.languageDisplay !== undefined) dto.languageDisplay = patch.languageDisplay
   if (patch.showCartTotal !== undefined) dto.showCartTotal = patch.showCartTotal
   if (patch.serviceChargeEnabled !== undefined) dto.serviceChargeEnabled = patch.serviceChargeEnabled
   if (patch.serviceChargeMode !== undefined) dto.serviceChargeMode = patch.serviceChargeMode

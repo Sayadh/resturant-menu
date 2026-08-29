@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Minimal editorial language toggle — AM · EN · RU as letter-spaced text.
-const { lang, languages, setLang } = useLanguage()
+const { lang, languages, langDisplay, langLabel, setLang } = useLanguage()
 </script>
 
 <template>
@@ -13,7 +13,7 @@ const { lang, languages, setLang } = useLanguage()
         :aria-pressed="lang === l"
         @click="setLang(l)"
       >
-        {{ l }}
+        <span :class="langDisplay === 'flag' && 'text-[15px] leading-none tracking-normal'">{{ langLabel(l) }}</span>
       </button>
       <span v-if="i < languages.length - 1" class="text-[#172033]/20" aria-hidden="true">·</span>
     </template>

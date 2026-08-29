@@ -106,6 +106,7 @@ export class PublicService {
         rating: r.rating,
         wifiName: r.wifiName,
         wifiPassword: r.wifiPassword,
+        languageDisplay: r.languageDisplay,
         currency: r.currency,
         ordering,
         showCartTotal: r.showCartTotal,

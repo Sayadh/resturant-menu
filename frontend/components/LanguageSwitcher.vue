@@ -2,7 +2,7 @@
 // `theme` only swaps colours. The default keeps the original palette so Aria
 // renders exactly as before; Heritage opts in to the stone/olive system.
 withDefaults(defineProps<{ theme?: 'default' | 'heritage' }>(), { theme: 'default' })
-const { lang, languages, setLang } = useLanguage()
+const { lang, languages, langDisplay, langLabel, setLang } = useLanguage()
 </script>
 
 <template>
@@ -33,7 +33,7 @@ const { lang, languages, setLang } = useLanguage()
       :aria-pressed="lang === code"
       @click="setLang(code)"
     >
-      {{ code }}
+      <span :class="langDisplay === 'flag' && 'text-[15px] leading-none tracking-normal'">{{ langLabel(code) }}</span>
     </button>
   </div>
 </template>

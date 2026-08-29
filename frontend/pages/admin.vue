@@ -1558,6 +1558,32 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 <button v-for="l in LANGS" :key="l.code" class="rounded-full px-4 py-1.5 text-sm font-semibold transition" :class="restaurant.activeLanguages.includes(l.code) ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200'" @click="toggleLang(l.code)">{{ l.label }}</button>
               </div>
             </div>
+            <!-- How the PUBLIC menu labels each language: the letters it has
+                 always used, or the country flags. Purely presentational —
+                 the set of languages and the default are unchanged. -->
+            <div>
+              <span class="lbl">{{ t('languageDisplayLabel') }}</span>
+              <div class="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  class="rounded-full px-4 py-1.5 text-sm font-semibold transition"
+                  :class="restaurant.languageDisplay !== 'flag' ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200'"
+                  @click="restaurant.languageDisplay = 'text'"
+                >
+                  {{ t('languageDisplayText') }} · AM EN RU
+                </button>
+                <button
+                  type="button"
+                  class="rounded-full px-4 py-1.5 text-sm font-semibold transition"
+                  :class="restaurant.languageDisplay === 'flag' ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 ring-1 ring-slate-200'"
+                  @click="restaurant.languageDisplay = 'flag'"
+                >
+                  {{ t('languageDisplayFlag') }} · 🇦🇲 🇬🇧 🇷🇺
+                </button>
+              </div>
+              <p class="mt-2 text-[11px] leading-relaxed text-slate-400">{{ t('languageDisplayHint') }}</p>
+            </div>
+
             <p class="text-xs text-slate-400">Every category & product stores hy / en / ru, ready for translation.</p>
             <button class="btn-primary" :disabled="busy" @click="saveRestaurant">{{ busy ? t('saving') : t('save') }}</button>
           </div>

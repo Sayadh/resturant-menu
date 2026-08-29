@@ -138,6 +138,8 @@ export interface Restaurant {
   /** Guest Wi-Fi, shown on the public menu (all plans). Empty = hidden. */
   wifiName: string
   wifiPassword: string
+  /** Public language switcher: letters (AM/EN/RU) or country flags. */
+  languageDisplay?: 'text' | 'flag'
   defaultLanguage: LangCode
   activeLanguages: LangCode[]
   /** Subscription tier (set by super-admin). Gates paid features like AI. */

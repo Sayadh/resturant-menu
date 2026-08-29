@@ -42,6 +42,10 @@ export class UpdateRestaurantDto {
   @IsOptional() @IsString() @MaxLength(80)
   wifiPassword?: string
 
+  // Public language switcher: letters (AM/EN/RU) or country flags.
+  @IsOptional() @IsIn(['text', 'flag'])
+  languageDisplay?: 'text' | 'flag'
+
   @IsOptional() @IsString() @MaxLength(8)
   currency?: string
 

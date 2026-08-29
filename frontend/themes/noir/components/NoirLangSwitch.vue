@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Monochrome language switch — three letters, the active one lifted to ivory
 // with a hairline platinum underline. Reads/sets the shared language state.
-const { lang, languages, setLang } = useLanguage()
+const { lang, languages, langDisplay, langLabel, setLang } = useLanguage()
 </script>
 
 <template>
@@ -19,7 +19,7 @@ const { lang, languages, setLang } = useLanguage()
       :aria-pressed="lang === l"
       @click="setLang(l)"
     >
-      {{ l }}
+      <span :class="langDisplay === 'flag' && 'text-[15px] leading-none tracking-normal'">{{ langLabel(l) }}</span>
       <span
         v-if="lang === l"
         class="absolute -bottom-0.5 left-1/2 h-px w-3 -translate-x-1/2 bg-[#B8B4AC]"

@@ -5,6 +5,10 @@ import type { LangCode } from '~/models/types'
 const CODE_TO_LANG: Record<LangCode, Lang> = { hy: 'AM', en: 'EN', ru: 'RU' }
 const DISPLAY_ORDER: Lang[] = ['AM', 'EN', 'RU']
 
+// Flag labels for the "flags" switcher mode. Armenian, British and Russian
+// flags — the three platform languages, nothing more.
+const LANG_FLAG: Record<Lang, string> = { AM: '🇦🇲', EN: '🇬🇧', RU: '🇷🇺' }
+
 /** All platform languages (used only as an ultimate fallback). */
 export const allLanguages: Lang[] = ['AM', 'EN', 'RU']
 
@@ -35,6 +39,16 @@ export const useLanguage = () => {
     languages.value.includes(selected.value) ? selected.value : defaultLang.value,
   )
 
+  // How the public switcher labels a language — chosen by the tenant in the
+  // admin (Languages tab). Unknown/absent values fall back to letters, so an
+  // older API response keeps the original look.
+  const langDisplay = computed<'text' | 'flag'>(() =>
+    rs.restaurant?.languageDisplay === 'flag' ? 'flag' : 'text',
+  )
+
+  /** The label a switcher renders for a language: 'AM' or '🇦🇲'. */
+  const langLabel = (l: Lang): string => (langDisplay.value === 'flag' ? LANG_FLAG[l] : l)
+
   const setLang = (next: Lang) => {
     if (languages.value.includes(next)) selected.value = next
   }
@@ -42,5 +56,5 @@ export const useLanguage = () => {
   // Resolve a localized string for the effective language.
   const t = (text: LocalizedText) => text[lang.value]
 
-  return { lang, languages, defaultLang, setLang, t }
+  return { lang, languages, defaultLang, langDisplay, langLabel, setLang, t }
 }

@@ -2,7 +2,7 @@
 // Language switch — three letters on porcelain, the active one in coral with
 // a short hairline underneath. Reads/sets the shared language state only; the
 // switching logic itself lives in useLanguage() and is untouched.
-const { lang, languages, setLang } = useLanguage()
+const { lang, languages, langDisplay, langLabel, setLang } = useLanguage()
 </script>
 
 <template>
@@ -16,7 +16,7 @@ const { lang, languages, setLang } = useLanguage()
       :aria-pressed="lang === l"
       @click="setLang(l)"
     >
-      {{ l }}
+      <span :class="langDisplay === 'flag' && 'text-[15px] leading-none tracking-normal'">{{ langLabel(l) }}</span>
       <span
         v-if="lang === l"
         class="absolute bottom-0 left-1/2 h-px w-3 -translate-x-1/2 bg-[#D85F3D]"

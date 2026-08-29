@@ -136,6 +136,8 @@ model Restaurant {
   rating           Float? // editable display rating (0–5)
   wifiName      String? // guest Wi-Fi network name (SSID), shown on the public menu
   wifiPassword  String? // guest Wi-Fi password, shown on the public menu (plain text — same trust level as a printed table card)
+  /// How the public language switcher labels each language: 'text' (AM/EN/RU) or 'flag' (🇦🇲/🇬🇧/🇷🇺).
+  languageDisplay String  @default("text")
   currency      String    @default("AMD")
   timezone      String    @default("Asia/Yerevan")
 

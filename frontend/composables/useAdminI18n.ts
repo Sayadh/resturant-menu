@@ -181,6 +181,15 @@ const T: Dict = {
     ru: 'Показывается гостям на публичном меню плавающей кнопкой. Если оставить пустым, кнопка не отображается.',
     en: 'Shown to guests on the public menu via a floating button. Leave empty to hide it.',
   },
+  // Public language switcher: letters or flags.
+  languageDisplayLabel: { hy: 'Լեզուների ցուցադրման տեսքը', ru: 'Вид переключателя языков', en: 'Language switcher style' },
+  languageDisplayText: { hy: 'Տառերով', ru: 'Буквами', en: 'Letters' },
+  languageDisplayFlag: { hy: 'Դրոշներով', ru: 'Флагами', en: 'Flags' },
+  languageDisplayHint: {
+    hy: 'Ընտրում է, թե հրապարակային մենյուում լեզուները ինչպես երևան՝ AM / EN / RU տառերով, թե երկրների դրոշներով։',
+    ru: 'Определяет, как языки показываются в публичном меню: буквами AM / EN / RU или флагами стран.',
+    en: 'Sets how languages appear on the public menu: as the letters AM / EN / RU, or as country flags.',
+  },
   // Language names shown inside labels, in the admin's current language.
   langHy: { hy: 'Հայերեն', ru: 'Армянский', en: 'Armenian' },
   langRu: { hy: 'Ռուսերեն', ru: 'Русский', en: 'Russian' },

@@ -15,6 +15,7 @@ export const emptyRestaurant: Restaurant = {
   rating: 0,
   wifiName: '',
   wifiPassword: '',
+  languageDisplay: 'text',
   defaultLanguage: 'hy',
   activeLanguages: ['hy', 'en', 'ru'],
   ordering: false,
