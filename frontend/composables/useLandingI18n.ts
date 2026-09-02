@@ -8,6 +8,8 @@
 // untouched. Keyword SEO pages (/qr-menu …) and <meta> are intentionally NOT
 // driven by this and stay Armenian.
 // ─────────────────────────────────────────────────────────────────────────
+import type { ThemeId } from '~/models/types'
+
 export type LandingLang = 'hy' | 'ru' | 'en'
 
 interface Feature { icon: string; color: string; title: string; desc: string }
@@ -20,7 +22,7 @@ interface Dict {
   features: { title: string; highlight: string; subtitle: string; items: Feature[] }
   how: { titleA: string; highlight: string; subtitle: string; steps: Step[] }
   demo: { titleA: string; highlight: string; subtitle: string; bullets: string[]; openFull: string; scanHint: string; scanShort: string }
-  themes: { titleA: string; highlight: string; titleC: string; subtitle: string; descs: string[] }
+  themes: { titleA: string; highlight: string; titleC: string; subtitle: string; preview: string; descs: Record<ThemeId, string> }
   about: { badge: string; company: string; suffix: string; lead: string; paragraphs: string[]; visionEyebrow: string; vision: string; values: { title: string; desc: string }[]; closing: string }
   faq: { titleA: string; highlight: string; subtitle: string; items: Faq[] }
   cta: { badge: string; titleA: string; highlight: string; subtitle: string; start: string }
@@ -78,7 +80,19 @@ const dict: Record<LandingLang, Dict> = {
       titleA: 'Փորձեք մեր', highlight: 'դեմոն', subtitle: 'Փոխեք թեման ու լեզուն ուղիղ այստեղ, կամ սկանավորեք QR-ը՝ կենդանի մենյուն ձեր հեռախոսում բացելու համար։',
       bullets: ['Ընտրեք թեմա', 'Փորձեք լեզուն', 'Դիտեք իրական մենյու'], openFull: 'Բացել ամբողջական դեմոն ↗', scanHint: 'Սկանավորեք հեռախոսով', scanShort: 'Սկանավորեք',
     },
-    themes: { titleA: 'Գեղեցիկ', highlight: 'թեմաներ', titleC: 'ձեր բրենդին համապատասխան', subtitle: 'Ընտրեք պատրաստի պրեմիում թեմաներ ձեր հաստատության ոճին համապատասխան։', descs: ['Ժամանակակից և պարզ', 'Էլեգանտ և մուգ', 'Ջերմ և բնական', 'Դասական և ավանդական'] },
+    themes: {
+      titleA: 'Գեղեցիկ', highlight: 'թեմաներ', titleC: 'ձեր բրենդին համապատասխան',
+      subtitle: 'Ընտրեք պատրաստի պրեմիում թեմաներ ձեր հաստատության ոճին համապատասխան։ Սեղմեք ցանկացածի վրա՝ կենդանի դեմոն տեսնելու համար։',
+      preview: 'Դիտել դեմոն',
+      descs: {
+        aria: 'Մաքուր և ժամանակակից',
+        atelier: 'Նրբագեղ և մինիմալ',
+        maison: 'Ջերմ և հարմարավետ',
+        heritage: 'Դասական և ազգային',
+        noir: 'Մուգ և շքեղ',
+        opaline: 'Բաց և խմբագրական',
+      },
+    },
     about: {
       badge: 'Մեր մասին', company: 'Rosami', suffix: 'ՍՊԸ',
       lead: 'Rosami ՍՊԸ-ն հայկական տեխնոլոգիական ընկերություն է, որը ստեղծում է ժամանակակից թվային լուծումներ բիզնեսների համար։',
@@ -207,7 +221,19 @@ const dict: Record<LandingLang, Dict> = {
       titleA: 'Попробуйте наше', highlight: 'демо', subtitle: 'Переключайте тему и язык прямо здесь или отсканируйте QR, чтобы открыть живое меню на телефоне.',
       bullets: ['Выберите тему', 'Попробуйте язык', 'Смотрите реальное меню'], openFull: 'Открыть полное демо ↗', scanHint: 'Отсканируйте телефоном', scanShort: 'Сканируйте',
     },
-    themes: { titleA: 'Красивые', highlight: 'темы', titleC: 'под ваш бренд', subtitle: 'Выбирайте готовые премиум-темы под стиль вашего заведения.', descs: ['Современная и простая', 'Элегантная и тёмная', 'Тёплая и природная', 'Классическая и традиционная'] },
+    themes: {
+      titleA: 'Красивые', highlight: 'темы', titleC: 'под ваш бренд',
+      subtitle: 'Выбирайте готовые премиум-темы под стиль вашего заведения. Нажмите на любую — откроется живое демо.',
+      preview: 'Смотреть демо',
+      descs: {
+        aria: 'Чистая и современная',
+        atelier: 'Изящная и минималистичная',
+        maison: 'Тёплая и уютная',
+        heritage: 'Классическая и национальная',
+        noir: 'Тёмная и роскошная',
+        opaline: 'Светлая и журнальная',
+      },
+    },
     about: {
       badge: 'О нас', company: 'Rosami', suffix: 'ООО',
       lead: 'Rosami ООО — армянская технологическая компания, создающая современные цифровые решения для бизнеса.',
@@ -336,7 +362,19 @@ const dict: Record<LandingLang, Dict> = {
       titleA: 'Try our', highlight: 'demo', subtitle: 'Switch the theme and language right here, or scan the QR to open the live menu on your phone.',
       bullets: ['Choose a theme', 'Try the language', 'See a real menu'], openFull: 'Open the full demo ↗', scanHint: 'Scan with your phone', scanShort: 'Scan',
     },
-    themes: { titleA: 'Beautiful', highlight: 'themes', titleC: 'that match your brand', subtitle: 'Choose ready-made premium themes that match your venue’s style.', descs: ['Modern and clean', 'Elegant and dark', 'Warm and natural', 'Classic and traditional'] },
+    themes: {
+      titleA: 'Beautiful', highlight: 'themes', titleC: 'that match your brand',
+      subtitle: 'Choose ready-made premium themes that match your venue’s style. Tap any of them to open the live demo.',
+      preview: 'View demo',
+      descs: {
+        aria: 'Clean and modern',
+        atelier: 'Refined and minimal',
+        maison: 'Warm and cosy',
+        heritage: 'Classic and traditional',
+        noir: 'Dark and luxurious',
+        opaline: 'Light and editorial',
+      },
+    },
     about: {
       badge: 'About us', company: 'Rosami', suffix: 'LLC',
       lead: 'Rosami LLC is an Armenian technology company building modern digital solutions for businesses.',

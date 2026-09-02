@@ -56,7 +56,7 @@ export const demoCategories: MenuCategory[] = [
     title: { AM: 'Հիմնական ուտեստներ', EN: 'Main Courses', RU: 'Основные блюда' },
     items: [
       {
-        id: 'm1', image: '', price: 5900, badge: 'best',
+        id: 'm1', image: '', price: 5900, badge: 'bestseller',
         name: { AM: 'Խորոված սաղմոն', EN: 'Grilled Salmon', RU: 'Сёмга на гриле' },
         description: { AM: 'Թարմ սաղմոն՝ բանջարեղենով', EN: 'Fresh salmon with vegetables', RU: 'Свежая сёмга с овощами' },
       },

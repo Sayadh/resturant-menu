@@ -18,7 +18,11 @@ export interface Translation {
 }
 
 /** Product highlight badges. */
-export type Badge = 'hit' | 'new' | 'recommended' | 'spicy' | 'vegan' | 'affordable'
+// The badge catalogue (keys, icons, labels) lives in `~/data/badges` — one
+// source of truth shared by the admin picker, the themes and the backend seed.
+import type { BadgeKey } from '~/data/badges'
+
+export type Badge = BadgeKey
 
 /** Available public theme identifiers. */
 export type ThemeId = 'aria' | 'atelier' | 'maison' | 'heritage' | 'noir' | 'opaline'

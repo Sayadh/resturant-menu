@@ -1,7 +1,8 @@
 <script setup lang="ts">
 // Editorial dish detail — a calm, magazine-style modal. Large plate on the
 // left, the dish "story" and add control on the right.
-import { ui, badgeLabels, type MenuItem } from '~/data/menu'
+import { ui, type MenuItem } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 import { atelierAddToTable } from '~/themes/atelier/config'
 
 const props = defineProps<{ item: MenuItem | null; categoryIcon: string }>()
@@ -46,8 +47,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             <!-- Story -->
             <div class="flex flex-col overflow-y-auto p-7 sm:p-9">
               <div class="flex items-start justify-between gap-4">
-                <p v-if="item.badge" class="atl-eyebrow font-display text-[10px] text-[#C65D3A]">
-                  {{ t(badgeLabels[item.badge].text) }}
+                <p
+                  v-if="visibleBadges(item, 4).length"
+                  class="atl-eyebrow font-display text-[10px] text-[#C65D3A]"
+                >
+                  {{ visibleBadges(item, 4).map((b) => t(b.text)).join(' · ') }}
                 </p>
                 <span v-else />
                 <button

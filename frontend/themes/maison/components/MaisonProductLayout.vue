@@ -6,7 +6,8 @@
 // control. Gentle hover lift. Clean, readable, cozy. Data comes from the shared
 // order store; the presentation is entirely this theme's.
 // ─────────────────────────────────────────────────────────────────────────
-import { type MenuCategory, type MenuItem, ui, badgeLabels } from '~/data/menu'
+import { type MenuCategory, type MenuItem, ui } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 import { vReveal } from '~/themes/maison/animations'
 
 const props = defineProps<{ category: MenuCategory }>()
@@ -48,10 +49,12 @@ const soldOut = (item: MenuItem) => item.available === false
         </div>
 
         <span
-          v-if="item.badge"
-          class="absolute left-3 top-3 inline-flex items-center rounded-full bg-[#8C304A] px-2.5 py-1 font-sans text-[10px] font-bold tracking-wide text-[#FFFBFC] shadow-sm"
+          v-for="(b, bi) in visibleBadges(item)"
+          :key="b.key"
+          class="absolute left-3 inline-flex items-center rounded-full bg-[#8C304A] px-2.5 py-1 font-sans text-[10px] font-bold tracking-wide text-[#FFFBFC] shadow-sm"
+          :class="bi === 0 ? 'top-3' : 'top-[3.1rem]'"
         >
-          {{ t(badgeLabels[item.badge].text) }}
+          {{ t(b.text) }}
         </span>
 
         <div v-if="soldOut(item)" class="absolute inset-0 flex items-center justify-center bg-[#541C2E]/45">
@@ -63,13 +66,14 @@ const soldOut = (item: MenuItem) => item.available === false
       <div class="flex flex-1 flex-col p-5">
         <!-- badge / sold-out kept visible on image-less cards -->
         <div
-          v-if="item.showImage === false && (item.badge || soldOut(item))"
+          v-if="item.showImage === false && (visibleBadges(item).length || soldOut(item))"
           class="mb-2.5 flex flex-wrap items-center gap-2"
         >
           <span
-            v-if="item.badge"
+            v-for="b in visibleBadges(item)"
+            :key="b.key"
             class="inline-flex items-center rounded-full bg-[#8C304A] px-2.5 py-1 font-sans text-[10px] font-bold tracking-wide text-[#FFFBFC]"
-          >{{ t(badgeLabels[item.badge].text) }}</span>
+          >{{ t(b.text) }}</span>
           <span
             v-if="soldOut(item)"
             class="inline-flex items-center rounded-full bg-[#FFFBFC] px-2.5 py-1 font-sans text-[10px] font-bold tracking-wide text-[#A33D4C] ring-1 ring-[#A33D4C]/30"

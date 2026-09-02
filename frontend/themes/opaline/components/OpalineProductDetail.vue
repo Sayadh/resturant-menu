@@ -4,10 +4,14 @@
 // overlay (a bottom sheet on phones). Same modal behaviour the other themes
 // use; only the look is Opaline's.
 // ─────────────────────────────────────────────────────────────────────────
-import { ui, badgeLabels, type MenuItem } from '~/data/menu'
+import { ui, type MenuItem } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 import { opalineAdd, opalineClose, opalineQty } from '~/themes/opaline/config'
 
 const props = defineProps<{ item: MenuItem | null }>()
+
+// A detail sheet has more room than a card, so it shows up to four badges.
+const badges = computed(() => (props.item ? visibleBadges(props.item, 4) : []))
 const emit = defineEmits<{ close: [] }>()
 
 const { t } = useLanguage()
@@ -52,10 +56,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             <div class="flex min-w-0 flex-1 flex-col overflow-y-auto p-6 sm:p-8">
               <div class="flex items-start justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-2">
-                  <span
-                    v-if="item.badge && !soldOut"
-                    class="op-label rounded-full bg-[#FBEDE8] px-2.5 py-1 text-[9px] text-[#D85F3D]"
-                  >{{ t(badgeLabels[item.badge].text) }}</span>
+                  <template v-if="!soldOut">
+                    <span
+                      v-for="b in badges"
+                      :key="b.key"
+                      class="op-label rounded-full bg-[#FBEDE8] px-2.5 py-1 text-[9px] text-[#D85F3D]"
+                    >{{ t(b.text) }}</span>
+                  </template>
                   <span
                     v-if="soldOut"
                     class="op-label rounded-full border border-[#E2E5E8] px-2.5 py-1 text-[9px] text-[#A04F4F]"

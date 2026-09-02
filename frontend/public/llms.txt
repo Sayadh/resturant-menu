@@ -17,7 +17,7 @@
   AI descriptions, multi-language, image management, availability toggle,
   custom domain (Business), analytics (Business)
 - Company: Rosami LLC
-- Contact: menusam9995@gmail.com, +374 77 135 299
+- Contact: menusam.qrmenu@gmail.com, +374 77 135 299
 
 ## Main pages
 - [Home](https://menus.am/): platform overview, features, pricing, FAQ

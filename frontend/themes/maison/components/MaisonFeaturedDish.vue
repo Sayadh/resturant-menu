@@ -6,7 +6,8 @@
 // composition. Alternates sides via `reversed`, and supports a dark tone for
 // the chef's band. Reads the order store directly for add / qty.
 // ─────────────────────────────────────────────────────────────────────────
-import { type MenuItem, ui, badgeLabels } from '~/data/menu'
+import { type MenuItem, ui } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 import { maisonOrder } from '~/themes/maison/config'
 import { vReveal, vParallax } from '~/themes/maison/animations'
 
@@ -68,11 +69,12 @@ const hasImage = computed(() => props.item.showImage !== false && !!props.item.i
           {{ eyebrow }}
         </p>
         <span
-          v-if="item.badge"
+          v-for="b in visibleBadges(item)"
+          :key="b.key"
           class="ms-eyebrow-sm rounded-full border px-2.5 py-0.5 font-sans text-[9px]"
           :class="isDark ? 'border-[#B99768]/40 text-[#B99768]' : 'border-[#8C304A]/40 text-[#8C304A]'"
         >
-          {{ t(badgeLabels[item.badge].text) }}
+          {{ t(b.text) }}
         </span>
       </div>
 

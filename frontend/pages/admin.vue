@@ -25,11 +25,17 @@ import { leadService } from '~/services/leadService'
 // (API mode → JWT tenant, mock mode → seed).
 const menuStore = useMenuStore()
 import type { Category, Product, Section, Badge, LangCode } from '~/models/types'
+import type { LocalizedText } from '~/data/menu'
+import type { AdminLang } from '~/composables/useAdminI18n'
+import { BADGES, BADGE_GROUPS } from '~/data/badges'
 
 // ── auth ────────────────────────────────────────────────────────
 const auth = useAuthStore()
 const needsLogin = ref(false)
 const login = reactive({ email: '', password: '' })
+// Let the person read what they typed — a wrong password is the most
+// common reason a login fails on a phone keyboard.
+const showPassword = ref(false)
 const loginError = ref('')
 const loggingIn = ref(false)
 
@@ -372,14 +378,17 @@ const visibleProducts = computed(() => {
 
 // ── modals + drafts ────────────────────────────────────────────
 const blankTr = () => ({ hy: '', en: '', ru: '' })
-const BADGES: { id: Badge; label: string }[] = [
-  { id: 'hit', label: '🔥 Հիթ' },
-  { id: 'new', label: '🆕 Նոր' },
-  { id: 'recommended', label: '⭐ Խորհուրդ' },
-  { id: 'spicy', label: '🌶 Կծու' },
-  { id: 'vegan', label: '🌱 Վեգան' },
-  { id: 'affordable', label: '💰 Մատչելի' },
-]
+// Badge picker — the shared catalogue (~/data/badges), grouped so the marks
+// stay scannable. Labels follow the ADMIN panel's language, not the menu's.
+const ADMIN_LANG_TO_LT: Record<AdminLang, keyof LocalizedText> = { hy: 'AM', ru: 'RU', en: 'EN' }
+const badgeText = (text: LocalizedText) => text[ADMIN_LANG_TO_LT[adminLang.value]]
+const badgeGroups = computed(() =>
+  BADGE_GROUPS.map((g) => ({
+    id: g.id,
+    title: badgeText(g.title),
+    items: BADGES.filter((b) => b.group === g.id),
+  })),
+)
 
 const catModal = reactive({ open: false, mode: 'add' as 'add' | 'edit', id: '' })
 const catDraft = reactive<CategoryDraft>({
@@ -710,6 +719,13 @@ const swapMove = <T,>(list: T[], index: number, dir: -1 | 1): T[] | null => {
   ;[arr[index], arr[j]] = [arr[j], arr[index]]
   return arr
 }
+// Sections are the horizontal tabs, so their arrows read left/right — the
+// mechanics are the same swap + persisted sortOrder as everywhere else.
+const moveSection = (index: number, dir: -1 | 1) => {
+  if (reordering.value) return
+  const arr = swapMove(sections.value, index, dir)
+  if (arr) persistOrder(arr, sectionService.reorder)
+}
 const moveCategory = (index: number, dir: -1 | 1) => {
   if (reordering.value) return
   const arr = swapMove(visibleCategories.value, index, dir)
@@ -1000,17 +1016,37 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         autocomplete="username"
         required
         class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-900 focus:outline-none"
-        placeholder="owner@tun-lahmajo.test"
+        placeholder="owner@test.test"
       />
       <label class="mt-3 block text-xs font-semibold text-slate-600">Գաղտնաբառ</label>
-      <input
-        v-model="login.password"
-        type="password"
-        autocomplete="current-password"
-        required
-        class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-900 focus:outline-none"
-        placeholder="••••••••"
-      />
+      <div class="relative mt-1">
+        <input
+          v-model="login.password"
+          :type="showPassword ? 'text' : 'password'"
+          autocomplete="current-password"
+          required
+          class="w-full rounded-lg border border-slate-300 py-2 pl-3 pr-11 text-sm focus:border-slate-900 focus:outline-none"
+          placeholder="••••••••"
+        />
+        <button
+          type="button"
+          class="absolute inset-y-0 right-0 grid w-11 place-items-center text-slate-400 transition hover:text-slate-700"
+          :aria-label="showPassword ? 'Թաքցնել գաղտնաբառը' : 'Ցույց տալ գաղտնաբառը'"
+          :aria-pressed="showPassword"
+          tabindex="-1"
+          @click="showPassword = !showPassword"
+        >
+          <svg v-if="showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 3l18 18" />
+            <path d="M10.6 10.6a2 2 0 002.8 2.8" />
+            <path d="M9.4 5.2A9.5 9.5 0 0112 5c5 0 9 4.5 9 7a11 11 0 01-2.4 3.5M6.5 6.6C4.2 8 2.7 10.2 2.7 12c0 2.5 4 7 9.3 7 1.3 0 2.5-.3 3.6-.7" />
+          </svg>
+          <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2.7 12S6.7 5 12 5s9.3 7 9.3 7-4 7-9.3 7-9.3-7-9.3-7Z" />
+            <circle cx="12" cy="12" r="2.6" />
+          </svg>
+        </button>
+      </div>
       <p v-if="loginError" class="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{{ loginError }}</p>
       <button
         type="submit"
@@ -1393,7 +1429,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           <!-- Dynamic section tabs (add / edit / delete) -->
           <div class="flex flex-wrap items-center gap-2">
             <div
-              v-for="s in sections"
+              v-for="(s, si) in sections"
               :key="s.id"
               class="flex items-center overflow-hidden rounded-full text-sm font-semibold transition"
               :class="menuSection === s.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200'"
@@ -1404,8 +1440,20 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 {{ trLabel(s.name) }}
               </button>
               <template v-if="menuSection === s.id">
-                <button class="px-1 opacity-80 hover:opacity-100" :title="t('edit')" @click="openEditSection(s)">✎</button>
-                <button class="pl-1 pr-3 opacity-80 hover:opacity-100" :title="t('delete')" @click="removeSection(s)">🗑</button>
+                <button
+                  class="tab-btn"
+                  :disabled="si === 0 || reordering"
+                  :title="t('moveLeft')"
+                  @click="moveSection(si, -1)"
+                >◀</button>
+                <button
+                  class="tab-btn"
+                  :disabled="si === sections.length - 1 || reordering"
+                  :title="t('moveRight')"
+                  @click="moveSection(si, 1)"
+                >▶</button>
+                <button class="tab-btn" :title="t('edit')" @click="openEditSection(s)">✎</button>
+                <button class="tab-btn pr-3" :title="t('delete')" @click="removeSection(s)">🗑</button>
               </template>
             </div>
             <p v-if="!sections.length" class="text-sm text-slate-400">{{ t('noSections') }}</p>
@@ -1767,9 +1815,22 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         </div>
         <div>
           <span class="lbl">{{ t('badges') }}</span>
-          <div class="mt-1.5 flex flex-wrap gap-2">
-            <button v-for="b in BADGES" :key="b.id" type="button" class="rounded-full px-3 py-1 text-xs font-semibold transition" :class="prodDraft.badges.includes(b.id) ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'" @click="toggleBadge(b.id)">{{ b.label }}</button>
+          <div class="mt-1.5 space-y-3">
+            <div v-for="g in badgeGroups" :key="g.id">
+              <p class="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">{{ g.title }}</p>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="b in g.items"
+                  :key="b.key"
+                  type="button"
+                  class="rounded-full px-3 py-1 text-xs font-semibold transition"
+                  :class="prodDraft.badges.includes(b.key) ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'"
+                  @click="toggleBadge(b.key)"
+                >{{ b.icon }} {{ badgeText(b.text) }}</button>
+              </div>
+            </div>
           </div>
+          <p class="mt-2 text-[11px] leading-relaxed text-slate-400">{{ t('badgesHint') }}</p>
         </div>
         <div>
           <!-- Picture switch. On by default; turning it off means the public
@@ -1959,6 +2020,9 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
 }
 .ai-btn {
   @apply inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 px-2.5 py-1 text-xs font-semibold text-white transition hover:-translate-y-px hover:shadow disabled:cursor-not-allowed disabled:opacity-50;
+}
+.tab-btn {
+  @apply px-1 opacity-80 transition hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-25;
 }
 .ord-btn {
   @apply flex h-4 w-5 items-center justify-center text-[9px] leading-none text-slate-400 transition hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-25;

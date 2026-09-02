@@ -131,7 +131,14 @@ const T: Dict = {
   descTranslations: { hy: 'Նկարագրություն · թարգմանություններ', ru: 'Описание · переводы', en: 'Description · translations' },
   category: { hy: 'Կատեգորիա', ru: 'Категория', en: 'Category' },
   price: { hy: 'Գին', ru: 'Цена', en: 'Price' },
+  moveLeft: { hy: 'Ձախ տեղափոխել', ru: 'Переместить влево', en: 'Move left' },
+  moveRight: { hy: 'Աջ տեղափոխել', ru: 'Переместить вправо', en: 'Move right' },
   badges: { hy: 'Պիտակներ', ru: 'Бейджи', en: 'Badges' },
+  badgesHint: {
+    hy: 'Քարտի վրա ցուցադրվում է առավելագույնը 2 պիտակ՝ ցուցակի հերթականությամբ, իսկ ուտեստի էջին՝ մինչև 4։',
+    ru: 'На карточке показываются максимум 2 бейджа — в порядке этого списка, а на странице блюда — до 4.',
+    en: 'A card shows at most 2 badges, in the order of this list; a dish page shows up to 4.',
+  },
   image: { hy: 'Նկար', ru: 'Изображение', en: 'Image' },
   showImage: { hy: 'Ցուցադրել նկար', ru: 'Показывать изображение', en: 'Show image' },
   showImageHint: {

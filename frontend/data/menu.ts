@@ -1,6 +1,9 @@
 export type Lang = 'AM' | 'EN' | 'RU'
 
-export type BadgeKey = 'hit' | 'best' | 'new'
+// The badge catalogue (keys, icons, labels) lives in `~/data/badges`, which is
+// shared by the admin picker, the public themes and the backend seed.
+import type { BadgeKey } from '~/data/badges'
+export type { BadgeKey }
 
 // A "level" is now a dynamic Section id (per-restaurant), not a fixed value.
 export type MenuLevelId = string
@@ -26,9 +29,9 @@ export interface MenuItem {
   price: number
   name: LocalizedText
   description: LocalizedText
-  /** Primary badge rendered by the public themes. */
+  /** Highest-priority badge (kept for payloads that carry only one). */
   badge?: BadgeKey
-  /** Full badge list (backend-ready); themes render `badge`. */
+  /** Every badge on the dish; themes render the first few via `visibleBadges`. */
   badges?: string[]
   /** Undefined/true = available; false = currently sold out / unavailable. */
   available?: boolean
@@ -70,21 +73,6 @@ export interface DrinkGroupInfo {
   id: DrinkGroup
   icon: string
   title: LocalizedText
-}
-
-export const badgeLabels: Record<BadgeKey, { icon: string; text: LocalizedText }> = {
-  hit: {
-    icon: '🔥',
-    text: { AM: 'Հիթ', EN: 'Hit', RU: 'Хит' },
-  },
-  best: {
-    icon: '⭐',
-    text: { AM: 'Ամենավաճառվող', EN: 'Bestseller', RU: 'Хит продаж' },
-  },
-  new: {
-    icon: '🆕',
-    text: { AM: 'Նոր', EN: 'New', RU: 'Новинка' },
-  },
 }
 
 export const ui = {

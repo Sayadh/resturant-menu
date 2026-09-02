@@ -21,19 +21,25 @@ import type {
   LocalizedText,
   BadgeKey,
 } from '~/data/menu'
+import { isBadgeKey, visibleBadges } from '~/data/badges'
 
 // ── badges ────────────────────────────────────────────────────────────────
-const KNOWN_BADGES: Badge[] = ['hit', 'new', 'recommended', 'spicy', 'vegan', 'affordable']
-
+// Keys the frontend knows how to render come from the catalogue; anything the
+// API sends that is not in it (a tenant's own custom badge) is dropped here.
 export const apiBadgesToBadges = (keys: string[] = []): Badge[] =>
-  keys.filter((k): k is Badge => (KNOWN_BADGES as string[]).includes(k))
+  keys.filter((k): k is Badge => isBadgeKey(k))
 
-/** Primary badge the public themes render (hit | best | new). */
+/**
+ * The single highest-priority badge, kept for the payload shape the themes
+ * fall back to. The legacy `isPopular/isNew/isRecommended` flags are folded in
+ * as badge keys so older products keep their mark.
+ */
 const primaryBadge = (keys: string[], flags: { isPopular?: boolean; isNew?: boolean; isRecommended?: boolean }): BadgeKey | undefined => {
-  if (keys.includes('hit') || flags.isPopular) return 'hit'
-  if (keys.includes('recommended') || flags.isRecommended) return 'best'
-  if (keys.includes('new') || flags.isNew) return 'new'
-  return undefined
+  const fromFlags: string[] = []
+  if (flags.isPopular) fromFlags.push('hit')
+  if (flags.isRecommended) fromFlags.push('recommended')
+  if (flags.isNew) fromFlags.push('new')
+  return visibleBadges({ badges: [...keys, ...fromFlags] }, 1)[0]?.key
 }
 
 // ── translations ────────────────────────────────────────────────────────

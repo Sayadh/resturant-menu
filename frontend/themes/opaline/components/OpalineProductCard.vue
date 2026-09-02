@@ -16,10 +16,15 @@
 // useBrand for the tenant's plan/cart settings). Nothing here duplicates
 // business logic.
 // ─────────────────────────────────────────────────────────────────────────
-import { ui, badgeLabels, type MenuItem } from '~/data/menu'
+import { ui, type MenuItem } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 import { opalineAdd, opalineQty } from '~/themes/opaline/config'
 
 const props = defineProps<{ item: MenuItem }>()
+
+// The dish can carry many badges; a card has room for the two highest-priority
+// ones (catalogue order in ~/data/badges decides which).
+const badges = computed(() => visibleBadges(props.item))
 const emit = defineEmits<{ open: [item: MenuItem] }>()
 
 const { t } = useLanguage()
@@ -65,11 +70,17 @@ const compact = computed(() => !showMedia.value)
         </span>
       </button>
 
-      <!-- Badge -->
-      <span
-        v-if="item.badge && !soldOut"
-        class="op-label pointer-events-none absolute left-3 top-3 rounded-full bg-[#FFFFFF]/94 px-2.5 py-1 text-[9px] text-[#D85F3D] shadow-[0_2px_8px_rgba(23,32,51,0.10)]"
-      >{{ t(badgeLabels[item.badge].text) }}</span>
+      <!-- Badges -->
+      <div
+        v-if="badges.length && !soldOut"
+        class="pointer-events-none absolute left-3 top-3 flex flex-wrap items-center gap-1.5"
+      >
+        <span
+          v-for="b in badges"
+          :key="b.key"
+          class="op-label rounded-full bg-[#FFFFFF]/94 px-2.5 py-1 text-[9px] text-[#D85F3D] shadow-[0_2px_8px_rgba(23,32,51,0.10)]"
+        >{{ t(b.text) }}</span>
+      </div>
 
       <!-- Unavailable -->
       <span
@@ -85,11 +96,14 @@ const compact = computed(() => !showMedia.value)
       <span v-if="compact" class="mb-2.5 block h-px w-6 bg-[#D85F3D]" aria-hidden="true" />
 
       <!-- badge / sold-out kept visible on image-less cards -->
-      <div v-if="compact && (item.badge || soldOut)" class="mb-2 flex flex-wrap items-center gap-1.5">
-        <span
-          v-if="item.badge && !soldOut"
-          class="op-label rounded-full bg-[#FBEDE8] px-2 py-0.5 text-[8px] text-[#D85F3D]"
-        >{{ t(badgeLabels[item.badge].text) }}</span>
+      <div v-if="compact && (badges.length || soldOut)" class="mb-2 flex flex-wrap items-center gap-1.5">
+        <template v-if="!soldOut">
+          <span
+            v-for="b in badges"
+            :key="b.key"
+            class="op-label rounded-full bg-[#FBEDE8] px-2 py-0.5 text-[8px] text-[#D85F3D]"
+          >{{ t(b.text) }}</span>
+        </template>
         <span
           v-if="soldOut"
           class="op-label rounded-full border border-[#E2E5E8] px-2 py-0.5 text-[8px] text-[#A04F4F]"

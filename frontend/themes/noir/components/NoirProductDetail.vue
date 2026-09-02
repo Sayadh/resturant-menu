@@ -3,10 +3,14 @@
 // NoirProductDetail — a smoked-graphite plate over a deep obsidian overlay.
 // Photograph on one side, the dish and its price on the other.
 // ─────────────────────────────────────────────────────────────────────────
-import { ui, badgeLabels, type MenuItem } from '~/data/menu'
+import { ui, type MenuItem } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 import { noirAdd } from '~/themes/noir/config'
 
 const props = defineProps<{ item: MenuItem | null }>()
+
+// The detail plate has room for more marks than a card.
+const badges = computed(() => (props.item ? visibleBadges(props.item, 4) : []))
 const emit = defineEmits<{ close: [] }>()
 
 const { t } = useLanguage()
@@ -40,10 +44,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             <!-- Copy -->
             <div class="flex flex-col overflow-y-auto p-7 sm:col-span-1 sm:p-9" :class="item.image ? '' : 'sm:col-span-2'">
               <div class="flex items-start justify-between gap-4">
-                <span
-                  v-if="item.badge"
-                  class="nr-eyebrow-sm rounded-full border border-[#B8B4AC]/45 px-2.5 py-0.5 font-sans text-[9px] text-[#D0CBC1]"
-                >{{ t(badgeLabels[item.badge].text) }}</span>
+                <div v-if="badges.length" class="flex flex-wrap items-center gap-2">
+                  <span
+                    v-for="b in badges"
+                    :key="b.key"
+                    class="nr-eyebrow-sm rounded-full border border-[#B8B4AC]/45 px-2.5 py-0.5 font-sans text-[9px] text-[#D0CBC1]"
+                  >{{ t(b.text) }}</span>
+                </div>
                 <span v-else />
                 <button
                   type="button"

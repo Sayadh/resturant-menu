@@ -3,6 +3,7 @@
 // Visually distinct from Heritage, but reads from the same shared stores so
 // data, language switching and Food/Drinks/Alcohol logic stay intact.
 import { ui, type MenuItem, type MenuCategory, type LocalizedText } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 import {
   ariaSearchPlaceholder,
   ariaBasketLabel,
@@ -491,11 +492,11 @@ onBeforeUnmount(() => {
 
                 <!-- Badge -->
                 <span
-                    v-if="item.badge"
-                    class="absolute left-2 top-2"
+                    v-if="visibleBadges(item).length"
+                    class="absolute left-2 top-2 flex flex-wrap items-center gap-1"
                 >
-        <MenuBadge :badge="item.badge" />
-      </span>
+                  <MenuBadge v-for="b in visibleBadges(item)" :key="b.key" :badge="b.key" />
+                </span>
 
                 <!-- Sold out -->
                 <div
@@ -517,13 +518,14 @@ onBeforeUnmount(() => {
                 <div
                     v-if="
           !categoryHasImages(cat) &&
-          (item.badge || item.available === false)
+          (visibleBadges(item).length || item.available === false)
         "
                     class="mb-2 flex items-center gap-2"
                 >
                   <MenuBadge
-                      v-if="item.badge"
-                      :badge="item.badge"
+                      v-for="b in visibleBadges(item)"
+                      :key="b.key"
+                      :badge="b.key"
                   />
 
                   <span

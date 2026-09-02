@@ -78,20 +78,39 @@ async function seedPlans() {
 }
 
 async function seedSystemBadges(langs: { id: string; code: string }[]) {
+  // Mirrors frontend/data/badges.ts — the catalogue's source of truth.
+  // Production gets the same rows from the badge_catalogue migration.
   const badges = [
     { key: 'hit', icon: '🔥', label: { hy: 'Հիթ', en: 'Hit', ru: 'Хит' } },
-    { key: 'new', icon: '🆕', label: { hy: 'Նոր', en: 'New', ru: 'Новинка' } },
+    { key: 'bestseller', icon: '🏆', label: { hy: 'Բեսթսելեր', en: 'Bestseller', ru: 'Бестселлер' } },
     { key: 'recommended', icon: '⭐', label: { hy: 'Խորհուրդ', en: 'Recommended', ru: 'Рекомендуем' } },
-    { key: 'spicy', icon: '🌶', label: { hy: 'Կծու', en: 'Spicy', ru: 'Острое' } },
+    { key: 'new', icon: '✨', label: { hy: 'Նոր', en: 'New', ru: 'Новинка' } },
+    { key: 'seasonal', icon: '📅', label: { hy: 'Սեզոնային', en: 'Seasonal', ru: 'Сезонное' } },
+    { key: 'affordable', icon: '💰', label: { hy: 'Մատչելի', en: 'Great value', ru: 'Доступно' } },
+    { key: 'best_price', icon: '🏷️', label: { hy: 'Լավագույն գին', en: 'Best price', ru: 'Лучшая цена' } },
+    { key: 'mild_spicy', icon: '🌶️', label: { hy: 'Միջին կծու', en: 'Mildly spicy', ru: 'Средне острое' } },
+    { key: 'spicy', icon: '🌶️🌶️', label: { hy: 'Կծու', en: 'Spicy', ru: 'Острое' } },
+    { key: 'hot', icon: '♨️', label: { hy: 'Տաք', en: 'Served hot', ru: 'Горячее' } },
+    { key: 'cold', icon: '🧊', label: { hy: 'Սառը', en: 'Served cold', ru: 'Холодное' } },
+    { key: 'quick', icon: '⏱️', label: { hy: 'Արագ պատրաստվող', en: 'Quick to serve', ru: 'Быстрая подача' } },
+    { key: 'kids', icon: '👶', label: { hy: 'Մանկական', en: 'For kids', ru: 'Детское' } },
     { key: 'vegan', icon: '🌱', label: { hy: 'Վեգան', en: 'Vegan', ru: 'Веган' } },
+    { key: 'healthy', icon: '🥑', label: { hy: 'Առողջ ընտրություն', en: 'Healthy choice', ru: 'Полезный выбор' } },
+    { key: 'organic', icon: '🍃', label: { hy: 'Օրգանական', en: 'Organic', ru: 'Органическое' } },
+    { key: 'light', icon: '🥗', label: { hy: 'Թեթև', en: 'Light', ru: 'Лёгкое' } },
+    { key: 'sugar_free', icon: '🚫🍬', label: { hy: 'Առանց շաքարի', en: 'Sugar-free', ru: 'Без сахара' } },
+    { key: 'low_salt', icon: '🧂', label: { hy: 'Քիչ աղով', en: 'Low salt', ru: 'Мало соли' } },
+    { key: 'alcohol_free', icon: '🚫🍷', label: { hy: 'Առանց ալկոհոլի', en: 'Alcohol-free', ru: 'Без алкоголя' } },
+    { key: 'halal', icon: '🕌', label: { hy: 'Հալալ', en: 'Halal', ru: 'Халяль' } },
   ]
   for (const b of badges) {
     // System badges have restaurantId = null; a compound upsert on a null key
     // is unreliable in Postgres, so find-or-create explicitly.
     const existing = await prisma.badge.findFirst({ where: { key: b.key, restaurantId: null } })
-    const badge =
-      existing ??
-      (await prisma.badge.create({ data: { key: b.key, icon: b.icon, isSystem: true } }))
+    const badge = existing
+      ? // keep the icon in sync when the catalogue's mark changes
+        await prisma.badge.update({ where: { id: existing.id }, data: { icon: b.icon, isSystem: true } })
+      : await prisma.badge.create({ data: { key: b.key, icon: b.icon, isSystem: true } })
     for (const l of langs) {
       await prisma.badgeTranslation.upsert({
         where: { badgeId_languageId: { badgeId: badge.id, languageId: l.id } },

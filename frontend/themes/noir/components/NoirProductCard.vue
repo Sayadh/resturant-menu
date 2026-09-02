@@ -4,10 +4,14 @@
 // colour (no filters); depth comes from the layered blacks and a hairline
 // border. Dishes with no photo simply render without the image block.
 // ─────────────────────────────────────────────────────────────────────────
-import { ui, badgeLabels, type MenuItem } from '~/data/menu'
+import { ui, type MenuItem } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 import { noirAdd } from '~/themes/noir/config'
 
 const props = defineProps<{ item: MenuItem }>()
+
+// Up to two badges per card — catalogue order decides which two.
+const badges = computed(() => visibleBadges(props.item))
 const emit = defineEmits<{ open: [item: MenuItem] }>()
 
 const { t } = useLanguage()
@@ -44,12 +48,15 @@ const hasImage = computed(() => props.item.showImage !== false && !!props.item.i
         />
       </button>
 
-      <span
-        v-if="item.badge"
-        class="nr-eyebrow-sm absolute left-3 top-3 rounded-full border border-[#B8B4AC]/45 bg-[#0B0C0E]/80 px-2.5 py-1 font-sans text-[9px] text-[#D0CBC1] backdrop-blur-sm"
-      >
-        {{ t(badgeLabels[item.badge].text) }}
-      </span>
+      <div v-if="badges.length" class="absolute left-3 top-3 flex flex-wrap items-center gap-1.5">
+        <span
+          v-for="b in badges"
+          :key="b.key"
+          class="nr-eyebrow-sm rounded-full border border-[#B8B4AC]/45 bg-[#0B0C0E]/80 px-2.5 py-1 font-sans text-[9px] text-[#D0CBC1] backdrop-blur-sm"
+        >
+          {{ t(b.text) }}
+        </span>
+      </div>
 
       <div v-if="soldOut" class="absolute inset-0 flex items-center justify-center bg-[#0B0C0E]/60">
         <span class="nr-eyebrow-sm rounded-full border border-[#A45B5B]/60 bg-[#0B0C0E]/85 px-3 py-1 font-sans text-[9px] text-[#A45B5B]">
@@ -61,11 +68,12 @@ const hasImage = computed(() => props.item.showImage !== false && !!props.item.i
     <!-- Copy -->
     <div class="flex flex-1 flex-col p-4 sm:p-5">
       <!-- badge / sold-out kept visible on image-less cards -->
-      <div v-if="!hasImage && (item.badge || soldOut)" class="mb-2.5 flex items-center gap-2">
+      <div v-if="!hasImage && (badges.length || soldOut)" class="mb-2.5 flex flex-wrap items-center gap-2">
         <span
-          v-if="item.badge"
+          v-for="b in badges"
+          :key="b.key"
           class="nr-eyebrow-sm rounded-full border border-[#B8B4AC]/45 px-2.5 py-0.5 font-sans text-[9px] text-[#D0CBC1]"
-        >{{ t(badgeLabels[item.badge].text) }}</span>
+        >{{ t(b.text) }}</span>
         <span
           v-if="soldOut"
           class="nr-eyebrow-sm rounded-full border border-[#A45B5B]/60 px-2.5 py-0.5 font-sans text-[9px] text-[#A45B5B]"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ui, type MenuItem } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 // `theme` only swaps colours. The default keeps the original palette so Aria
 // renders exactly as before; Heritage opts in to the stone/olive system.
 const props = withDefaults(
@@ -104,7 +105,12 @@ onBeforeUnmount(() => {
                 class="font-serif text-2xl font-semibold"
                 :class="theme === 'heritage' ? 'text-[#292A27]' : 'text-brown'"
               >{{ t(item.name) }}</h3>
-              <MenuBadge v-if="item.badge" :badge="item.badge" :theme="theme" />
+              <MenuBadge
+                v-for="b in visibleBadges(item, 4)"
+                :key="b.key"
+                :badge="b.key"
+                :theme="theme"
+              />
             </div>
             <p
               class="mt-2 font-serif text-base leading-relaxed"

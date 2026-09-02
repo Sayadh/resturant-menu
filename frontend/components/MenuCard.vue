@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ui, type MenuItem } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 const props = defineProps<{ item: MenuItem; icon?: string }>()
 const emit = defineEmits<{ open: [item: MenuItem] }>()
 const { t } = useLanguage()
@@ -47,10 +48,15 @@ const hasPhoto = computed(() => showMedia.value && !!props.item.image && !imgFai
         <span class="text-4xl drop-shadow-sm sm:text-5xl" aria-hidden="true">{{ icon || '🍽' }}</span>
       </div>
       <span
-        v-if="item.badge"
-        class="absolute left-2 top-2 sm:left-3 sm:top-3"
+        v-if="visibleBadges(item).length"
+        class="absolute left-2 top-2 flex flex-wrap items-center gap-1 sm:left-3 sm:top-3"
       >
-        <MenuBadge :badge="item.badge" theme="heritage" />
+        <MenuBadge
+          v-for="b in visibleBadges(item)"
+          :key="b.key"
+          :badge="b.key"
+          theme="heritage"
+        />
       </span>
       <!-- Sold out overlay -->
       <div

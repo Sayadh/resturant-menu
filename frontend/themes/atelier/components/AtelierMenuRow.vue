@@ -2,7 +2,8 @@
 // Editorial menu row — a printed-menu line rather than a card. Name and price
 // joined by a dotted leader, a large plated thumbnail, a two-line teaser (full
 // description lives in the click-triggered detail view), and a quiet add control.
-import { ui, badgeLabels, type MenuItem } from '~/data/menu'
+import { ui, type MenuItem } from '~/data/menu'
+import { visibleBadges } from '~/data/badges'
 import { atelierAdd } from '~/themes/atelier/config'
 
 const props = defineProps<{
@@ -78,10 +79,11 @@ const showMedia = computed(() => props.item.showImage !== false)
       <!-- meta row: badge + favorite + add -->
       <div class="mt-3 flex items-center gap-4">
         <span
-          v-if="item.badge"
+          v-for="b in visibleBadges(item)"
+          :key="b.key"
           class="atl-eyebrow font-display text-[9px] text-[#C65D3A]"
         >
-          {{ t(badgeLabels[item.badge].text) }}
+          {{ t(b.text) }}
         </span>
 
         <span v-if="soldOut" class="atl-eyebrow font-display text-[9px] text-[#667085]">
