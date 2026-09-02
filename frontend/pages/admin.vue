@@ -1813,9 +1813,23 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
           <label class="block"><span class="lbl">{{ t('price') }} (֏)</span><input v-model.number="prodDraft.price" type="number" class="inp" /></label>
           <label class="flex items-center justify-between gap-2 self-end pb-2 text-sm"><span>{{ t('available') }}</span><input v-model="prodDraft.available" type="checkbox" class="h-4 w-4" /></label>
         </div>
-        <div>
-          <span class="lbl">{{ t('badges') }}</span>
-          <div class="mt-1.5 space-y-3">
+        <!-- 21 badges would dominate the form, so the picker is collapsed by
+             default; the summary keeps the chosen count visible. -->
+        <details class="badge-picker rounded-xl border border-slate-200 bg-white">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-2 px-3.5 py-2.5">
+            <span class="flex items-center gap-2 text-xs font-semibold text-slate-600">
+              {{ t('badges') }}
+              <span
+                v-if="prodDraft.badges.length"
+                class="rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white"
+              >{{ prodDraft.badges.length }}</span>
+            </span>
+            <svg class="badge-chevron h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </summary>
+
+          <div class="space-y-3 border-t border-slate-100 px-3.5 pb-3.5 pt-3">
             <div v-for="g in badgeGroups" :key="g.id">
               <p class="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">{{ g.title }}</p>
               <div class="flex flex-wrap gap-2">
@@ -1829,9 +1843,9 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 >{{ b.icon }} {{ badgeText(b.text) }}</button>
               </div>
             </div>
+            <p class="text-[11px] leading-relaxed text-slate-400">{{ t('badgesHint') }}</p>
           </div>
-          <p class="mt-2 text-[11px] leading-relaxed text-slate-400">{{ t('badgesHint') }}</p>
-        </div>
+        </details>
         <div>
           <!-- Picture switch. On by default; turning it off means the public
                menu shows this dish with no image at all, not even a
@@ -2009,6 +2023,14 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
 </template>
 
 <style scoped>
+/* The badge picker is a native <details>: closed on open, no extra state.
+   Safari still paints the default triangle without this. */
+.badge-picker > summary::-webkit-details-marker {
+  display: none;
+}
+.badge-picker[open] .badge-chevron {
+  transform: rotate(180deg);
+}
 .lbl {
   @apply mb-1 block text-xs font-semibold text-slate-500;
 }
