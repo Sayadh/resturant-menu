@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // OpalineSectionCard — a top-level section on the home screen.
 //
@@ -35,7 +36,7 @@ const initial = computed(() => props.title.trim().charAt(0).toUpperCase())
     <span class="relative block aspect-square w-full overflow-hidden bg-[#F5F5F2]">
       <img
         v-if="image"
-        :src="image"
+        :src="imgUrl(image, 600)"
         alt=""
         loading="lazy"
         class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"

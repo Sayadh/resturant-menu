@@ -42,15 +42,52 @@
 
 - `decorators/`
   - `@Public()` — route-ը բացում է առանց token-ի (public endpoint-ներ)
+  - `@PublicCache()` — HTTP cache թույլատրում է (տես ստորև)
   - `@Roles(...)` / `roles.decorator` — թույլատրված role-եր
   - `@RestaurantId()` — JWT-ից քաշում է `restaurantId`-ն (multi-tenant բանալի)
   - `@CurrentUser()` — JWT-ի payload-ը
 - `guards/` — `jwt-auth.guard`, `roles.guard`, `restaurant-scope.guard`
-- `interceptors/response.interceptor` — envelope
+- `cache/public-cache.service` — հրապարակային payload-ների in-memory cache
+- `interceptors/response.interceptor` — envelope + cache header-ներ
+- `interceptors/cache-invalidation.interceptor` — cache-ի մաքրում գրառումից հետո
 - `filters/all-exceptions.filter` — error envelope
 - `context/` — request-context middleware (request-id, և այլն)
 - `dto/` — կիսվող DTO-ներ (`list-query`, `reorder`, `translation-input`)
 - `utils/` — `duration` (JWT expiry parse), `sort`, `translations`
+
+## Public cache
+
+Բազան այլ ռեգիոնում է, և Prisma-ն ամեն `include`-ը լուծում է առանձին query-ով,
+ուստի մեկ `getMenu` արժեր ~2 վրկ (չափված production-ում)։ Հյուրի մենյուն կարդացվում
+է անընդհատ, գրվում՝ օրական մի քանի անգամ, ուստի կարդալու ուղին cache-վում է․
+
+```
+PublicService.cached(key, tenantOf, load)
+  → PublicCacheService  (Map, խմբավորված ըստ restaurantId)
+```
+
+**Ճշտությունը գալիս է invalidation-ից, ոչ թե TTL-ից։** `CacheInvalidationInterceptor`-ը
+գլոբալ է․ ամեն **հաջողված ոչ-GET** հարցումից հետո ջնջում է այդ tenant-ի բոլոր
+entry-ները։ Կախված է հարցումից (ոչ թե service-ի մեթոդներից), ուստի նոր admin
+endpoint ավելացնելիս ոչինչ չի մոռացվում։ TTL-ը (10 րոպե) միայն ապահովագրություն է։
+
+Header-ները՝ `ResponseInterceptor`-ում․
+
+| Route | Header | Ինչու |
+|---|---|---|
+| Սովորական | `Cache-Control: no-store` + `Vary: Authorization` | Tenant-ը գալիս է header-ից — cache-ը կարող էր մեկի տվյալը մյուսին տալ |
+| `@PublicCache()` | `Cache-Control: public, no-cache` + ETag | URL-ը լիովին որոշում է պատասխանը; չփոխված մենյուն ստանում է 304՝ առանց body-ի |
+
+`@PublicCache()` դիր **միայն** չաուտենտիֆիկացված GET-երի վրա, որոնց URL-ը լրիվ
+նկարագրում է վերադարձվողը (`public.controller.ts`-ի հինգ route-ը)։
+
+⚠️ Cache-ը **մեկ պրոցեսի ներսում է**։ API-ն աշխատում է pm2 fork ռեժիմում (մեկ
+instance) — այնտեղ սա ճիշտ է։ `pm2 -i > 1` կամ երկրորդ սերվեր անցնելիս պետք կլինի
+Redis, այլապես invalidation-ը կհասնի միայն մեկ instance-ի։
+
+Query-ների կողմից՝ `select` ամենուր (ոչ `include`), translation-ները ֆիլտրվում են
+ըստ լեզվի, badge key-երը գալիս են զուգահեռ մեկ catalogue query-ով — ամեն ավելորդ
+relation հավասար է ևս մեկ round-trip դեպի հեռավոր բազա։
 
 ## Controller → Service → Prisma օրինակ
 

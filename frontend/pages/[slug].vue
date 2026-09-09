@@ -5,6 +5,7 @@
 import { restaurantService, menuService } from '~/services'
 import type { Lang, LocalizedText } from '~/data/menu'
 import { SITE } from '~/data/seo'
+import { themeFontsHref } from '~/themes/registry'
 
 const route = useRoute()
 const slug = computed(() => String(route.params.slug || ''))
@@ -17,9 +18,14 @@ const themeOverride = computed(() => {
   return VALID_THEMES.includes(q) ? q : ''
 })
 
-const { lang } = useLanguage()
+// The language the REQUEST uses is read from the raw switcher state, never
+// from `useLanguage().lang`. That one is derived from the restaurant store —
+// which this page's own render fills via ThemeRenderer — so watching it made
+// the fetch re-trigger itself. `selected` only changes when a guest taps a
+// language, so nothing here depends on state this page writes.
+const selected = useState<Lang>('lang', () => 'AM')
 const API_LANG: Record<Lang, string> = { AM: 'hy', EN: 'en', RU: 'ru' }
-const apiLang = computed(() => API_LANG[lang.value])
+const requestedLang = computed(() => API_LANG[selected.value])
 
 // ONE fetch for the whole page, rendered on the SERVER.
 //
@@ -28,24 +34,41 @@ const apiLang = computed(() => API_LANG[lang.value])
 // staring at a spinner through two sequential round trips before anything
 // appeared. Now the HTML arrives with the menu already in it, and the browser
 // makes no request at all on first paint.
-const { data: page, pending } = useAsyncData(
+const { data: page, pending, refresh } = useAsyncData(
   () => `page-${slug.value}`,
   async () => {
     const r = await restaurantService.getRestaurantBySlug(slug.value)
     if (!r) return null
-    const m = await menuService.getMenu(r.id, apiLang.value).catch(() => null)
+    // Honour the guest's pick only when the tenant actually serves it; the
+    // tenant's own default otherwise — decided from `r`, not from the store.
+    const code = r.activeLanguages.includes(requestedLang.value as never)
+      ? requestedLang.value
+      : r.defaultLanguage
+    const m = await menuService.getMenu(r.id, code).catch(() => null)
     return { r, m }
   },
-  { watch: [slug, apiLang] },
+  { watch: [slug, requestedLang] },
 )
 
+// The server render is an OPTIMISATION, never a dependency: if it produced no
+// usable payload the browser fetches once on mount, exactly as this page used
+// to. `settled` holds the loader until that retry resolves, so a page whose
+// server render failed never flashes "not found" at the guest.
+const settled = ref(false)
+onMounted(async () => {
+  if (!page.value?.m) await refresh()
+  settled.value = true
+})
+
 const restaurant = computed(() => page.value?.r ?? null)
+// Which display faces this tenant's theme needs (null = the theme loads its own).
+const fontsHref = computed(() => themeFontsHref(themeOverride.value || restaurant.value?.themeId || ''))
 const menu = computed(() => page.value?.m ?? null)
 
 // Full loader only on the FIRST load; a language switch keeps the current menu
 // visible (Nuxt retains the previous value) until the new language arrives.
-const loadingInitial = computed(() => pending.value && page.value == null)
-const notFound = computed(() => !pending.value && page.value === null)
+const loadingInitial = computed(() => (pending.value || !settled.value) && page.value?.m == null)
+const notFound = computed(() => settled.value && !pending.value && !page.value)
 
 // Apply the theme override for rendering only (clone, don't mutate the source).
 const displayRestaurant = computed(() =>
@@ -115,11 +138,10 @@ useHead(() => {
     link: [
       { rel: 'canonical', href: url },
       // Tenant-menu display fonts are loaded here (not globally) so marketing
-      // pages stay light. Themes use these serif families.
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Noto+Serif+Armenian:wght@400;500;600;700&display=swap',
-      },
+      // pages stay light — and only for the themes that actually render with
+      // them; the registry decides, so a theme with its own faces (Opaline)
+      // does not make the guest download three families it never uses.
+      ...(fontsHref.value ? [{ rel: 'stylesheet', href: fontsHref.value }] : []),
     ],
     script: ld ? [{ type: 'application/ld+json', innerHTML: JSON.stringify(ld) }] : [],
   }

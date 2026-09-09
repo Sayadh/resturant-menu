@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // Masthead — a slim editorial bar at the very top: the monogram alone on the
 // left, language toggle on the right. The wordmark deliberately lives only in
 // the hero below (magazine mastheads never repeat the title twice on a spread),
@@ -21,7 +22,7 @@ const mono = computed(() => {
           class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[#172033] font-display text-[13px] font-semibold tracking-[0.08em] text-[#172033]"
           :aria-label="brand.name"
         >
-          <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full object-cover" />
+          <img v-if="brand.logo" :src="imgUrl(brand.logo, 256)" alt="" class="h-full w-full object-cover" />
           <template v-else>{{ mono }}</template>
         </span>
       </div>

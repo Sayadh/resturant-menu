@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // MaisonCategorySection — each category becomes its own cinematic landing
 // band: a large background photograph (parallax), the category name, a short
@@ -27,7 +28,7 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
     <img loading="lazy" decoding="async"
       v-if="image"
       v-parallax="50"
-      :src="image"
+      :src="imgUrl(image, 1200)"
       alt=""
       aria-hidden="true"
       class="absolute inset-0 hidden h-[118%] w-full -translate-y-[6%] scale-105 object-cover sm:block"
@@ -36,7 +37,7 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
     <img loading="lazy" decoding="async"
       v-if="mobileSrc"
       v-parallax="50"
-      :src="mobileSrc"
+      :src="imgUrl(mobileSrc, 1080)"
       alt=""
       aria-hidden="true"
       class="absolute inset-0 h-[118%] w-full -translate-y-[6%] scale-105 object-cover sm:hidden"

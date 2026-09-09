@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // OpalineHeader — a thin porcelain bar: the house mark on the left, the
 // language switch on the right, one hairline underneath. It stays pinned so
@@ -40,7 +41,7 @@ const mono = computed(() => {
           class="grid h-9 w-9 place-items-center overflow-hidden rounded-full border border-[#E2E5E8] bg-[#FFFFFF] transition-colors duration-300 group-hover:border-[#CCD1D7] sm:h-10 sm:w-10"
           aria-hidden="true"
         >
-          <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full object-cover" />
+          <img v-if="brand.logo" :src="imgUrl(brand.logo, 256)" alt="" class="h-full w-full object-cover" />
           <span v-else class="op-serif text-[13px] tracking-[0.04em] text-[#172033]">{{ mono }}</span>
         </span>
       </button>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 import { ui, type MenuItem } from '~/data/menu'
 import { visibleBadges } from '~/data/badges'
 // `theme` only swaps colours. The default keeps the original palette so Aria
@@ -79,7 +80,7 @@ onBeforeUnmount(() => {
 
           <img loading="lazy" decoding="async"
             v-if="item.image && !imgFailed"
-            :src="item.image"
+            :src="imgUrl(item.image, 1600)"
             :alt="t(item.name)"
             class="aspect-[4/3] w-full object-cover"
             @error="imgFailed = true"

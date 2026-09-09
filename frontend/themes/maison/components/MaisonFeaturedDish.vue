@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // MaisonFeaturedDish — an almost full-width editorial "article" for a single
 // dish. Used for Today's Recommendation and the Chef's Selection. Image on one
@@ -47,7 +48,7 @@ const hasImage = computed(() => props.item.showImage !== false && !!props.item.i
       <div class="ms-img-reveal overflow-hidden rounded-[2rem]">
         <img loading="lazy" decoding="async"
           v-parallax="22"
-          :src="item.image"
+          :src="imgUrl(item.image, 1200)"
           :alt="t(item.name)"
           class="aspect-[5/4] w-full scale-110 object-cover"
         />

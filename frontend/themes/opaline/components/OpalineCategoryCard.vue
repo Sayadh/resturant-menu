@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // OpalineCategoryCard — the second level. Same museum-label construction as
 // the section card (image window, hairline, name on paper) so the two levels
@@ -33,7 +34,7 @@ const initial = computed(() => props.title.trim().charAt(0).toUpperCase())
     <span class="relative block aspect-[4/3] w-full overflow-hidden bg-[#F5F5F2]">
       <img
         v-if="image"
-        :src="image"
+        :src="imgUrl(image, 600)"
         alt=""
         loading="lazy"
         class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"

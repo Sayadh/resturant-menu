@@ -23,5 +23,10 @@
 - Landing-ի CSS-ը scoped է `.landing` root-ի ներսում (`index.vue`)։ Նոր landing
   բլոկ՝ ստեղծիր `landing/LandingX.vue` → ավելացրու `index.vue`-ում, փաթաթիր
   `<LandingReveal>`-ով scroll animation-ի համար։
+- **Նկարներ**․ ամեն `<img>` → `imgUrl(src, width)` (`~/utils/image`, **բացահայտ**
+  import-ով) + `loading="lazy" decoding="async"`։ Բացառություն՝ վերևի հատվածի
+  լոգոն/hero-ն, որոնք eager են։ Չափերի աղյուսակը՝
+  [`../../docs/THEMES.md`](../../docs/THEMES.md#նկարներ)։
+- **Պիտակներ**․ `visibleBadges(item)` `~/data/badges`-ից — սեփական ցուցակ չկա։
 
 Recipe-ներ՝ [`../../docs/AI-GUIDE.md`](../../docs/AI-GUIDE.md) (Recipe 5–6)։

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 import { ui, type MenuCategory, type MenuItem } from '~/data/menu'
 const props = defineProps<{ category: MenuCategory }>()
 const emit = defineEmits<{ open: [item: MenuItem] }>()
@@ -29,7 +30,7 @@ watch(banner, () => (bannerFailed.value = false))
       <!-- desktop banner -->
       <img
         v-if="banner && !bannerFailed"
-        :src="banner"
+        :src="imgUrl(banner, 1200)"
         :alt="t(category.title)"
         loading="lazy"
         class="absolute inset-0 hidden h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:block"
@@ -38,7 +39,7 @@ watch(banner, () => (bannerFailed.value = false))
       <!-- mobile banner -->
       <img
         v-if="mobileBanner && !bannerFailed"
-        :src="mobileBanner"
+        :src="imgUrl(mobileBanner, 1080)"
         :alt="t(category.title)"
         loading="lazy"
         class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:hidden"
@@ -58,7 +59,7 @@ watch(banner, () => (bannerFailed.value = false))
             class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#A47B45]/60 bg-[#26382F]/40 text-xl shadow-sm backdrop-blur-sm sm:h-12 sm:w-12 sm:text-2xl"
             aria-hidden="true"
           >
-            <img loading="lazy" decoding="async" v-if="iconImage" :src="iconImage" alt="" class="h-full w-full object-cover" />
+            <img loading="lazy" decoding="async" v-if="iconImage" :src="imgUrl(iconImage, 256)" alt="" class="h-full w-full object-cover" />
             <template v-else>{{ category.icon }}</template>
           </span>
           <div class="min-w-0">

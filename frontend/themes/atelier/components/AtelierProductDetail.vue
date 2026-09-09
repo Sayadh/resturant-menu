@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // Editorial dish detail — a calm, magazine-style modal. Large plate on the
 // left, the dish "story" and add control on the right.
 import { ui, type MenuItem } from '~/data/menu'
@@ -36,7 +37,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             <div v-if="item.showImage !== false" class="relative aspect-[4/3] bg-[#111827] sm:aspect-auto sm:h-full">
               <img loading="lazy" decoding="async"
                 v-if="item.image"
-                :src="item.image"
+                :src="imgUrl(item.image, 1200)"
                 :alt="t(item.name)"
                 class="h-full w-full object-cover"
               />

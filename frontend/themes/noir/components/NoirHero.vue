@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // NoirHero — the arrival. A calm obsidian plate: monogram (or the uploaded
 // logo), the house name in wide display caps, the tagline, and a restrained
@@ -31,7 +32,7 @@ const heroImage = computed(
   <section class="relative overflow-hidden bg-[#0B0C0E]">
     <!-- cover photograph (only when one actually exists) -->
     <template v-if="heroImage">
-      <img :src="heroImage" alt="" class="absolute inset-0 h-full w-full object-cover opacity-[0.28]" />
+      <img :src="imgUrl(heroImage, 1600)" alt="" class="absolute inset-0 h-full w-full object-cover opacity-[0.28]" />
       <!-- deep scrim: keeps text legible without tinting the food -->
       <div
         class="absolute inset-0"
@@ -51,7 +52,7 @@ const heroImage = computed(
         class="mx-auto mt-6 grid h-16 w-16 place-items-center overflow-hidden rounded-full border border-[#303339] bg-[#121417] font-display text-xl font-semibold tracking-[0.08em] text-[#B8B4AC] sm:h-20 sm:w-20 sm:text-2xl"
         :aria-label="brand.name"
       >
-        <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full object-cover" />
+        <img v-if="brand.logo" :src="imgUrl(brand.logo, 256)" alt="" class="h-full w-full object-cover" />
         <template v-else>{{ mono }}</template>
       </div>
 

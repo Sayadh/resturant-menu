@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 import { ui } from '~/data/menu'
 
 defineProps<{ open: boolean }>()
@@ -83,7 +84,7 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
             <ul v-else class="flex flex-col gap-3">
               <li v-for="r in rows" :key="r.id" class="flex items-center gap-3">
                 <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#C69A5A]/25 to-[#6F8B4A]/15">
-                  <img loading="lazy" decoding="async" v-if="r.image" :src="r.image" :alt="r.name" class="h-full w-full object-cover" />
+                  <img loading="lazy" decoding="async" v-if="r.image" :src="imgUrl(r.image, 256)" :alt="r.name" class="h-full w-full object-cover" />
                   <span v-else class="text-2xl" aria-hidden="true">{{ r.icon }}</span>
                 </div>
                 <div class="min-w-0 flex-1">

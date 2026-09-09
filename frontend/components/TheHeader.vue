@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 import { ui } from '~/data/menu'
 const { t } = useLanguage()
 const brand = useBrand()
@@ -29,7 +30,7 @@ const mono = computed(() => {
           class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-[#A47B45] bg-[#FCFBF7] font-display text-2xl font-bold text-[#292A27] shadow-[0_6px_18px_-6px_rgba(100,115,77,0.45)] sm:h-20 sm:w-20 sm:text-3xl"
           aria-hidden="true"
         >
-          <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full rounded-full object-cover" />
+          <img v-if="brand.logo" :src="imgUrl(brand.logo, 256)" alt="" class="h-full w-full rounded-full object-cover" />
           <template v-else>{{ mono }}</template>
         </div>
 

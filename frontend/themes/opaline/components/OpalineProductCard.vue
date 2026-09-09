@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // OpalineProductCard — the third level, in two builds.
 //
@@ -57,7 +58,7 @@ const compact = computed(() => !showMedia.value)
       >
         <img
           v-if="item.image"
-          :src="item.image"
+          :src="imgUrl(item.image, 600)"
           :alt="t(item.name)"
           loading="lazy"
           class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"

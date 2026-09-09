@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 import { ui, type MenuCategory, type DrinkGroup } from '~/data/menu'
 
 const props = defineProps<{
@@ -66,7 +67,7 @@ watch(
           @click="emit('select', cat.id)"
         >
           <span v-if="cat.iconImage" class="grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-full" aria-hidden="true">
-            <img loading="lazy" decoding="async" :src="cat.iconImage" alt="" class="h-full w-full object-cover" />
+            <img loading="lazy" decoding="async" :src="imgUrl(cat.iconImage, 256)" alt="" class="h-full w-full object-cover" />
           </span>
           <span v-else class="text-base leading-none" aria-hidden="true">{{ cat.icon }}</span>
           {{ t(cat.title) }}

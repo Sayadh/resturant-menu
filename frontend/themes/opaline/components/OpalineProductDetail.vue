@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // OpalineProductDetail — the dish, opened as a paper plate over a soft ink
 // overlay (a bottom sheet on phones). Same modal behaviour the other themes
@@ -45,7 +46,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             <!-- Photograph (only when the dish has one) -->
             <div v-if="item.showImage !== false && item.image" class="relative shrink-0 bg-[#F5F5F2] sm:w-[46%]">
               <img loading="lazy" decoding="async"
-                :src="item.image"
+                :src="imgUrl(item.image, 1200)"
                 :alt="t(item.name)"
                 class="h-52 w-full object-cover sm:h-full"
                 :class="{ 'opacity-70': soldOut }"

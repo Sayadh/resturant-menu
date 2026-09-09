@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // NoirOrderDrawer — a right-docked smoked-graphite drawer (bottom sheet on
 // mobile) listing the guest's selection. Honours the tenant's cart settings:
@@ -100,7 +101,7 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
           <ul v-else class="divide-y divide-[#25282D]">
             <li v-for="r in rows" :key="r.id" class="flex items-center gap-4 py-5">
               <div v-if="r.image" class="h-14 w-14 shrink-0 overflow-hidden rounded-[8px]">
-                <img loading="lazy" decoding="async" :src="r.image" :alt="r.name" class="h-full w-full object-cover" />
+                <img loading="lazy" decoding="async" :src="imgUrl(r.image, 256)" :alt="r.name" class="h-full w-full object-cover" />
               </div>
               <div class="min-w-0 flex-1">
                 <p class="truncate font-serif text-lg text-[#F1EEE8]">{{ r.name }}</p>

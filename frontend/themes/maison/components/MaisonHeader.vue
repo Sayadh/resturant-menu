@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // MaisonHeader — a floating glass bar that appears once the guest scrolls past
 // the hero. Deep burgundy, rounded: brand mark, an inline search field (typing
@@ -27,7 +28,7 @@ const { t } = useLanguage()
         <!-- Brand mark -->
         <a href="#top" class="shrink-0" :aria-label="brand.name">
           <span class="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-[#FFFBFC]/8 font-serif text-sm font-bold text-[#B99768] ring-1 ring-[#B99768]/40">
-            <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full object-cover" />
+            <img v-if="brand.logo" :src="imgUrl(brand.logo, 256)" alt="" class="h-full w-full object-cover" />
             <template v-else>{{ initial }}</template>
           </span>
         </a>

@@ -88,6 +88,32 @@ styles-ով։ `aria` և `heritage`-ը՝ `components/DesignAria.vue` / `DesignHer
 > Nuxt-ի auto-import. `components/landing/LandingHero.vue` → `<LandingHero>`,
 > `components/landing/Reveal.vue` → `<LandingReveal>` (թղթապանակ + ֆայլ անուն)։
 
+## Արագության կանոններ
+
+Հրապարակային մենյուն բացվում է հեռախոսից, հաճախ դանդաղ կապով։ Չորս բան, որ
+ամեն նոր կոդում պետք է պահպանվի (մանրամասն՝ [THEMES.md](./THEMES.md))․
+
+| Կանոն | Ինչու |
+|---|---|
+| Ամեն `<img>` → `imgUrl(src, width)` (`utils/image.ts`) | Վերբեռնման պահին ոչինչ չի չափափոխվում — առաստաղը դրվում է ցուցադրման կետում |
+| `loading="lazy" decoding="async"` (բացի լոգո/hero) | Սքրոլից ներքև եղածը չի բեռնվում առաջին վայրկյանին |
+| Թեմաները՝ `defineAsyncComponent` registry-ում | Հյուրը ստանում է միայն իր թեմայի կոդը, ոչ բոլոր վեցի |
+| Ֆոնտերը՝ ըստ թեմայի (`themeFontsHref`) | Cinzel/Cormorant-ը պետք չէ սեփական տառատեսակ ունեցող թեմային |
+
+Backend-ի կողմից հրապարակային endpoint-երը cache-վում են և invalidate-վում ամեն
+admin գրառումից հետո — տես [BACKEND.md](./BACKEND.md#public-cache)։
+
+## SSR-ի թակարդներ
+
+- `useAsyncData`-ի handler-ում **բոլոր composable-ները կանչիր առաջին `await`-ից
+  առաջ**․ SSR-ում `await`-ից հետո Nuxt instance-ը կորչում է և `useRuntimeConfig()`
+  ընկնում է։ Հետևանքը լուռ է՝ `.catch()`-ը կուլ է տալիս, էջը մնում է դատարկ։
+- Էջի fetch-ը **չկապես restaurant store-ից ածանցված արժեքի**․ store-ը լցնում է հենց
+  այդ էջի render-ը (`ThemeRenderer`), և ստացվում է օղակ։ Լեզուն վերցրու հում
+  `useState<Lang>('lang')`-ից, ոչ թե `useLanguage().lang`-ից։
+- Nuxt-ի `experimental.*` դրոշներ **մի՛ ավելացրու** առանց առանձին փորձարկման —
+  `asyncContext: true`-ն SSR-ը փլել է (էջը վերադարձնում էր 0 բայթ)։
+
 ## Config (`nuxt.config.ts`)
 
 - `runtimeConfig` — `apiBaseServer` (SSR) + `public.apiBase` (client)

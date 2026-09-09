@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // "Aria" design — a premium, modern, warm Armenian-restaurant QR menu.
 // Visually distinct from Heritage, but reads from the same shared stores so
 // data, language switching and Food/Drinks/Alcohol logic stay intact.
@@ -193,7 +194,7 @@ onBeforeUnmount(() => {
           <!-- monogram -->
           <div class="mx-auto flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gradient-to-br from-[#DBBA82] via-[#C69A5A] to-[#A87E42] p-[2px] shadow-[0_10px_24px_-8px_rgba(198,154,90,0.7)]">
             <div class="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#FFF9EF] font-display text-2xl font-bold tracking-wide text-[#3E2723]">
-              <img v-if="brand.logo" :src="brand.logo" alt="" class="h-full w-full rounded-full object-cover" />
+              <img v-if="brand.logo" :src="imgUrl(brand.logo, 256)" alt="" class="h-full w-full rounded-full object-cover" />
               <template v-else>{{ mono }}</template>
             </div>
           </div>
@@ -256,7 +257,7 @@ onBeforeUnmount(() => {
           >
             <span class="flex items-center gap-1.5">
               <span v-if="v.image" class="grid h-4 w-4 shrink-0 place-items-center overflow-hidden rounded-full sm:h-5 sm:w-5" aria-hidden="true">
-                <img loading="lazy" decoding="async" :src="v.image" alt="" class="h-full w-full object-cover" />
+                <img loading="lazy" decoding="async" :src="imgUrl(v.image, 600)" alt="" class="h-full w-full object-cover" />
               </span>
               <span v-else class="text-sm sm:text-base" aria-hidden="true">{{ v.icon }}</span>
               <span>{{ t(v.title) }}</span>
@@ -305,7 +306,7 @@ onBeforeUnmount(() => {
             @click="scrollToCategory(cat.id)"
           >
             <span class="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-[#C69A5A]/25 to-[#6F8B4A]/15 sm:h-9 sm:w-9 sm:rounded-xl">
-              <img v-if="iconOf(cat) || bannerOf(cat)" :src="iconOf(cat) || bannerOf(cat)" :alt="t(cat.title)" loading="lazy" class="h-full w-full object-cover" />
+              <img v-if="iconOf(cat) || bannerOf(cat)" :src="imgUrl(iconOf(cat) || bannerOf(cat), 600)" :alt="t(cat.title)" loading="lazy" class="h-full w-full object-cover" />
               <span v-else class="text-sm sm:text-base" aria-hidden="true">{{ cat.icon }}</span>
             </span>
             <span class="flex flex-col items-start leading-tight">
@@ -330,7 +331,7 @@ onBeforeUnmount(() => {
             <!-- Desktop banner -->
             <img
                 v-if="bannerOf(cat)"
-                :src="bannerOf(cat)"
+                :src="imgUrl(bannerOf(cat), 1200)"
                 :alt="t(cat.title)"
                 loading="lazy"
                 class="absolute inset-0 hidden h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:block"
@@ -339,7 +340,7 @@ onBeforeUnmount(() => {
             <!-- Mobile banner -->
             <img
                 v-if="mobileBannerOf(cat)"
-                :src="mobileBannerOf(cat)"
+                :src="imgUrl(mobileBannerOf(cat), 1080)"
                 :alt="t(cat.title)"
                 loading="lazy"
                 class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:hidden"
@@ -376,7 +377,7 @@ onBeforeUnmount(() => {
                 >
         <img loading="lazy" decoding="async"
             v-if="iconOf(cat)"
-            :src="iconOf(cat)"
+            :src="imgUrl(iconOf(cat), 256)"
             alt=""
             class="h-full w-full object-cover"
         />
@@ -444,7 +445,7 @@ onBeforeUnmount(() => {
                     @click="selected = item"
                 >
                   <img
-                      :src="item.image"
+                      :src="imgUrl(item.image, 600)"
                       :alt="t(item.name)"
                       loading="lazy"
                       class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // NoirProductCard — a graphite plate on obsidian. Photography keeps its own
 // colour (no filters); depth comes from the layered blacks and a hairline
@@ -40,7 +41,7 @@ const hasImage = computed(() => props.item.showImage !== false && !!props.item.i
         @click="emit('open', item)"
       >
         <img
-          :src="item.image"
+          :src="imgUrl(item.image, 600)"
           :alt="t(item.name)"
           loading="lazy"
           class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // "The Chef's Signatures" — a dark, full-bleed editorial band that breaks the
 // bone flow for contrast. Showcases featured (badged) dishes as large plates.
 import type { MenuItem } from '~/data/menu'
@@ -44,7 +45,7 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
             @click="emit('open', d.item)"
           >
             <img
-              :src="d.item.image"
+              :src="imgUrl(d.item.image, 1200)"
               :alt="t(d.item.name)"
               loading="lazy"
               class="h-full w-full object-cover opacity-90 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-100"

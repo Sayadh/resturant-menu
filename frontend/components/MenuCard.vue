@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 import { ui, type MenuItem } from '~/data/menu'
 import { visibleBadges } from '~/data/badges'
 const props = defineProps<{ item: MenuItem; icon?: string }>()
@@ -32,7 +33,7 @@ const hasPhoto = computed(() => showMedia.value && !!props.item.image && !imgFai
     >
       <img
         v-if="hasPhoto"
-        :src="item.image"
+        :src="imgUrl(item.image, 600)"
         :alt="t(item.name)"
         loading="lazy"
         decoding="async"

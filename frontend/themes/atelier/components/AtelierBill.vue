@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // "Your Table" — a right-docked editorial bill drawer (bottom sheet on mobile).
 // Reads the shared order/menu stores; styled as a printed restaurant check.
 import { ui } from '~/data/menu'
@@ -94,7 +95,7 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
           <ul v-else class="divide-y divide-[#DCE2EA]">
             <li v-for="r in rows" :key="r.id" class="flex items-center gap-4 py-5">
               <div class="relative h-14 w-14 shrink-0 overflow-hidden rounded-[2px] bg-[#111827]">
-                <img loading="lazy" decoding="async" v-if="r.image" :src="r.image" :alt="r.name" class="h-full w-full object-cover" />
+                <img loading="lazy" decoding="async" v-if="r.image" :src="imgUrl(r.image, 256)" :alt="r.name" class="h-full w-full object-cover" />
                 <span v-else class="flex h-full w-full items-center justify-center text-xl text-[#C65D3A]" aria-hidden="true">{{ r.icon }}</span>
               </div>
               <div class="min-w-0 flex-1">

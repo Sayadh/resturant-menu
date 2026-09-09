@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // MaisonOrderDrawer — an elegant right-docked drawer summarising the guest's
 // selection. Large serif typography, hairline dividers, a clear total and a
@@ -118,7 +119,7 @@ onBeforeUnmount(() => {
                   <div class="h-16 w-16 shrink-0 overflow-hidden rounded-2xl">
                     <img loading="lazy" decoding="async"
                       v-if="row.image"
-                      :src="row.image"
+                      :src="imgUrl(row.image, 256)"
                       :alt="row.name"
                       class="h-full w-full object-cover"
                     />

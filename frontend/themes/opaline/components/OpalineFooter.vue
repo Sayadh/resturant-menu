@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // OpalineFooter — the closing colophon. Every line is rendered ONLY when the
 // tenant has filled it in from the admin panel; nothing is ever invented.
@@ -18,7 +19,7 @@ const hasContact = computed(() => !!brand.address || !!brand.hours)
         class="mb-5 grid h-12 w-12 place-items-center overflow-hidden rounded-full border border-[#E2E5E8] bg-[#FFFFFF]"
         aria-hidden="true"
       >
-        <img :src="brand.logo" alt="" class="h-full w-full object-cover" />
+        <img :src="imgUrl(brand.logo, 256)" alt="" class="h-full w-full object-cover" />
       </span>
 
       <p v-if="brand.name" class="op-serif text-[22px] leading-tight text-[#172033] sm:text-[26px]">

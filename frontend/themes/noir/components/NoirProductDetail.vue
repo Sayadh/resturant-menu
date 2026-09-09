@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // NoirProductDetail — a smoked-graphite plate over a deep obsidian overlay.
 // Photograph on one side, the dish and its price on the other.
@@ -38,7 +39,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           >
             <!-- Photograph (only when the dish has one) -->
             <div v-if="item.image" class="relative aspect-[4/3] sm:aspect-auto sm:h-full">
-              <img loading="lazy" decoding="async" :src="item.image" :alt="t(item.name)" class="h-full w-full object-cover" />
+              <img loading="lazy" decoding="async" :src="imgUrl(item.image, 1200)" :alt="t(item.name)" class="h-full w-full object-cover" />
             </div>
 
             <!-- Copy -->

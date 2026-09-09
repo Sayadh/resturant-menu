@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // MaisonProductLayout — Warm & Family premium menu grid.
 // Every dish is an elevated, rounded card on warm cream: soft shadow, a large
@@ -34,7 +35,7 @@ const soldOut = (item: MenuItem) => item.available === false
       <div v-if="item.showImage !== false" class="relative overflow-hidden">
         <img loading="lazy" decoding="async"
           v-if="item.image"
-          :src="item.image"
+          :src="imgUrl(item.image, 600)"
           :alt="t(item.name)"
           class="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
           :class="soldOut(item) ? 'opacity-60 grayscale' : ''"

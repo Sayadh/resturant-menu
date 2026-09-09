@@ -171,6 +171,32 @@ npm run build && pm2 restart <api|api-staging> --update-env
 
 ---
 
+## 3b. Nginx — gzip (մեկանգամյա, արդեն արված)
+
+`/etc/nginx/nginx.conf`-ում `gzip on`-ը միացված էր, բայց `gzip_proxied`-ը և
+`gzip_types`-ը կոմենտի տակ։ Default-երով դա նշանակում է՝ **proxy-ից եկող ոչինչ չի
+սեղմվում** — ո՛չ API-ի JSON-ը, ո՛չ Nuxt-ի SSR HTML-ը, ո՛չ `/_nuxt/*.js`-ը։
+
+Ակտիվ կարգավորումը (backup՝ `/root/nginx.conf.bak-*`)․
+
+```nginx
+gzip on;
+gzip_vary on;
+gzip_proxied any;
+gzip_comp_level 5;
+gzip_buffers 16 8k;
+gzip_http_version 1.1;
+gzip_types text/plain text/css application/json application/javascript
+           text/xml application/xml application/xml+rss text/javascript;
+```
+
+Ստուգում՝
+```bash
+curl -sI -H 'Accept-Encoding: gzip' https://menus.am/api/v1/public/restaurants/<slug> | grep -i content-encoding
+```
+Պետք է տա `content-encoding: gzip`։ Սերվերը վերականգնելիս կամ nginx-ը
+վերատեղադրելիս այս բլոկը նորից պետք է դնել — git-ում չէ։
+
 ## 4. Smoke test
 
 - [ ] `pm2 status` → բոլորը `online`

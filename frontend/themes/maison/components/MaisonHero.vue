@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // ─────────────────────────────────────────────────────────────────────────
 // MaisonHero — Warm & Family welcome.
 // An inviting, airy split hero on warm cream: brand name + tagline + meta and
@@ -47,7 +48,7 @@ const heroImage = computed(
 
         <img
           v-if="brand.logo"
-          :src="brand.logo"
+          :src="imgUrl(brand.logo, 256)"
           alt=""
           class="mx-auto mt-5 h-20 w-20 rounded-full object-cover shadow-[0_16px_30px_-14px_rgba(84,28,46,0.5)] ring-4 ring-white/70 sm:h-24 sm:w-24 lg:mx-0"
         />
@@ -99,7 +100,7 @@ const heroImage = computed(
       <div v-if="heroImage" class="relative mx-auto w-full max-w-md lg:max-w-none">
         <div class="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] shadow-[0_44px_84px_-42px_rgba(84,28,46,0.55)] ring-1 ring-white/50">
           <img
-            :src="heroImage"
+            :src="imgUrl(heroImage, 1600)"
             alt=""
             class="ms-kenburns h-full w-full object-cover"
           />

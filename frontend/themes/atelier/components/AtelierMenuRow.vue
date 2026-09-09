@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { imgUrl } from '~/utils/image'
 // Editorial menu row — a printed-menu line rather than a card. Name and price
 // joined by a dotted leader, a large plated thumbnail, a two-line teaser (full
 // description lives in the click-triggered detail view), and a quiet add control.
@@ -40,7 +41,7 @@ const showMedia = computed(() => props.item.showImage !== false)
     >
       <img
         v-if="item.image"
-        :src="item.image"
+        :src="imgUrl(item.image, 600)"
         :alt="t(item.name)"
         loading="lazy"
         class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
