@@ -116,7 +116,7 @@ onBeforeUnmount(() => {
                 <div v-for="row in rows" :key="row.id" class="flex items-center gap-4 py-5">
                   <!-- thumb -->
                   <div class="h-16 w-16 shrink-0 overflow-hidden rounded-2xl">
-                    <img
+                    <img loading="lazy" decoding="async"
                       v-if="row.image"
                       :src="row.image"
                       :alt="row.name"

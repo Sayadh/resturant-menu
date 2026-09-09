@@ -21,24 +21,31 @@ const { lang } = useLanguage()
 const API_LANG: Record<Lang, string> = { AM: 'hy', EN: 'en', RU: 'ru' }
 const apiLang = computed(() => API_LANG[lang.value])
 
-// Restaurant — once per slug, language-independent.
-const { data: restaurant, pending: restPending } = useLazyAsyncData(
-  () => `rest-${slug.value}`,
-  () => restaurantService.getRestaurantBySlug(slug.value),
-  { server: false, watch: [slug] },
+// ONE fetch for the whole page, rendered on the SERVER.
+//
+// This used to be two client-only fetches for the UI plus a third server one
+// for the SEO tags — the same restaurant + menu fetched twice, and the guest
+// staring at a spinner through two sequential round trips before anything
+// appeared. Now the HTML arrives with the menu already in it, and the browser
+// makes no request at all on first paint.
+const { data: page, pending } = useAsyncData(
+  () => `page-${slug.value}`,
+  async () => {
+    const r = await restaurantService.getRestaurantBySlug(slug.value)
+    if (!r) return null
+    const m = await menuService.getMenu(r.id, apiLang.value).catch(() => null)
+    return { r, m }
+  },
+  { watch: [slug, apiLang] },
 )
 
-// Menu — active language only; refetches when restaurant or language changes.
-const { data: menu } = useLazyAsyncData(
-  () => `menu-${slug.value}-${apiLang.value}`,
-  () => (restaurant.value ? menuService.getMenu(restaurant.value.id, apiLang.value) : Promise.resolve(null)),
-  { server: false, watch: [() => restaurant.value?.id, apiLang] },
-)
+const restaurant = computed(() => page.value?.r ?? null)
+const menu = computed(() => page.value?.m ?? null)
 
 // Full loader only on the FIRST load; a language switch keeps the current menu
-// visible (Nuxt retains previous data) until the new language arrives.
-const loadingInitial = computed(() => restPending.value || (!!restaurant.value && menu.value == null))
-const notFound = computed(() => !restPending.value && restaurant.value == null)
+// visible (Nuxt retains the previous value) until the new language arrives.
+const loadingInitial = computed(() => pending.value && page.value == null)
+const notFound = computed(() => !pending.value && page.value === null)
 
 // Apply the theme override for rendering only (clone, don't mutate the source).
 const displayRestaurant = computed(() =>
@@ -47,19 +54,10 @@ const displayRestaurant = computed(() =>
     : restaurant.value,
 )
 
-// SSR fetch dedicated to SEO: renders title/description/canonical/OG + the
-// Restaurant/Menu JSON-LD into the INITIAL HTML (Google + social scrapers see
-// real content, not an empty shell). The interactive UI keeps its lazy fetch.
-const { data: seo } = useAsyncData(
-  () => `seo-${slug.value}`,
-  async () => {
-    const r = await restaurantService.getRestaurantBySlug(slug.value)
-    if (!r) return null
-    const m = await menuService.getMenu(r.id, 'hy').catch(() => null)
-    return { r, m }
-  },
-  { watch: [slug] },
-)
+// title/description/canonical/OG + the Restaurant/Menu JSON-LD are built from
+// the SAME payload the page renders, so Google and the social scrapers see the
+// real content in the initial HTML without a second fetch.
+const seo = page
 
 const ltPick = (lt?: LocalizedText) => lt?.AM || lt?.EN || lt?.RU || ''
 

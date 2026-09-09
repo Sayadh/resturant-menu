@@ -256,7 +256,7 @@ onBeforeUnmount(() => {
           >
             <span class="flex items-center gap-1.5">
               <span v-if="v.image" class="grid h-4 w-4 shrink-0 place-items-center overflow-hidden rounded-full sm:h-5 sm:w-5" aria-hidden="true">
-                <img :src="v.image" alt="" class="h-full w-full object-cover" />
+                <img loading="lazy" decoding="async" :src="v.image" alt="" class="h-full w-full object-cover" />
               </span>
               <span v-else class="text-sm sm:text-base" aria-hidden="true">{{ v.icon }}</span>
               <span>{{ t(v.title) }}</span>
@@ -374,7 +374,7 @@ onBeforeUnmount(() => {
                     class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#DBBA82]/60 bg-[#3E2723]/40 text-xl backdrop-blur-sm sm:h-12 sm:w-12 sm:text-2xl"
                     aria-hidden="true"
                 >
-        <img
+        <img loading="lazy" decoding="async"
             v-if="iconOf(cat)"
             :src="iconOf(cat)"
             alt=""

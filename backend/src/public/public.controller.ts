@@ -5,6 +5,7 @@ import { PublicService } from './public.service'
 import { LeadService } from './lead.service'
 import { CreateLeadDto } from './dto/create-lead.dto'
 import { Public } from '../common/decorators/public.decorator'
+import { PublicCache } from '../common/decorators/public-cache.decorator'
 
 /** Unauthenticated public menu API consumed by the customer-facing frontend. */
 @Public()
@@ -24,26 +25,31 @@ export class PublicController {
     return this.leads.submit(dto, { ua: req.headers['user-agent'] })
   }
 
+  @PublicCache()
   @Get('resolve')
   resolve(@Query('host') host?: string, @Query('slug') slug?: string) {
     return this.svc.resolve(host, slug)
   }
 
+  @PublicCache()
   @Get('restaurants')
   list() {
     return this.svc.listRestaurants()
   }
 
+  @PublicCache()
   @Get('restaurants/:slug')
   bySlug(@Param('slug') slug: string) {
     return this.svc.getRestaurantBySlug(slug)
   }
 
+  @PublicCache()
   @Get('restaurants/:id/menu')
   menu(@Param('id') id: string, @Query('lang') lang?: string) {
     return this.svc.getMenu(id, lang)
   }
 
+  @PublicCache()
   @Get('restaurants/:id/hours')
   hours(@Param('id') id: string) {
     return this.svc.getHours(id)

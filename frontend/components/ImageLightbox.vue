@@ -77,7 +77,7 @@ onBeforeUnmount(() => {
             </svg>
           </button>
 
-          <img
+          <img loading="lazy" decoding="async"
             v-if="item.image && !imgFailed"
             :src="item.image"
             :alt="t(item.name)"

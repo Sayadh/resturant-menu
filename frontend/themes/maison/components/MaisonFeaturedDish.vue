@@ -45,7 +45,7 @@ const hasImage = computed(() => props.item.showImage !== false && !!props.item.i
     <!-- Image (rendered only when the dish has a photo) -->
     <div v-if="hasImage" v-reveal class="relative">
       <div class="ms-img-reveal overflow-hidden rounded-[2rem]">
-        <img
+        <img loading="lazy" decoding="async"
           v-parallax="22"
           :src="item.image"
           :alt="t(item.name)"

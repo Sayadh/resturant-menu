@@ -44,7 +44,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           >
             <!-- Photograph (only when the dish has one) -->
             <div v-if="item.showImage !== false && item.image" class="relative shrink-0 bg-[#F5F5F2] sm:w-[46%]">
-              <img
+              <img loading="lazy" decoding="async"
                 :src="item.image"
                 :alt="t(item.name)"
                 class="h-52 w-full object-cover sm:h-full"

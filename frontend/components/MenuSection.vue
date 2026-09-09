@@ -58,7 +58,7 @@ watch(banner, () => (bannerFailed.value = false))
             class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#A47B45]/60 bg-[#26382F]/40 text-xl shadow-sm backdrop-blur-sm sm:h-12 sm:w-12 sm:text-2xl"
             aria-hidden="true"
           >
-            <img v-if="iconImage" :src="iconImage" alt="" class="h-full w-full object-cover" />
+            <img loading="lazy" decoding="async" v-if="iconImage" :src="iconImage" alt="" class="h-full w-full object-cover" />
             <template v-else>{{ category.icon }}</template>
           </span>
           <div class="min-w-0">

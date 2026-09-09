@@ -15,22 +15,24 @@ const { lang } = useLanguage()
 const API_LANG: Record<Lang, string> = { AM: 'hy', EN: 'en', RU: 'ru' }
 const apiLang = computed(() => API_LANG[lang.value])
 
-// Restaurant — fetched once by slug "demo".
-const { data: restaurant, pending: restPending } = useLazyAsyncData(
-  'rest-demo',
-  () => restaurantService.getRestaurantBySlug('demo'),
-  { server: false },
+// One server-rendered fetch for the whole page: the HTML already carries the
+// menu, so the visitor is not left on a spinner through two client round trips.
+const { data: page, pending } = useAsyncData(
+  'demo-page',
+  async () => {
+    const r = await restaurantService.getRestaurantBySlug('demo')
+    if (!r) return null
+    const m = await menuService.getMenu(r.id, apiLang.value).catch(() => null)
+    return { r, m }
+  },
+  { watch: [apiLang] },
 )
 
-// Menu — active language only; refetches when language changes.
-const { data: menu } = useLazyAsyncData(
-  () => `menu-demo-${apiLang.value}`,
-  () => (restaurant.value ? menuService.getMenu(restaurant.value.id, apiLang.value) : Promise.resolve(null)),
-  { server: false, watch: [() => restaurant.value?.id, apiLang] },
-)
+const restaurant = computed(() => page.value?.r ?? null)
+const menu = computed(() => page.value?.m ?? null)
 
-const loadingInitial = computed(() => restPending.value || (!!restaurant.value && menu.value == null))
-const notFound = computed(() => !restPending.value && restaurant.value == null)
+const loadingInitial = computed(() => pending.value && page.value == null)
+const notFound = computed(() => !pending.value && page.value === null)
 
 // Apply theme override for rendering only (clone, don't mutate).
 const displayRestaurant = computed(() =>

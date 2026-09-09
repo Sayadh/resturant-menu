@@ -34,7 +34,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           >
             <!-- Image -->
             <div v-if="item.showImage !== false" class="relative aspect-[4/3] bg-[#111827] sm:aspect-auto sm:h-full">
-              <img
+              <img loading="lazy" decoding="async"
                 v-if="item.image"
                 :src="item.image"
                 :alt="t(item.name)"

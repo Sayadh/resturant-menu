@@ -7,6 +7,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
 import configuration from './config/configuration'
 import { envValidationSchema } from './config/env.validation'
 import { PrismaModule } from './prisma/prisma.module'
+import { PublicCacheModule } from './common/cache/public-cache.module'
 import { HealthModule } from './health/health.module'
 import { AuthModule } from './auth/auth.module'
 import { RestaurantModule } from './restaurant/restaurant.module'
@@ -20,6 +21,7 @@ import { AiModule } from './ai/ai.module'
 
 import { RequestContextMiddleware } from './common/context/request-context.middleware'
 import { ResponseInterceptor } from './common/interceptors/response.interceptor'
+import { CacheInvalidationInterceptor } from './common/interceptors/cache-invalidation.interceptor'
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter'
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard'
 import { RolesGuard } from './common/guards/roles.guard'
@@ -44,6 +46,7 @@ import { RolesGuard } from './common/guards/roles.guard'
     // Sensitive routes tighten this via @Throttle() (auth login, uploads, AI, lead).
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 300 }]),
     PrismaModule,
+    PublicCacheModule,
     HealthModule,
     AuthModule,
     RestaurantModule,
@@ -58,6 +61,8 @@ import { RolesGuard } from './common/guards/roles.guard'
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
+    // Drops the tenant's public cache after every successful write.
+    { provide: APP_INTERCEPTOR, useClass: CacheInvalidationInterceptor },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     // Global rate limiting (runs before auth). Per-route limits via @Throttle().
     { provide: APP_GUARD, useClass: ThrottlerGuard },

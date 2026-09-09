@@ -38,7 +38,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           >
             <!-- Photograph (only when the dish has one) -->
             <div v-if="item.image" class="relative aspect-[4/3] sm:aspect-auto sm:h-full">
-              <img :src="item.image" :alt="t(item.name)" class="h-full w-full object-cover" />
+              <img loading="lazy" decoding="async" :src="item.image" :alt="t(item.name)" class="h-full w-full object-cover" />
             </div>
 
             <!-- Copy -->

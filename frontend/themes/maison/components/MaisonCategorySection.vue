@@ -24,7 +24,7 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
 <template>
   <div class="relative mx-auto h-[40svh] min-h-[260px] w-[calc(100%-2rem)] max-w-6xl overflow-hidden rounded-[2rem] shadow-[0_30px_60px_-32px_rgba(84,28,46,0.45)] sm:h-[62svh] sm:min-h-[400px] sm:w-[calc(100%-3rem)]">
     <!-- Background (desktop) -->
-    <img
+    <img loading="lazy" decoding="async"
       v-if="image"
       v-parallax="50"
       :src="image"
@@ -33,7 +33,7 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
       class="absolute inset-0 hidden h-[118%] w-full -translate-y-[6%] scale-105 object-cover sm:block"
     />
     <!-- Background (mobile) -->
-    <img
+    <img loading="lazy" decoding="async"
       v-if="mobileSrc"
       v-parallax="50"
       :src="mobileSrc"

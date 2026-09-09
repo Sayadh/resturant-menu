@@ -32,7 +32,7 @@ const soldOut = (item: MenuItem) => item.available === false
     >
       <!-- photo -->
       <div v-if="item.showImage !== false" class="relative overflow-hidden">
-        <img
+        <img loading="lazy" decoding="async"
           v-if="item.image"
           :src="item.image"
           :alt="t(item.name)"

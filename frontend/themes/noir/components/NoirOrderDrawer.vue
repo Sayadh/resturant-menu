@@ -100,7 +100,7 @@ const fmt = (n: number) => n.toLocaleString('hy-AM')
           <ul v-else class="divide-y divide-[#25282D]">
             <li v-for="r in rows" :key="r.id" class="flex items-center gap-4 py-5">
               <div v-if="r.image" class="h-14 w-14 shrink-0 overflow-hidden rounded-[8px]">
-                <img :src="r.image" :alt="r.name" class="h-full w-full object-cover" />
+                <img loading="lazy" decoding="async" :src="r.image" :alt="r.name" class="h-full w-full object-cover" />
               </div>
               <div class="min-w-0 flex-1">
                 <p class="truncate font-serif text-lg text-[#F1EEE8]">{{ r.name }}</p>
