@@ -1,23 +1,30 @@
-import { defineAsyncComponent, type Component } from 'vue'
+import type { Component } from 'vue'
+import DesignAria from '~/components/DesignAria.vue'
+import DesignHeritage from '~/components/DesignHeritage.vue'
+import AtelierMenu from '~/themes/atelier/layouts/AtelierMenu.vue'
+import MaisonExperience from '~/themes/maison/layouts/MaisonExperience.vue'
+import NoirMenu from '~/themes/noir/layouts/NoirMenu.vue'
+import OpalineMenu from '~/themes/opaline/layouts/OpalineMenu.vue'
 
 // ─────────────────────────────────────────────────────────────────────────
 // Theme registry — themeId → root component. No switch statements anywhere
 // else in the app; ThemeRenderer reads from here. Add new themes in one place.
 //
-// Every entry is loaded LAZILY: a tenant ships only the theme it renders with.
-// Static imports meant a restaurant on Opaline also downloaded Aria, Heritage,
-// Atelier, Maison and Noir — five themes of dead code for every guest.
+// These are STATIC on purpose. Splitting them with defineAsyncComponent ships
+// less code per tenant, but the client then has no chunk at hydration time
+// while the server rendered the full theme, and the page can stay on its
+// loader. Revisit only with a way to preload the active theme's chunk.
 // ─────────────────────────────────────────────────────────────────────────
 export const themeRegistry: Record<string, Component> = {
-  aria: defineAsyncComponent(() => import('~/components/DesignAria.vue')),
-  atelier: defineAsyncComponent(() => import('~/themes/atelier/layouts/AtelierMenu.vue')),
-  maison: defineAsyncComponent(() => import('~/themes/maison/layouts/MaisonExperience.vue')),
-  heritage: defineAsyncComponent(() => import('~/components/DesignHeritage.vue')),
-  noir: defineAsyncComponent(() => import('~/themes/noir/layouts/NoirMenu.vue')),
-  opaline: defineAsyncComponent(() => import('~/themes/opaline/layouts/OpalineMenu.vue')),
+  aria: DesignAria,
+  atelier: AtelierMenu,
+  maison: MaisonExperience,
+  heritage: DesignHeritage,
+  noir: NoirMenu,
+  opaline: OpalineMenu,
 }
 
-export const FALLBACK_THEME: Component = themeRegistry.aria
+export const FALLBACK_THEME: Component = DesignAria
 
 export const getThemeComponent = (themeId: string): Component =>
   themeRegistry[themeId] ?? FALLBACK_THEME

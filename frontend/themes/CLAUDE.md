@@ -6,8 +6,8 @@
 ## Հիմնականը
 
 - `themeId → component` կապը՝ **միայն** `registry.ts`-ում (switch չկա app-ում)։
-- Բոլոր թեմաները **lazy** են՝ `defineAsyncComponent(() => import(...))`։ Ստատիկ
-  import-ը վեց թեմայի կոդն էլ սոսնձում է ընդհանուր փաթեթին — մի՛ արա։
+- Import-երը **ստատիկ** են․ lazy տարբերակը փորձարկվել և հետ է բերվել (client-ը
+  հիդրատացիայի պահին chunk չուներ, էջը մնում էր loader-ի վրա)։
 - `ThemeRenderer.vue` (components/-ում) կապում է data → store → theme component։
 - Theme component-ները **state չեն ստանում props-ով** և **fetch չեն անում** —
   կարդում են shared store-երից (`useMenuStore`, `useRestaurantStore`,

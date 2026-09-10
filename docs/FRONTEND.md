@@ -97,7 +97,6 @@ styles-ով։ `aria` և `heritage`-ը՝ `components/DesignAria.vue` / `DesignHer
 |---|---|
 | Ամեն `<img>` → `imgUrl(src, width)` (`utils/image.ts`) | Վերբեռնման պահին ոչինչ չի չափափոխվում — առաստաղը դրվում է ցուցադրման կետում |
 | `loading="lazy" decoding="async"` (բացի լոգո/hero) | Սքրոլից ներքև եղածը չի բեռնվում առաջին վայրկյանին |
-| Թեմաները՝ `defineAsyncComponent` registry-ում | Հյուրը ստանում է միայն իր թեմայի կոդը, ոչ բոլոր վեցի |
 | Ֆոնտերը՝ ըստ թեմայի (`themeFontsHref`) | Cinzel/Cormorant-ը պետք չէ սեփական տառատեսակ ունեցող թեմային |
 
 Backend-ի կողմից հրապարակային endpoint-երը cache-վում են և invalidate-վում ամեն
