@@ -106,7 +106,14 @@ admin գրառումից հետո — տես [BACKEND.md](./BACKEND.md#public-ca
 
 - `useAsyncData`-ի handler-ում **բոլոր composable-ները կանչիր առաջին `await`-ից
   առաջ**․ SSR-ում `await`-ից հետո Nuxt instance-ը կորչում է և `useRuntimeConfig()`
-  ընկնում է։ Հետևանքը լուռ է՝ `.catch()`-ը կուլ է տալիս, էջը մնում է դատարկ։
+  ընկնում է։ Հետևանքը լուռ է՝ service-ի ներսի `catch`-ը կուլ է տալիս, արժեքը
+  դառնում է `null`, և էջը մնում է loader-ի վրա։ Հենց դրա պատճառով tenant-ի էջը
+  **երկու fetch** է անում client-ից՝ ոչ թե մեկը SSR-ից․ երկրորդ կանչը
+  (`menuService.getMenu`) միշտ առաջինից հետո է։ Մեկ SSR fetch-ի անցնելու համար
+  պետք է կա՛մ `callWithNuxt`, կա՛մ backend endpoint, որ ռեստորանն ու մենյուն
+  վերադարձնի **մեկ** պատասխանով։
+- Nuxt-ի payload-ը **devalue** ձևաչափով է (հարթ զանգված՝ ինդեքսային հղումներով)։
+  HTML-ում `"key":null` փնտրելը ոչինչ չի ապացուցում — payload-ը այդպես չի գրվում։
 - Էջի fetch-ը **չկապես restaurant store-ից ածանցված արժեքի**․ store-ը լցնում է հենց
   այդ էջի render-ը (`ThemeRenderer`), և ստացվում է օղակ։ Լեզուն վերցրու հում
   `useState<Lang>('lang')`-ից, ոչ թե `useLanguage().lang`-ից։
