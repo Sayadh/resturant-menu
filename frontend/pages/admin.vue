@@ -28,6 +28,7 @@ import type { Category, Product, Section, Badge, LangCode } from '~/models/types
 import type { LocalizedText } from '~/data/menu'
 import type { AdminLang } from '~/composables/useAdminI18n'
 import { BADGES, BADGE_GROUPS } from '~/data/badges'
+import type { CropState } from '~/utils/image'
 
 // ── auth ────────────────────────────────────────────────────────
 const auth = useAuthStore()
@@ -781,19 +782,6 @@ const applyUpload = (prev: string, set: (u: string) => void, url: string) => {
   pendingUploads.add(url)
 }
 
-const onUpload = async (e: Event, target: { image: string }) => {
-  const input = e.target as HTMLInputElement
-  const file = input.files?.[0]
-  if (!file) return
-  try {
-    const { url } = await uploadService.uploadImage(file)
-    applyUpload(target.image, (u) => (target.image = u), url)
-  } catch (err) {
-    flash((err as Error)?.message || 'Չհաջողվեց վերբեռնել')
-  } finally {
-    input.value = ''
-  }
-}
 // Generic: upload a file and store its hosted URL into obj[key] (sections,
 // category icon/banner, etc.). Used where the field isn't literally `image`.
 const onUploadInto = async (e: Event, obj: Record<string, unknown>, key: string) => {
@@ -807,6 +795,98 @@ const onUploadInto = async (e: Event, obj: Record<string, unknown>, key: string)
     flash((err as Error)?.message || 'Չհաջողվեց վերբեռնել')
   } finally {
     input.value = ''
+  }
+}
+
+// ── product/category photo: crop editor (4:3, hi-res + focal point) ────
+// Unlike the plain uploads above, a product photo or a category's desktop
+// banner goes through ImageCropEditor first: the admin frames it into a 4:3
+// box, and only then do we bake+upload the two delivered sizes (1200×900
+// hi-res, 800×600 standard) plus keep the original for a later re-crop.
+type CropTargetKind = 'product' | 'category'
+const cropEditor = reactive<{ open: boolean; kind: CropTargetKind | null; file: File | null; initialCrop?: CropState }>(
+  { open: false, kind: null, file: null, initialCrop: undefined },
+)
+
+const openCropEditor = (kind: CropTargetKind, file: File, initialCrop?: CropState) => {
+  cropEditor.kind = kind
+  cropEditor.file = file
+  cropEditor.initialCrop = initialCrop
+  cropEditor.open = true
+}
+const closeCropEditor = () => {
+  cropEditor.open = false
+  cropEditor.kind = null
+  cropEditor.file = null
+  cropEditor.initialCrop = undefined
+}
+
+// File input → open the crop editor instead of uploading straight away.
+const onProductImagePick = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  openCropEditor('product', file, prodDraft.imageCrop)
+}
+const onCategoryImagePick = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  openCropEditor('category', file, catDraft.imageCrop)
+}
+
+// Re-open the editor on an already-cropped photo — fetches the kept
+// original back into a File so it can be reframed from scratch.
+const cropRefetching = ref(false)
+const editExistingCrop = async (kind: CropTargetKind) => {
+  const draft = kind === 'product' ? prodDraft : catDraft
+  const originalUrl = draft.imageOriginal || draft.image
+  if (!originalUrl) return
+  cropRefetching.value = true
+  try {
+    const blob = await $fetch<Blob>(originalUrl, { responseType: 'blob' })
+    const file = new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' })
+    openCropEditor(kind, file, draft.imageCrop)
+  } catch {
+    flash('Չհաջողվեց բացել բնօրինակը')
+  } finally {
+    cropRefetching.value = false
+  }
+}
+
+// Crop editor confirmed → upload the two baked sizes + the original,
+// write them into the right draft, and clean up any previous (unsaved)
+// uploads it replaces. Focal point defaults to centre: the crop editor
+// already framed the subject, so `object-position` only matters in
+// non-4:3 boxes (e.g. Maison's wide banner), where centre is the safe
+// default until a dedicated focal-point control is added.
+const onCropSave = async (payload: { hiRes: Blob; stdRes: Blob; preview: string; crop: CropState }) => {
+  const kind = cropEditor.kind
+  const file = cropEditor.file
+  if (!kind || !file) return
+  try {
+    const { hiResUrl, stdResUrl, originalUrl } = await uploadService.uploadMenuImage(file, payload.hiRes, payload.stdRes)
+    const draft = kind === 'product' ? prodDraft : catDraft
+    for (const prev of [draft.image, draft.imageHiRes, draft.imageOriginal]) {
+      if (prev && pendingUploads.has(prev)) {
+        uploadService.deleteImage(prev)
+        pendingUploads.delete(prev)
+      }
+    }
+    draft.image = stdResUrl
+    draft.imageHiRes = hiResUrl
+    draft.imageOriginal = originalUrl
+    draft.imageCrop = payload.crop
+    draft.imageFocalX = 50
+    draft.imageFocalY = 50
+    pendingUploads.add(stdResUrl)
+    pendingUploads.add(hiResUrl)
+    pendingUploads.add(originalUrl)
+    closeCropEditor()
+  } catch (err) {
+    flash((err as Error)?.message || 'Չհաջողվեց վերբեռնել')
   }
 }
 
@@ -866,6 +946,28 @@ const removeImage = (
     await uploadService.deleteImage(url)
     // Logo/cover live outside a modal → persist the cleared field right away.
     if (persist) await persist()
+  })
+}
+
+// Remove a product/category photo produced by the crop editor: unlike
+// removeImage (single field), this clears the whole bundle (std/hi-res/
+// original URLs + crop + focal point) and deletes all three storage
+// objects, so nothing stale gets resent to the backend on the next save.
+const removeCroppedImage = (kind: CropTargetKind) => {
+  const draft = kind === 'product' ? prodDraft : catDraft
+  if (!draft.image) return
+  askDelete(t('removeImageTitle'), t('removeImageMsg'), async () => {
+    const urls = [draft.image, draft.imageHiRes, draft.imageOriginal].filter(Boolean) as string[]
+    draft.image = ''
+    draft.imageHiRes = ''
+    draft.imageOriginal = ''
+    draft.imageCrop = undefined
+    draft.imageFocalX = 50
+    draft.imageFocalY = 50
+    for (const url of urls) {
+      pendingUploads.delete(url)
+      await uploadService.deleteImage(url)
+    }
   })
 }
 
@@ -1687,8 +1789,9 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 <img v-if="catDraft.image" :src="catDraft.image" class="h-full w-full object-cover" alt="" />
                 <span v-else class="text-[10px] text-slate-300">16:5</span>
               </div>
-              <label class="cursor-pointer text-sm font-medium text-indigo-600 hover:underline">{{ t('upload') }}<input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, catDraft, 'image')" /></label>
-              <button v-if="catDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="removeImage(() => catDraft.image, (u) => (catDraft.image = u))">{{ t('remove') }}</button>
+              <label class="cursor-pointer text-sm font-medium text-indigo-600 hover:underline">{{ t('upload') }}<input type="file" accept="image/*" class="hidden" @change="onCategoryImagePick" /></label>
+              <button v-if="catDraft.image" type="button" :disabled="cropRefetching" class="text-xs font-medium text-indigo-600 hover:underline disabled:opacity-50" @click="editExistingCrop('category')">{{ t('cropEdit') }}</button>
+              <button v-if="catDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="removeCroppedImage('category')">{{ t('remove') }}</button>
             </div>
           </div>
           <div>
@@ -1870,9 +1973,10 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
               <div class="mt-1.5 flex items-center gap-3">
                 <label class="inline-block cursor-pointer text-xs font-semibold text-slate-500 hover:text-slate-800">
                   Upload file
-                  <input type="file" accept="image/*" class="hidden" @change="(e) => onUpload(e, prodDraft)" />
+                  <input type="file" accept="image/*" class="hidden" @change="onProductImagePick" />
                 </label>
-                <button v-if="prodDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="removeImage(() => prodDraft.image, (u) => (prodDraft.image = u))">{{ t('remove') }}</button>
+                <button v-if="prodDraft.image" type="button" :disabled="cropRefetching" class="text-xs font-semibold text-indigo-600 hover:underline disabled:opacity-50" @click="editExistingCrop('product')">{{ t('cropEdit') }}</button>
+                <button v-if="prodDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="removeCroppedImage('product')">{{ t('remove') }}</button>
               </div>
             </div>
           </div>
@@ -2019,6 +2123,14 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         >{{ upgradeReq.busy ? t('saving') : t('sendRequest') }}</button>
       </template>
     </AdminModal>
+
+    <AdminImageCropEditor
+      v-if="cropEditor.open && cropEditor.file"
+      :file="cropEditor.file"
+      :initial-crop="cropEditor.initialCrop"
+      @save="onCropSave"
+      @cancel="closeCropEditor"
+    />
   </div>
 </template>
 

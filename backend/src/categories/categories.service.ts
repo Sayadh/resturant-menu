@@ -94,6 +94,11 @@ export class CategoriesService {
         icon: dto.icon,
         iconUrl: dto.iconUrl,
         imageUrl: dto.imageUrl,
+        imageHiResUrl: dto.imageHiResUrl,
+        imageOriginalUrl: dto.imageOriginalUrl,
+        imageFocalX: dto.imageFocalX,
+        imageFocalY: dto.imageFocalY,
+        imageCrop: dto.imageCrop as never, // ImageCropDto lacks Json's index signature; Prisma accepts the plain object at runtime
         mobileImageUrl: dto.mobileImageUrl,
         bannerTextColor: dto.bannerTextColor,
         sortOrder: dto.sortOrder ?? 0,
@@ -118,6 +123,11 @@ export class CategoriesService {
         icon: dto.icon,
         iconUrl: dto.iconUrl,
         imageUrl: dto.imageUrl,
+        imageHiResUrl: dto.imageHiResUrl,
+        imageOriginalUrl: dto.imageOriginalUrl,
+        imageFocalX: dto.imageFocalX,
+        imageFocalY: dto.imageFocalY,
+        imageCrop: dto.imageCrop as never, // ImageCropDto lacks Json's index signature; Prisma accepts the plain object at runtime
         mobileImageUrl: dto.mobileImageUrl,
         bannerTextColor: dto.bannerTextColor,
         sortOrder: dto.sortOrder,
@@ -135,8 +145,16 @@ export class CategoriesService {
       }
     }
     // Best-effort: if an image was replaced/cleared, drop the old storage object.
-    if (dto.imageUrl !== undefined && cat.imageUrl && cat.imageUrl !== dto.imageUrl) {
-      await this.uploads.removeOwnByUrl(restaurantId, cat.imageUrl)
+    // A photo is three objects now (display, retina, original) — drop them all.
+    const replaced: [string | undefined, string | null | undefined][] = [
+      [dto.imageUrl, cat.imageUrl],
+      [dto.imageHiResUrl, cat.imageHiResUrl],
+      [dto.imageOriginalUrl, cat.imageOriginalUrl],
+    ]
+    for (const [next, prev] of replaced) {
+      if (next !== undefined && prev && prev !== next) {
+        await this.uploads.removeOwnByUrl(restaurantId, prev)
+      }
     }
     if (dto.iconUrl !== undefined && cat.iconUrl && cat.iconUrl !== dto.iconUrl) {
       await this.uploads.removeOwnByUrl(restaurantId, cat.iconUrl)

@@ -232,6 +232,17 @@ const T: Dict = {
     ru: 'Заведение «{name}» и все его разделы, категории, позиции меню и связанные данные будут удалены навсегда. Это действие нельзя отменить.',
     en: 'The business “{name}” and all of its sections, categories, menu items, and related data will be permanently deleted. This action cannot be undone.',
   },
+
+  // image crop editor
+  cropPhoto: { hy: 'Կադրել նկարը', ru: 'Кадрирование фото', en: 'Crop photo' },
+  cropHint: { hy: 'Քաշիր և մեծացրու/փոքրացրու, որպեսզի ուզած մասը մնա կենտրոնում։ Սա միայն ձևի մեջ է կիրառվում — մի մոռացիր հետո սեղմել ապրանքի/կատեգորիայի սեփական «Պահպանել» կոճակը։', ru: 'Перетаскивайте и масштабируйте, чтобы нужная часть осталась в центре. Это применяется только к форме — не забудьте потом нажать «Сохранить» в самой форме товара/категории.', en: 'Drag and zoom so the part you want stays centred. This only applies to the form — don’t forget to hit “Save” on the product/category form too.' },
+  cropZoom: { hy: 'Քանակացում', ru: 'Масштаб', en: 'Zoom' },
+  cropReset: { hy: 'Վերարկել', ru: 'Сброс', en: 'Reset' },
+  cropSave: { hy: 'Կիրառել', ru: 'Применить', en: 'Apply' },
+  cropSaving: { hy: 'Կիրառվում է…', ru: 'Применение…', en: 'Applying…' },
+  cropCancel: { hy: 'Չեղարկել', ru: 'Отмена', en: 'Cancel' },
+  cropEdit: { hy: 'Փոխել կադրումը', ru: 'Изменить кадр', en: 'Edit crop' },
+  cropFailed: { hy: 'Չհաջողվեց մշակել նկարը', ru: 'Не удалось обработать фото', en: 'Could not process the photo' },
 }
 
 export const ADMIN_LANGS: { code: AdminLang; label: string }[] = [

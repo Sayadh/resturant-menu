@@ -5,6 +5,8 @@ import {
   IsBoolean,
   IsIn,
   IsInt,
+  IsObject,
+  Max,
   IsOptional,
   IsString,
   IsUUID,
@@ -13,6 +15,7 @@ import {
   ValidateNested,
 } from 'class-validator'
 import { TranslationInputDto } from '../../common/dto/translation-input.dto'
+import { ImageCropDto } from '../../common/dto/image-crop.dto'
 
 export class CreateCategoryDto {
   @IsUUID()
@@ -29,6 +32,24 @@ export class CreateCategoryDto {
 
   @IsOptional() @IsString()
   imageUrl?: string
+
+  /** 1200×900 WebP — retina screens and the detail view. */
+  @IsOptional() @IsString()
+  imageHiResUrl?: string
+
+  /** The upload itself, kept so the crop can be redone later. */
+  @IsOptional() @IsString()
+  imageOriginalUrl?: string
+
+  /** 0–100, 50 = centre. Becomes CSS object-position on the public menu. */
+  @IsOptional() @IsInt() @Min(0) @Max(100)
+  imageFocalX?: number
+
+  @IsOptional() @IsInt() @Min(0) @Max(100)
+  imageFocalY?: number
+
+  @IsOptional() @IsObject() @ValidateNested() @Type(() => ImageCropDto)
+  imageCrop?: ImageCropDto
 
   @IsOptional() @IsString() @MaxLength(500)
   mobileImageUrl?: string

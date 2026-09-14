@@ -161,8 +161,11 @@ export function buildMenu(payload: ApiMenuResponse): { levels: MenuLevel[]; cate
       title: mirror(c.name),
       description: mirror(c.description ?? ''),
       image: c.image ?? '',
+      imageHiRes: (c as Record<string, unknown>).imageHiRes as string ?? '',
       mobileImage: c.mobileImage ?? '',
       bannerTextColor: (c.bannerTextColor === 'dark' ? 'dark' : 'light'),
+      imageFocalX: (c as Record<string, unknown>).imageFocalX as number ?? 50,
+      imageFocalY: (c as Record<string, unknown>).imageFocalY as number ?? 50,
       items: [],
       sortOrder: c.sortOrder,
       active: true,
@@ -177,6 +180,9 @@ export function buildMenu(payload: ApiMenuResponse): { levels: MenuLevel[]; cate
       id: p.id,
       showImage: p.showImage ?? true,
       image: p.image ?? p.images[0] ?? '',
+      imageHiRes: (p as Record<string, unknown>).imageHiRes as string ?? '',
+      imageFocalX: (p as Record<string, unknown>).imageFocalX as number ?? 50,
+      imageFocalY: (p as Record<string, unknown>).imageFocalY as number ?? 50,
       price: p.price,
       name: mirror(p.name),
       description: mirror(p.description ?? ''),
@@ -427,8 +433,13 @@ export interface ApiCategoryRow {
   icon: string | null
   iconUrl: string | null
   imageUrl: string | null
+  imageHiResUrl: string | null
+  imageOriginalUrl: string | null
+  imageCrop: { offsetX: number; offsetY: number; zoom: number } | null
   mobileImageUrl: string | null
   bannerTextColor: string | null
+  imageFocalX: number | null
+  imageFocalY: number | null
   sortOrder: number
   isActive: boolean
   translations: ApiTranslationRow[]
@@ -445,8 +456,13 @@ export function mapCategory(c: ApiCategoryRow): Category {
     icon: c.icon ?? '',
     iconImage: c.iconUrl ?? '',
     image: c.imageUrl ?? '',
+    imageHiRes: c.imageHiResUrl ?? '',
+    imageOriginal: c.imageOriginalUrl ?? '',
+    imageCrop: c.imageCrop ?? undefined,
     mobileImage: c.mobileImageUrl ?? '',
     bannerTextColor: c.bannerTextColor === 'dark' ? 'dark' : 'light',
+    imageFocalX: c.imageFocalX ?? 50,
+    imageFocalY: c.imageFocalY ?? 50,
     sortOrder: c.sortOrder,
     active: c.isActive,
   }
@@ -465,7 +481,15 @@ export interface ApiProductRow {
   showImage?: boolean
   sortOrder: number
   translations: ApiTranslationRow[]
-  images: { url: string; isMain: boolean }[]
+  images: {
+    url: string
+    hiResUrl?: string | null
+    originalUrl?: string | null
+    focalX?: number | null
+    focalY?: number | null
+    crop?: { offsetX: number; offsetY: number; zoom: number } | null
+    isMain: boolean
+  }[]
   badges: { badge: { key: string } }[]
 }
 
@@ -481,7 +505,12 @@ export function mapProduct(p: ApiProductRow, sectionByCat: Map<string, string>):
     description: ltToTranslation(desc),
     price: p.price,
     image: main?.url ?? '',
+    imageHiRes: main?.hiResUrl ?? '',
+    imageOriginal: main?.originalUrl ?? '',
+    imageCrop: main?.crop ?? undefined,
     showImage: p.showImage ?? true,
+    imageFocalX: main?.focalX ?? 50,
+    imageFocalY: main?.focalY ?? 50,
     badges: apiBadgesToBadges(p.badges.map((b) => b.badge.key)),
     active: p.isActive,
     available: p.isAvailable,
@@ -498,8 +527,13 @@ export function categoryDraftToDto(d: Omit<Category, 'id' | 'restaurantId'>) {
     // old file is deleted from storage on save. `|| undefined` swallowed clears.
     iconUrl: d.iconImage ?? '',
     imageUrl: d.image ?? '',
+    imageHiResUrl: d.imageHiRes ?? '',
+    imageOriginalUrl: d.imageOriginal ?? '',
+    imageCrop: d.imageCrop,
     mobileImageUrl: d.mobileImage ?? '',
     bannerTextColor: d.bannerTextColor ?? 'light',
+    imageFocalX: d.imageFocalX ?? 50,
+    imageFocalY: d.imageFocalY ?? 50,
     sortOrder: d.sortOrder,
     isActive: d.active,
     translations: translationToRows(d.name, d.description),
@@ -520,7 +554,19 @@ export function productDraftToDto(d: Omit<Product, 'id' | 'restaurantId'>) {
     showImage: d.showImage,
     badges: keys.length ? keys : undefined,
     // [] (not undefined) so a removed product image is cleared + old file deleted.
-    images: d.image ? [{ url: d.image, isMain: true }] : [],
+    // The crop bundle belongs to the image, so it travels inside the row
+    // rather than alongside it on the product.
+    images: d.image
+      ? [{
+          url: d.image,
+          hiResUrl: d.imageHiRes || undefined,
+          originalUrl: d.imageOriginal || undefined,
+          focalX: d.imageFocalX ?? 50,
+          focalY: d.imageFocalY ?? 50,
+          crop: d.imageCrop,
+          isMain: true,
+        }]
+      : [],
     translations: translationToRows(d.name, d.description),
   }
 }

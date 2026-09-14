@@ -255,6 +255,9 @@ export class PublicService {
           icon: true,
           iconUrl: true,
           imageUrl: true,
+          imageHiResUrl: true,
+          imageFocalX: true,
+          imageFocalY: true,
           mobileImageUrl: true,
           bannerTextColor: true,
           sortOrder: true,
@@ -276,7 +279,7 @@ export class PublicService {
           sortOrder: true,
           showImage: true,
           translations: { ...trWhere, select: { languageId: true, name: true, description: true } },
-          images: { select: { url: true, isMain: true } },
+          images: { select: { url: true, hiResUrl: true, focalX: true, focalY: true, isMain: true } },
           // Just the id — the key comes from the badge catalogue fetched
           // alongside, which saves a second hop per product.
           badges: { select: { badgeId: true } },
@@ -318,6 +321,10 @@ export class PublicService {
           icon: c.icon,
           iconImage: c.iconUrl,
           image: c.imageUrl,
+          imageHiRes: c.imageHiResUrl,
+          // NULL reads as 50 so pre-crop rows stay centred.
+          imageFocalX: c.imageFocalX ?? 50,
+          imageFocalY: c.imageFocalY ?? 50,
           mobileImage: c.mobileImageUrl,
           bannerTextColor: c.bannerTextColor,
           sortOrder: c.sortOrder,
@@ -345,6 +352,9 @@ export class PublicService {
           // menu gets no image at all -- not even the placeholder.
           showImage: p.showImage,
           image: p.showImage ? (main?.url ?? null) : null,
+          imageHiRes: p.showImage ? (main?.hiResUrl ?? null) : null,
+          imageFocalX: main?.focalX ?? 50,
+          imageFocalY: main?.focalY ?? 50,
           images: p.showImage ? p.images.map((i) => i.url) : [],
           badges: p.badges
             .map((pb) => badgeKey.get(pb.badgeId))

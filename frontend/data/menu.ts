@@ -20,12 +20,18 @@ export interface LocalizedText {
 export interface MenuItem {
   id: string
   image: string
+  /** High-resolution (1200×900) version for retina / detail views. */
+  imageHiRes?: string
   /**
    * Whether this dish shows a picture at all on the public menu (admin switch).
    * `false` means the themes render NO image block -- not even the placeholder.
    * Undefined is treated as true, so older payloads keep their behaviour.
    */
   showImage?: boolean
+  /** Focal-point X (0–100, default 50). Controls object-position on cover images. */
+  imageFocalX?: number
+  /** Focal-point Y (0–100, default 50). */
+  imageFocalY?: number
   price: number
   name: LocalizedText
   description: LocalizedText
@@ -52,10 +58,16 @@ export interface MenuCategory {
   iconImage?: string
   /** Desktop banner (themes derive a banner from items if unset). */
   image?: string
+  /** High-resolution (1200×900) card image. */
+  imageHiRes?: string
   /** Mobile banner (falls back to `image`). */
   mobileImage?: string
   /** Banner title colour over the image: 'light' (white) or 'dark'. */
   bannerTextColor?: 'light' | 'dark'
+  /** Focal-point X (0–100, default 50). */
+  imageFocalX?: number
+  /** Focal-point Y (0–100, default 50). */
+  imageFocalY?: number
   description?: LocalizedText
   active?: boolean
   sortOrder?: number

@@ -5,10 +5,22 @@ import { mapTranslations } from '../common/utils/translations'
 import { parseSort } from '../common/utils/sort'
 import { CreateProductDto } from './dto/create-product.dto'
 import { UpdateProductDto } from './dto/update-product.dto'
+import type { ProductImageInputDto } from './dto/product-image-input.dto'
 import { ProductListQueryDto } from './dto/product-list.query.dto'
 import { ReorderItemDto } from '../common/dto/reorder.dto'
 import { UploadsService } from '../uploads/uploads.service'
 import { PlanLimitsService } from '../common/services/plan-limits.service'
+
+/** A ProductImage row from the upload DTO — the crop bundle travels with it. */
+const imageRow = (im: ProductImageInputDto) => ({
+  url: im.url,
+  hiResUrl: im.hiResUrl ?? null,
+  originalUrl: im.originalUrl ?? null,
+  focalX: im.focalX ?? null,
+  focalY: im.focalY ?? null,
+  crop: (im.crop ?? undefined) as never,
+  storageKey: im.storageKey ?? null,
+})
 
 const INCLUDE = {
   translations: { include: { language: true } },
@@ -106,7 +118,7 @@ export class ProductsService {
         sortOrder: dto.sortOrder ?? 0,
         translations: { create: translations },
         images: dto.images?.length
-          ? { create: dto.images.map((im, i) => ({ url: im.url, storageKey: im.storageKey ?? null, isMain: im.isMain ?? i === 0, sortOrder: i })) }
+          ? { create: dto.images.map((im, i) => ({ ...imageRow(im), isMain: im.isMain ?? i === 0, sortOrder: i })) }
           : undefined,
         badges: badgeIds.length ? { create: badgeIds.map((badgeId) => ({ badgeId })) } : undefined,
       },
@@ -157,21 +169,26 @@ export class ProductsService {
     if (dto.images) {
       const old = await this.prisma.productImage.findMany({
         where: { productId: id },
-        select: { url: true },
+        select: { url: true, hiResUrl: true, originalUrl: true },
       })
       await this.prisma.$transaction([
         this.prisma.productImage.deleteMany({ where: { productId: id } }),
         ...dto.images.map((im, i) =>
           this.prisma.productImage.create({
-            data: { productId: id, url: im.url, storageKey: im.storageKey ?? null, isMain: im.isMain ?? i === 0, sortOrder: i },
+            data: { productId: id, ...imageRow(im), isMain: im.isMain ?? i === 0, sortOrder: i },
           }),
         ),
       ])
-      // Best-effort: drop storage objects for images no longer referenced.
-      const keep = new Set(dto.images.map((im) => im.url))
+      // Best-effort: drop storage objects no longer referenced. One photo is
+      // three of them now (display, retina, original), so all three are checked.
+      const keep = new Set(
+        dto.images.flatMap((im) => [im.url, im.hiResUrl, im.originalUrl]).filter(Boolean) as string[],
+      )
       await this.uploads.removeManyOwnByUrl(
         restaurantId,
-        old.filter((o) => !keep.has(o.url)).map((o) => o.url),
+        old
+          .flatMap((o) => [o.url, o.hiResUrl, o.originalUrl])
+          .filter((u): u is string => Boolean(u) && !keep.has(u as string)),
       )
     }
 

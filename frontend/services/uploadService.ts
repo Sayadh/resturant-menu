@@ -74,6 +74,31 @@ export const uploadService = {
     return res.data
   },
 
+  /**
+   * Upload the two pre-processed 4:3 WebP blobs (hi-res 1200×900 + standard
+   * 800×600) produced by the crop editor, plus the original file itself
+   * (kept so the crop can be redone later). Returns all three hosted URLs.
+   */
+  async uploadMenuImage(
+    original: File,
+    hiRes: Blob,
+    stdRes: Blob,
+  ): Promise<{ hiResUrl: string; stdResUrl: string; originalUrl: string }> {
+    const baseName = original.name.replace(/\.\w+$/, '')
+
+    const hiResFile = new File([hiRes], `${baseName}_1200x900.webp`, { type: 'image/webp' })
+    const stdResFile = new File([stdRes], `${baseName}_800x600.webp`, { type: 'image/webp' })
+
+    // Upload all three in parallel.
+    const [hiResult, stdResult, originalResult] = await Promise.all([
+      this.uploadImage(hiResFile),
+      this.uploadImage(stdResFile),
+      this.uploadImage(original),
+    ])
+
+    return { hiResUrl: hiResult.url, stdResUrl: stdResult.url, originalUrl: originalResult.url }
+  },
+
   /** Delete a previously uploaded object from storage (scoped to this tenant). */
   async deleteImage(url: string): Promise<void> {
     if (!url) return
@@ -87,3 +112,4 @@ export const uploadService = {
     return { url: r.image }
   },
 }
+

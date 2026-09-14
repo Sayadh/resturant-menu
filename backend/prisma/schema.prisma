@@ -355,7 +355,12 @@ model Category {
   sectionId       String?   @db.Uuid
   icon            String?
   iconUrl         String?
-  imageUrl        String?
+  imageUrl        String?   // 800×600 WebP — the copy guests are served
+  imageHiResUrl   String?   // 1200×900 WebP — retina / detail views
+  imageOriginalUrl String?  // the upload itself, kept so the crop can be redone
+  imageFocalX     Int?      // 0–100, 50 = centre. Drives CSS object-position.
+  imageFocalY     Int?
+  imageCrop       Json?     // editor state { offsetX, offsetY, zoom } for re-cropping
   mobileImageUrl  String?
   bannerTextColor String?   // 'light' | 'dark' — banner title colour over the image
   sortOrder       Int       @default(0)
@@ -444,7 +449,12 @@ model ProductTranslation {
 model ProductImage {
   id        String    @id @default(uuid()) @db.Uuid
   productId String    @db.Uuid
-  url        String // public/CDN URL
+  url        String // 800×600 WebP — the copy guests are served
+  hiResUrl   String? // 1200×900 WebP — retina / detail views
+  originalUrl String? // the upload itself, kept so the crop can be redone
+  focalX     Int? // 0–100, 50 = centre. Drives CSS object-position.
+  focalY     Int?
+  crop       Json? // editor state { offsetX, offsetY, zoom } for re-cropping
   storageKey String? // object-storage key (null for external/linked images)
   altText    String?
   isMain    Boolean   @default(false)

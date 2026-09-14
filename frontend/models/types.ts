@@ -51,10 +51,20 @@ export interface Category {
   iconImage: string
   /** Desktop banner image. */
   image: string
+  /** High-resolution (1200×900) version of the card image. */
+  imageHiRes: string
+  /** The upload itself, kept so the crop can be redone. */
+  imageOriginal: string
+  /** Crop-editor state, so reopening a photo restores its framing. */
+  imageCrop?: { offsetX: number; offsetY: number; zoom: number }
   /** Mobile banner image (falls back to `image`). */
   mobileImage: string
   /** Banner title colour over the image: 'light' (white) or 'dark'. */
   bannerTextColor: 'light' | 'dark'
+  /** Focal-point X (0–100, default 50). Controls object-position. */
+  imageFocalX: number
+  /** Focal-point Y (0–100, default 50). Controls object-position. */
+  imageFocalY: number
   sortOrder: number
   active: boolean
 }
@@ -70,8 +80,18 @@ export interface Product {
   /** Price in minor-less AMD (whole drams). */
   price: number
   image: string
+  /** High-resolution (1200×900) version of the product image. */
+  imageHiRes: string
+  /** The upload itself, kept so the crop can be redone. */
+  imageOriginal: string
+  /** Crop-editor state, so reopening a photo restores its framing. */
+  imageCrop?: { offsetX: number; offsetY: number; zoom: number }
   /** Show a picture for this dish on the public menu. Off = no image at all. */
   showImage: boolean
+  /** Focal-point X (0–100, default 50). Controls object-position. */
+  imageFocalX: number
+  /** Focal-point Y (0–100, default 50). Controls object-position. */
+  imageFocalY: number
   badges: Badge[]
   active: boolean
   available: boolean
