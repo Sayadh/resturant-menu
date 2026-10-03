@@ -80,6 +80,19 @@ export const opalineCategoryCount: LocalizedText = {
   RU: 'категорий',
 }
 
+/** Search sheet (opened from the header). */
+export const opalineSearch = {
+  open: { AM: 'Որոնել', EN: 'Search', RU: 'Поиск' } satisfies LocalizedText,
+  title: { AM: 'Որոնում', EN: 'Search', RU: 'Поиск' } satisfies LocalizedText,
+  hint: {
+    AM: 'Գրեք ուտեստի անունը՝ առնվազն 2 տառ։',
+    EN: 'Type a dish name — at least 2 letters.',
+    RU: 'Введите название блюда — минимум 2 буквы.',
+  } satisfies LocalizedText,
+  found: { AM: 'արդյունք', EN: 'results', RU: 'результатов' } satisfies LocalizedText,
+  clear: { AM: 'Մաքրել', EN: 'Clear', RU: 'Очистить' } satisfies LocalizedText,
+} as const
+
 /** Close action — accessible label for icon-only close buttons. */
 export const opalineClose: LocalizedText = { AM: 'Փակել', EN: 'Close', RU: 'Закрыть' }
 

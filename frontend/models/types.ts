@@ -57,8 +57,14 @@ export interface Category {
   imageOriginal: string
   /** Crop-editor state, so reopening a photo restores its framing. */
   imageCrop?: { offsetX: number; offsetY: number; zoom: number }
-  /** Mobile banner image (falls back to `image`). */
+  /** Mobile banner image, 800×600 (falls back to `image`). */
   mobileImage: string
+  /** Mobile banner 1200×900 — retina phones. */
+  mobileImageHiRes: string
+  /** Mobile banner upload itself, kept so the crop can be redone. */
+  mobileImageOriginal: string
+  /** Crop-editor state of the mobile banner. */
+  mobileImageCrop?: { offsetX: number; offsetY: number; zoom: number }
   /** Banner title colour over the image: 'light' (white) or 'dark'. */
   bannerTextColor: 'light' | 'dark'
   /** Focal-point X (0–100, default 50). Controls object-position. */
@@ -168,6 +174,8 @@ export interface Restaurant {
   activeLanguages: LangCode[]
   /** Subscription tier (set by super-admin). Gates paid features like AI. */
   planKey?: PlanKey
+  /** Current paid period (days 'YYYY-MM-DD'), recorded by the super-admin. */
+  subscription?: { paidAt: string; months: number; paidUntil: string } | null
   /** Plan limits (null = unlimited). Mirrored from the backend plan. */
   maxProducts?: number | null
   maxCategories?: number | null

@@ -18,12 +18,12 @@
 ```
 themes/
 ├── registry.ts              # themeId → component + themeFontsHref (միակ միացումը)
-├── atelier/ maison/ noir/ opaline/   # լրիվ թեմա (layouts + components + styles + config)
-└── (aria, heritage)         # պարզ՝ components/DesignAria.vue, DesignHeritage.vue
+├── atelier/ heritage/ maison/ noir/ opaline/   # լրիվ թեմա (layouts + components + config …)
+└── (aria)                   # պարզ՝ components/DesignAria.vue
 ```
 
-`opaline`-ը միակ թեման է, որ մենյուն ցույց է տալիս մակարդակներով
-(գլխավոր → բաժին → կատեգորիա)։ Մակարդակը պահվում է **նույն** `/<slug>` route-ի
+`opaline`-ը և `heritage`-ը մենյուն ցույց են տալիս մակարդակներով
+(գլխավոր → բաժին → կատեգորիա), նույն կմախքով, բայց տարբեր տեսքով (տես THEMES.md)։ Մակարդակը պահվում է **նույն** `/<slug>` route-ի
 query-ում (`?s=<sectionId>&c=<categoryId>`) — նոր route չկա։
 
 ## Երեք կանոն, որոնք ամենից հաճախ են խախտվում

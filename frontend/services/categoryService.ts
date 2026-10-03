@@ -1,6 +1,13 @@
 import type { Category } from '~/models/types'
 import { useApiClient } from './http'
-import { mapCategory, categoryDraftToDto, type ApiCategoryRow } from './_api-map'
+import {
+  mapCategory,
+  categoryDraftToDto,
+  categoryImageToDto,
+  categoryMobileImageToDto,
+  type ApiCategoryRow,
+  type CategoryBannerSlot,
+} from './_api-map'
 
 export type CategoryDraft = Omit<Category, 'id' | 'restaurantId'>
 
@@ -23,8 +30,19 @@ export const categoryService = {
     await useApiClient().patch(`/admin/categories/${id}`, categoryDraftToDto(draft))
   },
 
+  /** Save only one banner photo (partial PATCH — every other field untouched). */
+  async updateCategoryImage(id: string, draft: CategoryDraft, slot: CategoryBannerSlot): Promise<void> {
+    const body = slot === 'desktop' ? categoryImageToDto(draft) : categoryMobileImageToDto(draft)
+    await useApiClient().patch(`/admin/categories/${id}`, body)
+  },
+
   async deleteCategory(id: string): Promise<void> {
     await useApiClient().del(`/admin/categories/${id}`, { cascade: true })
+  },
+
+  /** Undo a delete — brings back the category and the products it took with it. */
+  async restoreCategory(id: string): Promise<void> {
+    await useApiClient().post(`/admin/categories/${id}/restore`, {})
   },
 
   /** Persist a new order: [{ id, sortOrder }, …]. */

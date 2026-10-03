@@ -78,6 +78,9 @@ const bannerOf = (cat: MenuCategory) =>
   cat.image || cat.items.find((i) => i.showImage !== false && i.image)?.image || ''
 // Mobile banner: dedicated mobile image, else the desktop banner.
 const mobileBannerOf = (cat: MenuCategory) => cat.mobileImage || bannerOf(cat)
+// Full-width banners prefer the retina copy (the standard one is the fallback).
+const bannerHiOf = (cat: MenuCategory) => cat.imageHiRes || bannerOf(cat)
+const mobileBannerHiOf = (cat: MenuCategory) => cat.mobileImageHiRes || cat.mobileImage || bannerHiOf(cat)
 // The category's own small icon image (falls back to the emoji in templates).
 const iconOf = (cat: MenuCategory) => cat.iconImage || ''
 
@@ -331,7 +334,7 @@ onBeforeUnmount(() => {
             <!-- Desktop banner -->
             <img
                 v-if="bannerOf(cat)"
-                :src="imgUrl(bannerOf(cat), 1200)"
+                :src="imgUrl(bannerHiOf(cat), 1600)"
                 :alt="t(cat.title)"
                 loading="lazy"
                 class="absolute inset-0 hidden h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:block"
@@ -340,7 +343,7 @@ onBeforeUnmount(() => {
             <!-- Mobile banner -->
             <img
                 v-if="mobileBannerOf(cat)"
-                :src="imgUrl(mobileBannerOf(cat), 1080)"
+                :src="imgUrl(mobileBannerHiOf(cat), 1080)"
                 :alt="t(cat.title)"
                 loading="lazy"
                 class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 sm:hidden"

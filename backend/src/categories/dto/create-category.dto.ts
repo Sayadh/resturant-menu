@@ -54,6 +54,17 @@ export class CreateCategoryDto {
   @IsOptional() @IsString() @MaxLength(500)
   mobileImageUrl?: string
 
+  /** Mobile banner 1200×900 WebP — retina phones. */
+  @IsOptional() @IsString() @MaxLength(500)
+  mobileImageHiResUrl?: string
+
+  /** Mobile banner upload itself, kept so the crop can be redone later. */
+  @IsOptional() @IsString() @MaxLength(500)
+  mobileImageOriginalUrl?: string
+
+  @IsOptional() @IsObject() @ValidateNested() @Type(() => ImageCropDto)
+  mobileImageCrop?: ImageCropDto
+
   // Banner title colour over the image: 'light' (white) or 'dark'.
   @IsOptional() @IsIn(['light', 'dark'])
   bannerTextColor?: 'light' | 'dark'

@@ -104,7 +104,9 @@ export interface ApiMenuResponse {
     icon: string | null
     iconImage: string | null
     image: string | null
+    imageHiRes?: string | null
     mobileImage: string | null
+    mobileImageHiRes?: string | null
     bannerTextColor: string | null
     sortOrder: number
     name: string
@@ -161,8 +163,9 @@ export function buildMenu(payload: ApiMenuResponse): { levels: MenuLevel[]; cate
       title: mirror(c.name),
       description: mirror(c.description ?? ''),
       image: c.image ?? '',
-      imageHiRes: (c as Record<string, unknown>).imageHiRes as string ?? '',
+      imageHiRes: c.imageHiRes ?? '',
       mobileImage: c.mobileImage ?? '',
+      mobileImageHiRes: c.mobileImageHiRes ?? '',
       bannerTextColor: (c.bannerTextColor === 'dark' ? 'dark' : 'light'),
       imageFocalX: (c as Record<string, unknown>).imageFocalX as number ?? 50,
       imageFocalY: (c as Record<string, unknown>).imageFocalY as number ?? 50,
@@ -360,6 +363,8 @@ export interface ApiAdminRestaurant {
   translations?: { tagline: string | null; language: { code: string } }[]
   languages?: { isDefault: boolean; language: { code: string } }[]
   defaultLanguage?: { code: string } | null
+  /** At most one row: the period that runs longest. DATE columns arrive as ISO timestamps. */
+  payments?: { paidAt: string; months: number; paidUntil: string }[]
 }
 
 export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
@@ -390,6 +395,13 @@ export function mapAdminRestaurant(r: ApiAdminRestaurant): Restaurant {
     defaultLanguage: def ?? codes[0] ?? 'hy',
     activeLanguages: codes.length ? codes : ['hy'],
     planKey: (r.plan?.key as Restaurant['planKey']) ?? 'free',
+    subscription: r.payments?.[0]
+      ? {
+          paidAt: r.payments[0].paidAt.slice(0, 10),
+          months: r.payments[0].months,
+          paidUntil: r.payments[0].paidUntil.slice(0, 10),
+        }
+      : null,
     maxProducts: r.plan?.maxProducts ?? null,
     maxCategories: r.plan?.maxCategories ?? null,
     ordering: r.ordering ?? false,
@@ -437,6 +449,9 @@ export interface ApiCategoryRow {
   imageOriginalUrl: string | null
   imageCrop: { offsetX: number; offsetY: number; zoom: number } | null
   mobileImageUrl: string | null
+  mobileImageHiResUrl: string | null
+  mobileImageOriginalUrl: string | null
+  mobileImageCrop: { offsetX: number; offsetY: number; zoom: number } | null
   bannerTextColor: string | null
   imageFocalX: number | null
   imageFocalY: number | null
@@ -460,6 +475,9 @@ export function mapCategory(c: ApiCategoryRow): Category {
     imageOriginal: c.imageOriginalUrl ?? '',
     imageCrop: c.imageCrop ?? undefined,
     mobileImage: c.mobileImageUrl ?? '',
+    mobileImageHiRes: c.mobileImageHiResUrl ?? '',
+    mobileImageOriginal: c.mobileImageOriginalUrl ?? '',
+    mobileImageCrop: c.mobileImageCrop ?? undefined,
     bannerTextColor: c.bannerTextColor === 'dark' ? 'dark' : 'light',
     imageFocalX: c.imageFocalX ?? 50,
     imageFocalY: c.imageFocalY ?? 50,
@@ -519,6 +537,33 @@ export function mapProduct(p: ApiProductRow, sectionByCat: Map<string, string>):
 }
 
 // ── drafts → backend DTOs ─────────────────────────────────────────────────
+type DesktopBanner = Pick<Category, 'image' | 'imageHiRes' | 'imageOriginal' | 'imageCrop' | 'imageFocalX' | 'imageFocalY'>
+type MobileBanner = Pick<Category, 'mobileImage' | 'mobileImageHiRes' | 'mobileImageOriginal' | 'mobileImageCrop'>
+export type CategoryBannerSlot = 'desktop' | 'mobile'
+
+/** A category's desktop-banner photo (display + retina + original + framing). */
+export function categoryImageToDto(d: DesktopBanner) {
+  return {
+    // '' (not undefined) so a removed image is CLEARED and its file deleted.
+    imageUrl: d.image ?? '',
+    imageHiResUrl: d.imageHiRes ?? '',
+    imageOriginalUrl: d.imageOriginal ?? '',
+    imageCrop: d.imageCrop,
+    imageFocalX: d.imageFocalX ?? 50,
+    imageFocalY: d.imageFocalY ?? 50,
+  }
+}
+
+/** A category's mobile-banner photo, same bundle as the desktop one. */
+export function categoryMobileImageToDto(d: MobileBanner) {
+  return {
+    mobileImageUrl: d.mobileImage ?? '',
+    mobileImageHiResUrl: d.mobileImageHiRes ?? '',
+    mobileImageOriginalUrl: d.mobileImageOriginal ?? '',
+    mobileImageCrop: d.mobileImageCrop,
+  }
+}
+
 export function categoryDraftToDto(d: Omit<Category, 'id' | 'restaurantId'>) {
   return {
     sectionId: d.sectionId,
@@ -526,18 +571,32 @@ export function categoryDraftToDto(d: Omit<Category, 'id' | 'restaurantId'>) {
     // Send '' (not undefined) so a removed image is CLEARED in the DB and its
     // old file is deleted from storage on save. `|| undefined` swallowed clears.
     iconUrl: d.iconImage ?? '',
-    imageUrl: d.image ?? '',
-    imageHiResUrl: d.imageHiRes ?? '',
-    imageOriginalUrl: d.imageOriginal ?? '',
-    imageCrop: d.imageCrop,
-    mobileImageUrl: d.mobileImage ?? '',
+    ...categoryImageToDto(d),
+    ...categoryMobileImageToDto(d),
     bannerTextColor: d.bannerTextColor ?? 'light',
-    imageFocalX: d.imageFocalX ?? 50,
-    imageFocalY: d.imageFocalY ?? 50,
     sortOrder: d.sortOrder,
     isActive: d.active,
     translations: translationToRows(d.name, d.description),
   }
+}
+
+/**
+ * A product's photo rows. [] (not undefined) so a removed image is cleared +
+ * old file deleted. The crop bundle belongs to the image, so it travels
+ * inside the row rather than alongside it on the product.
+ */
+export function productImagesToDto(d: Pick<Product, 'image' | 'imageHiRes' | 'imageOriginal' | 'imageCrop' | 'imageFocalX' | 'imageFocalY'>) {
+  return d.image
+    ? [{
+        url: d.image,
+        hiResUrl: d.imageHiRes || undefined,
+        originalUrl: d.imageOriginal || undefined,
+        focalX: d.imageFocalX ?? 50,
+        focalY: d.imageFocalY ?? 50,
+        crop: d.imageCrop,
+        isMain: true,
+      }]
+    : []
 }
 
 export function productDraftToDto(d: Omit<Product, 'id' | 'restaurantId'>) {
@@ -553,20 +612,7 @@ export function productDraftToDto(d: Omit<Product, 'id' | 'restaurantId'>) {
     sortOrder: d.sortOrder,
     showImage: d.showImage,
     badges: keys.length ? keys : undefined,
-    // [] (not undefined) so a removed product image is cleared + old file deleted.
-    // The crop bundle belongs to the image, so it travels inside the row
-    // rather than alongside it on the product.
-    images: d.image
-      ? [{
-          url: d.image,
-          hiResUrl: d.imageHiRes || undefined,
-          originalUrl: d.imageOriginal || undefined,
-          focalX: d.imageFocalX ?? 50,
-          focalY: d.imageFocalY ?? 50,
-          crop: d.imageCrop,
-          isMain: true,
-        }]
-      : [],
+    images: productImagesToDto(d),
     translations: translationToRows(d.name, d.description),
   }
 }

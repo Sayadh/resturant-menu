@@ -2,9 +2,15 @@
 import { imgUrl } from '~/utils/image'
 import { ui, type MenuItem } from '~/data/menu'
 import { visibleBadges } from '~/data/badges'
+import { heritageOrder } from '~/themes/heritage/config'
 const props = defineProps<{ item: MenuItem; icon?: string }>()
 const emit = defineEmits<{ open: [item: MenuItem] }>()
 const { t } = useLanguage()
+const brand = useBrand() // ordering = paid plans only
+const order = useOrderStore()
+const qty = computed(() => order.qtyOf(props.item.id))
+// A sold-out dish can't be ordered; one already in the basket can still be reduced.
+const canOrder = computed(() => brand.ordering && (props.item.available !== false || qty.value > 0))
 
 const formattedPrice = computed(() => props.item.price.toLocaleString('hy-AM'))
 
@@ -85,10 +91,46 @@ const hasPhoto = computed(() => showMedia.value && !!props.item.image && !imgFai
         {{ t(item.description) }}
       </p>
 
-      <div class="mt-auto flex items-end justify-between gap-2 border-t border-[#D5D1C6] pt-2.5 sm:mt-3">
+      <div class="mt-auto flex items-center justify-between gap-2 border-t border-[#D5D1C6] pt-2.5 sm:mt-3">
         <p class="font-display text-lg font-bold tracking-wide text-[#49372C] sm:text-xl">
           {{ formattedPrice }}<span class="ml-0.5 text-[#A47B45]">{{ ui.currency.AM }}</span>
         </p>
+
+        <!-- Order (paid plans only): "+" first, a − n + stepper once added -->
+        <template v-if="canOrder">
+          <div
+            v-if="qty > 0"
+            class="flex shrink-0 items-center gap-1 rounded-full border border-[#D5D1C6] bg-[#F1F0EA] p-0.5"
+          >
+            <button
+              type="button"
+              class="grid h-8 w-8 place-items-center rounded-full text-lg font-bold leading-none text-[#292A27] transition hover:bg-[#E2E6D8] active:scale-90"
+              :aria-label="t(heritageOrder.less)"
+              @click="order.dec(item.id)"
+            >
+              −
+            </button>
+            <span class="min-w-[1.25rem] text-center font-display text-sm font-bold text-[#292A27]">{{ qty }}</span>
+            <button
+              v-if="item.available !== false"
+              type="button"
+              class="grid h-8 w-8 place-items-center rounded-full bg-[#64734D] text-[#FCFBF7] transition hover:bg-[#4F6B58] active:scale-90"
+              :aria-label="t(heritageOrder.more)"
+              @click="order.add(item.id)"
+            >
+              <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round" /></svg>
+            </button>
+          </div>
+          <button
+            v-else
+            type="button"
+            class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#64734D] text-[#FCFBF7] shadow-[0_6px_18px_-6px_rgba(100,115,77,0.6)] ring-1 ring-[#A47B45]/40 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#4F6B58] active:translate-y-0 active:scale-90 sm:h-10 sm:w-10"
+            :aria-label="t(heritageOrder.add)"
+            @click="order.add(item.id)"
+          >
+            <svg viewBox="0 0 24 24" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round" /></svg>
+          </button>
+        </template>
       </div>
     </div>
   </article>

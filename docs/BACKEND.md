@@ -21,7 +21,7 @@
 | Categories | `categories/` | `admin/categories` | կատեգորիաներ (CRUD + reorder) |
 | Products | `products/` | `admin/products` | ապրանքներ (CRUD + reorder + availability) |
 | SuperAdmin | `super-admin/` | `super-admin/restaurants` | ռեստորանների կառավարում (platform) |
-| Public | `public/` | `public` | հրապարակային՝ menu, restaurants, lead, resolve |
+| Public | `public/` | `public` | հրապարակային՝ menu, restaurants, **search**, lead, resolve |
 | Health | `health/` | `health` | health check |
 | Prisma | `prisma/` | — | `PrismaService` (DB հասանելիություն) |
 
@@ -89,6 +89,64 @@ Query-ների կողմից՝ `select` ամենուր (ոչ `include`), translat
 ըստ լեզվի, badge key-երը գալիս են զուգահեռ մեկ catalogue query-ով — ամեն ավելորդ
 relation հավասար է ևս մեկ round-trip դեպի հեռավոր բազա։
 
+## Ուտեստների որոնում (`GET /public/restaurants/:id/search?q=&lang=`)
+
+Հյուրի որոնումը backend-ում է․ համեմատվում է ամեն ուտեստի անունն ու նկարագրությունը
+**բոլոր լեզուներով** (հայերեն մենյուում «cola» գրելը գտնում է «Կոլա»-ն)։
+
+- **Ֆիլտր** (`PublicService.search`)՝ ակտիվ ուտեստ → ակտիվ կատեգորիա → ակտիվ բաժին
+  (կամ առանց բաժնի) → ակտիվ ռեստորան։ Ամեն բառ պետք է գտնվի (AND), `ILIKE`։
+- **Դասավորություն** (`public/menu-search.ts`, մաքուր ֆունկցիաներ, թեստ՝
+  `test/menu-search.test.ts`)՝ ճիշտ անուն → անունը սկսվում է → բառն է սկսվում →
+  անվան ներսում → միայն նկարագրության մեջ։ Հավասարի դեպքում՝ հյուրի լեզուն, ապա `sortOrder`։
+- **Պատասխան**՝ `{ query, total, items: [{ id, categoryId, name }] }` (առավելագույնը 30)։
+  Frontend-ը id-ներով վերցնում է արդեն բեռնված ուտեստները (`useMenuSearch`)՝ նույն քարտը,
+  նույն գինը, նույն «+»-ը։
+- **Cache չկա դիտավորյալ**․ ամեն տարբեր query կդառնար cache entry և դուրս կմղեր իրական
+  մենյուները 300-entry cache-ից։ Փոխարենը՝ սեփական rate limit (120/րոպե/IP — մի ամբողջ
+  դահլիճ մեկ Wi-Fi IP-ից), `ParseUUIDPipe` id-ի վրա, `q`-ն՝ ≤64 նիշ, < 2 նիշ → դատարկ։
+
+## Բաժանորդային վճարումներ (super-admin)
+
+`RestaurantPayment` (`restaurant_payments`)՝ «ռեստորանը վճարել է `months` ամսվա
+համար՝ սկսած `paidAt` օրից»։ **Միայն հաշվառում է** — ոչինչ չի միացնում/անջատում։
+
+| Route (SUPER_ADMIN) | Ինչ |
+|---|---|
+| `GET /super-admin/restaurants` | ամեն տողում `payment`՝ ամենաերկար ժամկետով վճարումը կամ `null` |
+| `GET /super-admin/restaurants/:id/payments` | պատմությունը, նորից հին |
+| `POST /super-admin/restaurants/:id/payments` | `{ paidAt: 'YYYY-MM-DD', months: 1\|3\|6\|12 }` |
+| `DELETE /super-admin/restaurants/:id/payments/:paymentId` | սխալ գրառման ջնջում (միայն այդ ռեստորանի) |
+
+- Օրերը **օրացույցային** են (`DATE`, ոչ timestamp)՝ `'YYYY-MM-DD'` տողերով։
+- `paidUntil = paidAt + months`՝ ամսվա վերջին օրով սահմանափակված (Jan 31 + 1 → Feb 28),
+  հաշվում է backend-ը (`super-admin/billing.ts`, թեստ՝ `test/billing.test.ts`) և պահում։
+- Բազայում CHECK-եր՝ `months IN (1,3,6,12)` և `paidUntil > paidAt`։
+
+## Կատեգորիայի բաններների նկարներ
+
+`categories`-ում desktop և mobile բաններից յուրաքանչյուրը նույն փաթեթն է.
+
+| | Desktop (16:5) | Mobile (4:3) |
+|---|---|---|
+| Ցուցադրվող | `imageUrl` (960×300) | `mobileImageUrl` (800×600) |
+| Retina | `imageHiResUrl` (1600×500) | `mobileImageHiResUrl` (1200×900) |
+| Original | `imageOriginalUrl` | `mobileImageOriginalUrl` |
+| Կադրում | `imageCrop` | `mobileImageCrop` |
+
+- Migration՝ `20261003120000_category_mobile_image_crop` (additive, idempotent)։
+- `PATCH /admin/categories/:id`-ը partial է․ admin-ը մեկ բանները պահպանում է առանձին։ Փոխարինված/մաքրված URL-ների ֆայլերը (6-ն էլ) ջնջվում են storage-ից, իսկ մաքրված նկարի `crop`-ը դառնում է `NULL`։
+- Public menu-ն վերադարձնում է `imageHiRes` և `mobileImageHiRes`։ Original-ն ու crop-ը միայն admin-ի համար են։
+
+## Ջնջում և «Վերադարձնել» (undo)
+
+Ապրանքը, կատեգորիան և բաժինը ջնջվում են soft (`deletedAt`)։ Մեկ ջնջումը նույն `deletedAt`-ն է դնում նաև այն ամենին, ինչ cascade-ով գնաց (կատեգորիա → ապրանքներ, բաժին → կատեգորիաներ → ապրանքներ)։
+
+- `POST /admin/{products|categories|sections}/:id/restore` (owner/manager) — վերադարձնում է հենց այդ ջնջումը. նախկինում առանձին ջնջվածները ջնջված են մնում։
+- Թույլատրվում է ջնջումից `RESTORE_WINDOW_MS` (60 վ, `common/utils/restore-window.ts`) ընթացքում․ ադմինը կոճակը ցույց է տալիս 10 վ։ Հետո՝ `410 Gone`։
+- Idempotent (չջնջվածի վրա՝ `200`), tenant-ը JWT-ից (այլ ռեստորանի id → `404`), plan limit-ը ստուգվում է (`assertCanCreate(…, adding)`), ծնողը պետք է կենդանի լինի (`409`)։
+- Public cache-ը մաքրվում է `CacheInvalidationInterceptor`-ով։
+
 ## Controller → Service → Prisma օրինակ
 
 ```ts
@@ -134,7 +192,7 @@ async create(restaurantId: string, dto: CreateProductDto) {
 ```env
 NODE_ENV=production
 PORT=4000
-DATABASE_URL=postgresql://...@...pooler.supabase.com:5432/postgres   # Session pooler
+DATABASE_URL=postgresql://...@...pooler.supabase.com:5432/postgres?connection_limit=5&pool_timeout=20   # Session pooler (pool_size 15 — keep connection_limit so one process can't take them all)
 JWT_ACCESS_SECRET=<strong>
 JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_SECRET=<strong>

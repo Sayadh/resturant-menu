@@ -20,6 +20,14 @@ defineEmits<{ (e: 'explore'): void }>()
 
 const { t } = useLanguage()
 const num = computed(() => String(props.index + 1).padStart(2, '0'))
+// Admin's "banner text colour": 'dark' = ink on a cream veil, for light
+// photos; default 'light' = cream on the wine veil.
+const darkText = computed(() => props.category.bannerTextColor === 'dark' && !!(props.image || mobileSrc.value))
+const veil = computed(() =>
+  darkText.value
+    ? 'linear-gradient(180deg, rgba(255,251,252,0.62), rgba(255,251,252,0.5) 45%, rgba(255,251,252,0.82))'
+    : 'linear-gradient(180deg, rgba(84, 28, 46,0.55), rgba(84, 28, 46,0.4) 45%, rgba(84, 28, 46,0.78))',
+)
 </script>
 
 <template>
@@ -50,17 +58,24 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
     />
     <div
       class="absolute inset-0"
-      style="background: linear-gradient(180deg, rgba(84, 28, 46,0.55), rgba(84, 28, 46,0.4) 45%, rgba(84, 28, 46,0.78))"
+      :style="{ background: veil }"
       aria-hidden="true"
     />
 
     <!-- Content -->
-    <div class="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center text-[#FFFBFC]">
+    <div
+      class="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center"
+      :class="darkText ? 'text-[#2C1B22]' : 'text-[#FFFBFC]'"
+    >
       <span v-reveal class="ms-gold-text font-display text-4xl sm:text-6xl">{{ num }}</span>
       <h2 v-reveal="1" class="mt-3 text-balance font-serif text-3xl leading-tight sm:mt-4 sm:text-6xl">
         {{ t(category.title) }}
       </h2>
-      <div v-reveal="2" class="mt-4 flex items-center gap-3 font-sans text-[11px] tracking-[0.24em] text-[#FFFBFC]/75 sm:mt-6">
+      <div
+        v-reveal="2"
+        class="mt-4 flex items-center gap-3 font-sans text-[11px] tracking-[0.24em] sm:mt-6"
+        :class="darkText ? 'text-[#2C1B22]/75' : 'text-[#FFFBFC]/75'"
+      >
         <span class="h-px w-8 bg-[#B99768]/60" aria-hidden="true" />
         {{ category.items.length }} {{ t(maisonCategories.dishesWord).toUpperCase() }}
         <span class="h-px w-8 bg-[#B99768]/60" aria-hidden="true" />
@@ -69,7 +84,8 @@ const num = computed(() => String(props.index + 1).padStart(2, '0'))
       <button
         v-reveal="3"
         type="button"
-        class="group mt-6 inline-flex items-center gap-3 border border-[#FFFBFC]/40 px-8 py-3 font-sans text-[11px] tracking-[0.26em] transition-colors duration-500 hover:border-[#B99768] hover:bg-[#B99768] hover:text-[#2C1B22] sm:mt-9"
+        class="group mt-6 inline-flex items-center gap-3 border px-8 py-3 font-sans text-[11px] tracking-[0.26em] transition-colors duration-500 hover:border-[#B99768] hover:bg-[#B99768] hover:text-[#2C1B22] sm:mt-9"
+        :class="darkText ? 'border-[#2C1B22]/40' : 'border-[#FFFBFC]/40'"
         @click="$emit('explore')"
       >
         {{ t(maisonCategories.explore).toUpperCase() }}

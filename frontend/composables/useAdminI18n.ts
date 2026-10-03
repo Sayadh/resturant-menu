@@ -164,6 +164,14 @@ const T: Dict = {
   // toasts
   saved: { hy: 'Պահպանված է', ru: 'Сохранено', en: 'Saved' },
   deleted: { hy: 'Ջնջված է', ru: 'Удалено', en: 'Deleted' },
+  // undo after delete
+  deletedWord: { hy: 'ջնջվեց', ru: 'удалено', en: 'deleted' },
+  undo: { hy: 'Վերադարձնել', ru: 'Вернуть', en: 'Undo' },
+  restoring: { hy: 'Վերադարձվում է…', ru: 'Возвращаем…', en: 'Restoring…' },
+  restored: { hy: 'Վերադարձվեց', ru: 'Восстановлено', en: 'Restored' },
+  restoreExpired: { hy: 'Վերադարձնելու ժամկետն անցել է', ru: 'Время для отмены истекло', en: 'Too late to undo' },
+  restoreFailed: { hy: 'Չհաջողվեց վերադարձնել', ru: 'Не удалось вернуть', en: 'Could not restore' },
+  close: { hy: 'Փակել', ru: 'Закрыть', en: 'Close' },
   loadFailed: { hy: 'Չհաջողվեց բեռնել', ru: 'Не удалось загрузить', en: 'Failed to load' },
   createFailed: { hy: 'Չհաջողվեց ստեղծել', ru: 'Не удалось создать', en: 'Failed to create' },
 
@@ -235,14 +243,74 @@ const T: Dict = {
 
   // image crop editor
   cropPhoto: { hy: 'Կադրել նկարը', ru: 'Кадрирование фото', en: 'Crop photo' },
-  cropHint: { hy: 'Քաշիր և մեծացրու/փոքրացրու, որպեսզի ուզած մասը մնա կենտրոնում։ Սա միայն ձևի մեջ է կիրառվում — մի մոռացիր հետո սեղմել ապրանքի/կատեգորիայի սեփական «Պահպանել» կոճակը։', ru: 'Перетаскивайте и масштабируйте, чтобы нужная часть осталась в центре. Это применяется только к форме — не забудьте потом нажать «Сохранить» в самой форме товара/категории.', en: 'Drag and zoom so the part you want stays centred. This only applies to the form — don’t forget to hit “Save” on the product/category form too.' },
+  cropHint: { hy: 'Քաշիր և մեծացրու/փոքրացրու, որպեսզի ուզած մասը մնա կադրում։ «Կիրառել»-ից հետո նկարը միանգամից պահպանվում է (նոր ապրանքի/կատեգորիայի դեպքում՝ ձևի «Պահպանել»-ով)։', ru: 'Перетаскивайте и масштабируйте, чтобы нужная часть осталась в кадре. После «Применить» фото сразу сохраняется (для нового товара/категории — кнопкой «Сохранить» в форме).', en: 'Drag and zoom so the part you want stays in the frame. “Apply” saves the photo right away (for a new product/category, with the form’s “Save”).' },
+  imageSaved: { hy: 'Նկարը պահպանվեց', ru: 'Фото сохранено', en: 'Photo saved' },
+  imageRemoved: { hy: 'Նկարը հեռացվեց', ru: 'Фото удалено', en: 'Photo removed' },
   cropZoom: { hy: 'Քանակացում', ru: 'Масштаб', en: 'Zoom' },
   cropReset: { hy: 'Վերարկել', ru: 'Сброс', en: 'Reset' },
   cropSave: { hy: 'Կիրառել', ru: 'Применить', en: 'Apply' },
   cropSaving: { hy: 'Կիրառվում է…', ru: 'Применение…', en: 'Applying…' },
   cropCancel: { hy: 'Չեղարկել', ru: 'Отмена', en: 'Cancel' },
   cropEdit: { hy: 'Փոխել կադրումը', ru: 'Изменить кадр', en: 'Edit crop' },
+  cropFrameBanner: { hy: 'Կադրը 16:5 է՝ ճիշտ այնպես, ինչպես երևում է դեսքթոփ բաններում', ru: 'Кадр 16:5 — ровно так, как баннер выглядит на десктопе', en: 'The frame is 16:5 — exactly how the desktop banner shows it' },
+  cropFrameMobile: { hy: 'Կադրը 4:3 է՝ ճիշտ այնպես, ինչպես երևում է հեռախոսի բաններում', ru: 'Кадр 4:3 — ровно так, как баннер выглядит на телефоне', en: 'The frame is 4:3 — exactly how the mobile banner shows it' },
+  replaceImage: { hy: 'Փոխել', ru: 'Заменить', en: 'Replace' },
   cropFailed: { hy: 'Չհաջողվեց մշակել նկարը', ru: 'Не удалось обработать фото', en: 'Could not process the photo' },
+
+  // subscription payments (super-admin)
+  payment: { hy: 'Վճարում', ru: 'Оплата', en: 'Payment' },
+  paymentTitle: { hy: 'Վճարում', ru: 'Оплата', en: 'Payment' },
+  paymentMark: { hy: 'Նշել վճարում', ru: 'Отметить оплату', en: 'Record payment' },
+  paymentUntil: { hy: 'մինչև', ru: 'до', en: 'until' },
+  paymentDaysLeft: { hy: 'օր մնաց', ru: 'дн. осталось', en: 'days left' },
+  paymentEndsToday: { hy: 'այսօր ավարտվում է', ru: 'заканчивается сегодня', en: 'ends today' },
+  paymentExpired: { hy: 'Ժամկետանց', ru: 'Просрочено', en: 'Expired' },
+  paymentFrom: { hy: 'սկսած', ru: 'с', en: 'from' },
+  paymentStepDay: { hy: 'Վճարման օրը', ru: 'День оплаты', en: 'Payment day' },
+  paymentStepPeriod: { hy: 'Ժամկետը', ru: 'Срок', en: 'Period' },
+  paymentToday: { hy: 'Այսօր', ru: 'Сегодня', en: 'Today' },
+  paymentMonths1: { hy: '1 ամիս', ru: '1 месяц', en: '1 month' },
+  paymentMonths3: { hy: '3 ամիս', ru: '3 месяца', en: '3 months' },
+  paymentMonths6: { hy: '6 ամիս', ru: '6 месяцев', en: '6 months' },
+  paymentMonths12: { hy: '1 տարի', ru: '1 год', en: '1 year' },
+  paymentSave: { hy: 'Նշել վճարումը', ru: 'Сохранить оплату', en: 'Save payment' },
+  paymentSaved: { hy: 'Վճարումը նշվեց', ru: 'Оплата сохранена', en: 'Payment saved' },
+  paymentHistory: { hy: 'Վճարումների պատմություն', ru: 'История оплат', en: 'Payment history' },
+  paymentHistoryEmpty: { hy: 'Վճարումներ դեռ չկան', ru: 'Оплат пока нет', en: 'No payments yet' },
+  paymentDeleteConfirm: { hy: 'Այո, ջնջել', ru: 'Да, удалить', en: 'Yes, delete' },
+
+  // activate / deactivate a restaurant (super-admin)
+  activate: { hy: 'Ակտիվացնել', ru: 'Активировать', en: 'Activate' },
+  deactivate: { hy: 'Ապաակտիվացնել', ru: 'Деактивировать', en: 'Deactivate' },
+  inactiveBadge: { hy: 'Ապաակտիվ', ru: 'Отключён', en: 'Inactive' },
+  deactivateTitle: { hy: 'Ապաակտիվացնե՞լ «{name}»-ը', ru: 'Деактивировать «{name}»?', en: 'Deactivate “{name}”?' },
+  deactivateConfirm: {
+    hy: 'Հյուրերի համար մենյուն այլևս չի բացվի, իսկ սեփականատերը չի կարողանա աշխատել ադմին-պանելում։ Ոչինչ չի ջնջվում․ ցանկացած պահի կարող եք նորից ակտիվացնել։',
+    ru: 'Меню перестанет открываться для гостей, а владелец не сможет работать в админ-панели. Ничего не удаляется — включить снова можно в любой момент.',
+    en: 'Guests will no longer be able to open the menu, and the owner will be locked out of the admin panel. Nothing is deleted — you can activate it again at any time.',
+  },
+  restaurantActivated: { hy: 'Հաստատությունը ակտիվացվեց', ru: 'Заведение активировано', en: 'Business activated' },
+  restaurantDeactivated: { hy: 'Հաստատությունը ապաակտիվացվեց', ru: 'Заведение деактивировано', en: 'Business deactivated' },
+  actionFailed: { hy: 'Չհաջողվեց', ru: 'Не удалось', en: 'Something went wrong' },
+
+  // the owner's subscription (dashboard card + warning banner)
+  subscription: { hy: 'Բաժանորդագրություն', ru: 'Подписка', en: 'Subscription' },
+  subPaidUntil: { hy: 'Վճարված է մինչև', ru: 'Оплачено до', en: 'Paid until' },
+  subStatusActive: { hy: 'Ակտիվ', ru: 'Активна', en: 'Active' },
+  subStatusSoon: { hy: 'Շուտով ավարտվում է', ru: 'Скоро истекает', en: 'Ending soon' },
+  subStatusExpired: { hy: 'Ժամկետանց', ru: 'Просрочена', en: 'Expired' },
+  subStatusUpcoming: { hy: 'Սկսվում է {date}-ին', ru: 'Начинается {date}', en: 'Starts on {date}' },
+  subNoPayment: { hy: 'Վճարման ժամկետը դեռ նշված չէ', ru: 'Срок оплаты ещё не указан', en: 'No payment period recorded yet' },
+  subSoonMsg: {
+    hy: 'Բաժանորդագրության ժամկետն ավարտվում է {date}-ին։ Երկարացնելու համար կապվեք մեզ հետ։',
+    ru: 'Подписка заканчивается {date}. Чтобы продлить, свяжитесь с нами.',
+    en: 'Your subscription ends on {date}. Contact us to renew.',
+  },
+  subExpiredMsg: {
+    hy: 'Բաժանորդագրության ժամկետն ավարտվել է {date}-ին։ Երկարացնելու համար կապվեք մեզ հետ։',
+    ru: 'Подписка закончилась {date}. Чтобы продлить, свяжитесь с нами.',
+    en: 'Your subscription ended on {date}. Contact us to renew.',
+  },
 }
 
 export const ADMIN_LANGS: { code: AdminLang; label: string }[] = [

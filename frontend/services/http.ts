@@ -73,5 +73,7 @@ function normalizeError(err: unknown): Error {
     : raw || (err as Error)?.message || 'Request failed'
   const e = new Error(msg)
   ;(e as Error & { errors?: unknown }).errors = data?.errors
+  // HTTP status, so callers can tell e.g. 410 (undo window passed) apart.
+  ;(e as Error & { status?: number }).status = (err as { response?: { status?: number } })?.response?.status
   return e
 }

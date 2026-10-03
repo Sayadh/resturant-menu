@@ -18,6 +18,12 @@ export class RestaurantService {
     translations: { include: { language: true } },
     languages: { include: { language: true }, orderBy: { sortOrder: 'asc' as const } },
     defaultLanguage: true,
+    // The period that runs longest — what the owner's dashboard shows.
+    payments: {
+      orderBy: { paidUntil: 'desc' as const },
+      take: 1,
+      select: { paidAt: true, months: true, paidUntil: true },
+    },
   }
 
   async getOwn(restaurantId: string) {

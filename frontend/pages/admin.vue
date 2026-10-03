@@ -18,6 +18,7 @@ import {
 } from '~/services'
 import type { ThemeId } from '~/models/types'
 import { superAdminService, type AdminRestaurantRow } from '~/services/superAdminService'
+import { daysBetween, displayDay, paymentState, todayDay } from '~/utils/billing'
 import { leadService } from '~/services/leadService'
 
 // The admin manages exactly one restaurant — the signed-in owner's tenant.
@@ -28,7 +29,7 @@ import type { Category, Product, Section, Badge, LangCode } from '~/models/types
 import type { LocalizedText } from '~/data/menu'
 import type { AdminLang } from '~/composables/useAdminI18n'
 import { BADGES, BADGE_GROUPS } from '~/data/badges'
-import type { CropState } from '~/utils/image'
+import type { CropPreset, CropState } from '~/utils/image'
 
 // ── auth ────────────────────────────────────────────────────────
 const auth = useAuthStore()
@@ -78,9 +79,11 @@ const busy = ref(false)
 // so a stale/seed restaurant is never flashed on refresh.
 const pageReady = ref(false)
 const toast = ref('')
+let toastTimer: ReturnType<typeof setTimeout> | undefined
 const flash = (m: string) => {
   toast.value = m
-  setTimeout(() => (toast.value = ''), 2000)
+  clearTimeout(toastTimer) // a newer message gets its full 2 s
+  toastTimer = setTimeout(() => (toast.value = ''), 2000)
 }
 
 const refresh = async () => {
@@ -106,6 +109,54 @@ const atCategoryLimit = computed(() => categoryLimit.value != null && categories
 const PLAN_NAMES: Record<string, string> = { free: 'Starter', pro: 'Professional', business: 'Business' }
 const planName = computed(() => PLAN_NAMES[restaurant.value.planKey ?? 'free'] ?? 'Starter')
 const isPaidPlan = computed(() => (restaurant.value.planKey ?? 'free') !== 'free')
+
+// ── the owner's subscription (recorded by the super-admin) ─────────────
+const SUB_TONE = {
+  active: { pill: 'bg-emerald-100 text-emerald-700', bar: 'bg-emerald-500', text: 'text-emerald-700' },
+  soon: { pill: 'bg-amber-100 text-amber-800', bar: 'bg-amber-500', text: 'text-amber-700' },
+  expired: { pill: 'bg-rose-100 text-rose-700', bar: 'bg-rose-500', text: 'text-rose-700' },
+} as const
+const sub = computed(() => {
+  const s = restaurant.value.subscription
+  if (!s) return null
+  const today = todayDay()
+  const { state, daysLeft, upcoming } = paymentState(s, today)
+  const total = Math.max(1, daysBetween(s.paidAt, s.paidUntil))
+  const elapsed = Math.min(total, Math.max(0, daysBetween(s.paidAt, today)))
+  const st = state === 'none' ? 'active' : state
+  return {
+    ...s,
+    state: st,
+    tone: SUB_TONE[st],
+    daysLeft,
+    upcoming,
+    /** Share of the period already used, 0–100. */
+    progress: Math.round((elapsed / total) * 100),
+    label: upcoming
+      ? t('subStatusUpcoming').replace('{date}', displayDay(s.paidAt))
+      : st === 'expired'
+        ? t('subStatusExpired')
+        : st === 'soon'
+          ? t('subStatusSoon')
+          : t('subStatusActive'),
+    note:
+      st === 'expired'
+        ? ''
+        : daysLeft === 0
+          ? t('paymentEndsToday')
+          : `${daysLeft} ${t('paymentDaysLeft')}`,
+  }
+})
+/** Shown above every admin page (except the dashboard, which has the card) when it needs attention. */
+const subBanner = computed(() => {
+  const s = sub.value
+  if (!s || (s.state !== 'soon' && s.state !== 'expired')) return null
+  const date = displayDay(s.paidUntil)
+  return {
+    expired: s.state === 'expired',
+    text: (s.state === 'expired' ? t('subExpiredMsg') : t('subSoonMsg')).replace('{date}', date),
+  }
+})
 
 const upgrade = reactive({ open: false, resource: 'product' as 'product' | 'category', limit: 0 })
 const openUpgrade = (resource: 'product' | 'category', limit: number) => {
@@ -161,6 +212,61 @@ const handleLimitError = (e: unknown, resource: 'product' | 'category', limit: n
   }
   return false
 }
+
+// ── undo after delete ───────────────────────────────────────────
+// Deletes are soft on the backend; for UNDO_MS after one the admin can bring
+// it back (with everything the delete cascaded to). After that the bar goes
+// away and the delete is final (the backend refuses later restores).
+const UNDO_MS = 10_000
+const undoState = reactive({
+  open: false,
+  key: 0,
+  label: '',
+  busy: false,
+  restore: null as null | (() => Promise<void>),
+})
+let undoTimer: ReturnType<typeof setTimeout> | undefined
+const closeUndo = () => {
+  clearTimeout(undoTimer)
+  Object.assign(undoState, { open: false, busy: false, restore: null })
+}
+// A newer delete replaces the bar: the previous one becomes final.
+const offerUndo = (name: string, restore: () => Promise<void>) => {
+  clearTimeout(undoTimer)
+  Object.assign(undoState, {
+    open: true,
+    key: undoState.key + 1,
+    label: name,
+    busy: false,
+    restore,
+  })
+  undoTimer = setTimeout(closeUndo, UNDO_MS)
+}
+const runUndo = async () => {
+  const restore = undoState.restore
+  if (!restore || undoState.busy) return
+  undoState.busy = true
+  clearTimeout(undoTimer) // don't let the bar vanish mid-request
+  try {
+    await restore()
+    flash(t('restored'))
+    await refresh().catch(() => {})
+  } catch (e) {
+    const err = e as Error & { status?: number; errors?: { field?: string }[] }
+    const field = err.errors?.[0]?.field
+    if (field === 'product' || field === 'category') {
+      handleLimitError(e, field, field === 'product' ? productLimit.value : categoryLimit.value)
+    } else {
+      flash(err.status === 410 ? t('restoreExpired') : err.message || t('restoreFailed'))
+    }
+  } finally {
+    closeUndo()
+  }
+}
+onBeforeUnmount(() => {
+  clearTimeout(undoTimer)
+  clearTimeout(toastTimer)
+})
 
 // ── super-admin (platform) ──────────────────────────────────────
 const saRestaurants = ref<AdminRestaurantRow[]>([])
@@ -235,6 +341,61 @@ const removeRestaurant = (r: AdminRestaurantRow) =>
     flash(t('deleted'))
     await loadSuperAdmin()
   })
+
+// Activate / deactivate. Backend does the rest: an inactive restaurant's public
+// endpoints answer 404 (the guest sees "menu not found"), its owner is locked
+// out of the admin (RestaurantScopeGuard) and its cached menu is dropped.
+const saToggling = ref<string | null>(null)
+const setRestaurantActive = async (r: AdminRestaurantRow, isActive: boolean) => {
+  await superAdminService.update(r.id, { isActive })
+  flash(isActive ? t('restaurantActivated') : t('restaurantDeactivated'))
+  await loadSuperAdmin()
+}
+const toggleRestaurantActive = (r: AdminRestaurantRow) => {
+  if (r.isActive) {
+    // Switching a live menu off is confirmed; switching it back on is not.
+    askConfirm({
+      title: t('deactivateTitle').replace('{name}', r.name),
+      message: t('deactivateConfirm'),
+      confirmLabel: t('deactivate'),
+      icon: '⏸',
+      tone: 'warning',
+      onConfirm: () => setRestaurantActive(r, false),
+    })
+    return
+  }
+  saToggling.value = r.id
+  setRestaurantActive(r, true)
+    .catch((e) => flash((e as Error)?.message || t('actionFailed')))
+    .finally(() => (saToggling.value = null))
+}
+
+// Subscription payments — the column shows the period that runs longest;
+// clicking it opens AdminPaymentModal (calendar → 1/3/6/12 months → save).
+const saPayment = ref<AdminRestaurantRow | null>(null)
+const PAY_TONE = {
+  none: { text: 'text-slate-500', dot: 'bg-slate-300' },
+  active: { text: 'text-emerald-700', dot: 'bg-emerald-500' },
+  soon: { text: 'text-amber-700', dot: 'bg-amber-500' },
+  expired: { text: 'text-rose-700', dot: 'bg-rose-500' },
+} as const
+const paymentInfo = (r: AdminRestaurantRow) => {
+  const s = paymentState(r.payment)
+  const note =
+    s.state === 'expired'
+      ? t('paymentExpired')
+      : s.upcoming && r.payment
+        ? `${t('paymentFrom')} ${displayDay(r.payment.paidAt)}`
+        : s.daysLeft === 0
+          ? t('paymentEndsToday')
+          : `${s.daysLeft} ${t('paymentDaysLeft')}`
+  return { tone: PAY_TONE[s.state], note }
+}
+const onPaymentSaved = async () => {
+  saPayment.value = null
+  flash(t('paymentSaved'))
+  await loadSuperAdmin()
+}
 
 const createRestaurant = async () => {
   saError.value = ''
@@ -399,7 +560,15 @@ const catDraft = reactive<CategoryDraft>({
   icon: '🍽',
   iconImage: '',
   image: '',
+  imageHiRes: '',
+  imageOriginal: '',
+  imageCrop: undefined,
+  imageFocalX: 50,
+  imageFocalY: 50,
   mobileImage: '',
+  mobileImageHiRes: '',
+  mobileImageOriginal: '',
+  mobileImageCrop: undefined,
   bannerTextColor: 'light',
   sortOrder: 0,
   active: true,
@@ -426,6 +595,9 @@ const openAddCategory = () => {
     imageFocalX: 50,
     imageFocalY: 50,
     mobileImage: '',
+    mobileImageHiRes: '',
+    mobileImageOriginal: '',
+    mobileImageCrop: undefined,
     bannerTextColor: 'light',
     sortOrder: visibleCategories.value.length,
     active: true,
@@ -447,6 +619,9 @@ const openEditCategory = (c: Category) => {
     imageFocalX: c.imageFocalX,
     imageFocalY: c.imageFocalY,
     mobileImage: c.mobileImage,
+    mobileImageHiRes: c.mobileImageHiRes,
+    mobileImageOriginal: c.mobileImageOriginal,
+    mobileImageCrop: c.mobileImageCrop ? { ...c.mobileImageCrop } : undefined,
     bannerTextColor: c.bannerTextColor,
     sortOrder: c.sortOrder,
     active: c.active,
@@ -486,9 +661,34 @@ const confirmState = reactive({
   message: '',
   busy: false,
   onConfirm: null as null | (() => Promise<void>),
+  /** Deleting is the default look; reversible actions (suspend) use 'warning'. */
+  tone: 'danger' as 'danger' | 'warning',
+  icon: '🗑',
+  confirmLabel: '',
+  busyLabel: '',
 })
 const askDelete = (title: string, message: string, onConfirm: () => Promise<void>) => {
-  Object.assign(confirmState, { open: true, title, message, busy: false, onConfirm })
+  Object.assign(confirmState, {
+    open: true,
+    title,
+    message,
+    busy: false,
+    onConfirm,
+    tone: 'danger',
+    icon: '🗑',
+    confirmLabel: t('delete'),
+    busyLabel: t('deleting'),
+  })
+}
+const askConfirm = (opts: {
+  title: string
+  message: string
+  confirmLabel: string
+  icon: string
+  tone: 'danger' | 'warning'
+  onConfirm: () => Promise<void>
+}) => {
+  Object.assign(confirmState, { open: true, busy: false, busyLabel: t('saving'), ...opts })
 }
 const runConfirm = async () => {
   if (!confirmState.onConfirm) return
@@ -497,7 +697,7 @@ const runConfirm = async () => {
     await confirmState.onConfirm()
     confirmState.open = false
   } catch (e) {
-    flash((e as Error)?.message || 'Չհաջողվեց ջնջել')
+    flash((e as Error)?.message || t('actionFailed'))
   } finally {
     confirmState.busy = false
   }
@@ -506,7 +706,7 @@ const runConfirm = async () => {
 const removeCategory = (c: Category) =>
   askDelete('Ջնջե՞լ կատեգորիան', `«${c.name.hy || c.name.en || c.name.ru}» կատեգորիան և դրա բոլոր ապրանքները կջնջվեն։`, async () => {
     await categoryService.deleteCategory(c.id)
-    flash(t('deleted'))
+    offerUndo(trLabel(c.name), () => categoryService.restoreCategory(c.id))
     await refresh().catch(() => {})
   })
 
@@ -549,7 +749,7 @@ const submitSection = async () => {
 const removeSection = (s: Section) =>
   askDelete('Ջնջե՞լ բաժինը', `«${trLabel(s.name)}» բաժինը և դրա բոլոր կատեգորիաներն ու ապրանքները կջնջվեն։`, async () => {
     await sectionService.deleteSection(s.id)
-    flash(t('deleted'))
+    offerUndo(trLabel(s.name), () => sectionService.restoreSection(s.id))
     await refresh().catch(() => {})
   })
 
@@ -561,6 +761,11 @@ const prodDraft = reactive<ProductDraft>({
   description: blankTr(),
   price: 0,
   image: '',
+  imageHiRes: '',
+  imageOriginal: '',
+  imageCrop: undefined,
+  imageFocalX: 50,
+  imageFocalY: 50,
   showImage: true,
   badges: [],
   active: true,
@@ -761,7 +966,7 @@ const moveProduct = (index: number, dir: -1 | 1) => {
 const removeProduct = (p: Product) =>
   askDelete('Ջնջե՞լ ապրանքը', `«${p.name.hy || p.name.en || p.name.ru}» ապրանքը կջնջվի։`, async () => {
     await productService.deleteProduct(p.id)
-    flash(t('deleted'))
+    offerUndo(trLabel(p.name), () => productService.restoreProduct(p.id))
     await refresh().catch(() => {})
   })
 // Per-row in-flight state so the toggle disables + shows feedback while saving.
@@ -818,57 +1023,91 @@ const onUploadInto = async (e: Event, obj: Record<string, unknown>, key: string)
   }
 }
 
-// ── product/category photo: crop editor (4:3, hi-res + focal point) ────
-// Unlike the plain uploads above, a product photo or a category's desktop
-// banner goes through ImageCropEditor first: the admin frames it into a 4:3
-// box, and only then do we bake+upload the two delivered sizes (1200×900
-// hi-res, 800×600 standard) plus keep the original for a later re-crop.
-type CropTargetKind = 'product' | 'category'
+// ── cropped photos: product, category desktop + mobile banner ───────────
+// A product photo and both category banners go through ImageCropEditor: the
+// admin frames the photo in the exact shape it is shown in (CROP_PRESETS),
+// then we bake + upload the two delivered sizes and keep the original so the
+// crop can be redone later. Each kind is a "slot": where its four fields
+// live in which draft, its frame preset, and how to save only that photo.
+type CropTargetKind = 'product' | 'category' | 'categoryMobile'
+interface CropBundle {
+  image: string
+  hiRes: string
+  original: string
+  crop?: CropState
+}
+interface CropSlot {
+  preset: CropPreset
+  read: () => CropBundle
+  write: (b: CropBundle) => void
+  /** Id of the record being edited, '' while it is still being created. */
+  editingId: () => string
+  /** Partial PATCH of this photo only. */
+  persist: (id: string) => Promise<void>
+}
+const CROP_SLOTS: Record<CropTargetKind, CropSlot> = {
+  product: {
+    preset: 'product',
+    read: () => ({ image: prodDraft.image, hiRes: prodDraft.imageHiRes, original: prodDraft.imageOriginal, crop: prodDraft.imageCrop }),
+    write: (b) => Object.assign(prodDraft, {
+      image: b.image, imageHiRes: b.hiRes, imageOriginal: b.original, imageCrop: b.crop, imageFocalX: 50, imageFocalY: 50,
+    }),
+    editingId: () => (prodModal.mode === 'edit' ? prodModal.id : ''),
+    persist: (id) => productService.updateProductImage(id, prodDraft),
+  },
+  category: {
+    preset: 'banner',
+    read: () => ({ image: catDraft.image, hiRes: catDraft.imageHiRes, original: catDraft.imageOriginal, crop: catDraft.imageCrop }),
+    write: (b) => Object.assign(catDraft, {
+      image: b.image, imageHiRes: b.hiRes, imageOriginal: b.original, imageCrop: b.crop, imageFocalX: 50, imageFocalY: 50,
+    }),
+    editingId: () => (catModal.mode === 'edit' ? catModal.id : ''),
+    persist: (id) => categoryService.updateCategoryImage(id, catDraft, 'desktop'),
+  },
+  categoryMobile: {
+    preset: 'mobileBanner',
+    read: () => ({ image: catDraft.mobileImage, hiRes: catDraft.mobileImageHiRes, original: catDraft.mobileImageOriginal, crop: catDraft.mobileImageCrop }),
+    write: (b) => Object.assign(catDraft, {
+      mobileImage: b.image, mobileImageHiRes: b.hiRes, mobileImageOriginal: b.original, mobileImageCrop: b.crop,
+    }),
+    editingId: () => (catModal.mode === 'edit' ? catModal.id : ''),
+    persist: (id) => categoryService.updateCategoryImage(id, catDraft, 'mobile'),
+  },
+}
+const EMPTY_BUNDLE: CropBundle = { image: '', hiRes: '', original: '', crop: undefined }
+const bundleUrls = (b: CropBundle) => [b.image, b.hiRes, b.original].filter(Boolean)
+
 const cropEditor = reactive<{ open: boolean; kind: CropTargetKind | null; file: File | null; initialCrop?: CropState }>(
   { open: false, kind: null, file: null, initialCrop: undefined },
 )
-
 const openCropEditor = (kind: CropTargetKind, file: File, initialCrop?: CropState) => {
-  cropEditor.kind = kind
-  cropEditor.file = file
-  cropEditor.initialCrop = initialCrop
-  cropEditor.open = true
+  Object.assign(cropEditor, { open: true, kind, file, initialCrop })
 }
 const closeCropEditor = () => {
-  cropEditor.open = false
-  cropEditor.kind = null
-  cropEditor.file = null
-  cropEditor.initialCrop = undefined
+  Object.assign(cropEditor, { open: false, kind: null, file: null, initialCrop: undefined })
 }
 
 // File input → open the crop editor instead of uploading straight away.
-const onProductImagePick = (e: Event) => {
+// A new photo starts with a fresh framing (the old crop belongs to the old photo).
+const onCropPick = (kind: CropTargetKind, e: Event) => {
   const input = e.target as HTMLInputElement
   const file = input.files?.[0]
-  input.value = ''
-  if (!file) return
-  openCropEditor('product', file, prodDraft.imageCrop)
-}
-const onCategoryImagePick = (e: Event) => {
-  const input = e.target as HTMLInputElement
-  const file = input.files?.[0]
-  input.value = ''
-  if (!file) return
-  openCropEditor('category', file, catDraft.imageCrop)
+  input.value = '' // allow re-selecting the same file
+  if (file) openCropEditor(kind, file)
 }
 
-// Re-open the editor on an already-cropped photo — fetches the kept
-// original back into a File so it can be reframed from scratch.
+// Re-open the editor on an already-cropped photo — fetches the kept original
+// back into a File so it can be reframed from scratch. Photos saved before
+// originals were kept fall back to the delivered copy.
 const cropRefetching = ref(false)
 const editExistingCrop = async (kind: CropTargetKind) => {
-  const draft = kind === 'product' ? prodDraft : catDraft
-  const originalUrl = draft.imageOriginal || draft.image
-  if (!originalUrl) return
+  const current = CROP_SLOTS[kind].read()
+  const sourceUrl = current.original || current.image
+  if (!sourceUrl) return
   cropRefetching.value = true
   try {
-    const blob = await $fetch<Blob>(originalUrl, { responseType: 'blob' })
-    const file = new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' })
-    openCropEditor(kind, file, draft.imageCrop)
+    const blob = await $fetch<Blob>(sourceUrl, { responseType: 'blob' })
+    openCropEditor(kind, new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' }), current.crop)
   } catch {
     flash('Չհաջողվեց բացել բնօրինակը')
   } finally {
@@ -876,35 +1115,45 @@ const editExistingCrop = async (kind: CropTargetKind) => {
   }
 }
 
-// Crop editor confirmed → upload the two baked sizes + the original,
-// write them into the right draft, and clean up any previous (unsaved)
-// uploads it replaces. Focal point defaults to centre: the crop editor
-// already framed the subject, so `object-position` only matters in
-// non-4:3 boxes (e.g. Maison's wide banner), where centre is the safe
-// default until a dedicated focal-point control is added.
+// Drop uploads that were never saved; saved ones are the backend's to delete.
+const discardIfPending = (urls: string[]) => {
+  for (const u of urls) {
+    if (pendingUploads.has(u)) {
+      pendingUploads.delete(u)
+      uploadService.deleteImage(u)
+    }
+  }
+}
+
+// Save one photo right away when its record already exists — "Apply" and
+// "Remove" otherwise looked final while the menu kept the old picture until
+// the form's own Save. A record still being created saves it with the form.
+// The backend deletes the storage objects the PATCH replaces.
+const persistSlot = async (kind: CropTargetKind, fresh: string[]) => {
+  const slot = CROP_SLOTS[kind]
+  const id = slot.editingId()
+  if (!id) return false
+  await slot.persist(id)
+  for (const u of fresh) pendingUploads.delete(u) // saved → not Cancel's to delete
+  refresh().catch(() => {})
+  return true
+}
+
+// Crop editor confirmed → upload the baked sizes + the original into the slot.
+// Focal point stays centred: the photo is already framed in its display shape.
 const onCropSave = async (payload: { hiRes: Blob; stdRes: Blob; preview: string; crop: CropState }) => {
   const kind = cropEditor.kind
   const file = cropEditor.file
   if (!kind || !file) return
+  const slot = CROP_SLOTS[kind]
   try {
     const { hiResUrl, stdResUrl, originalUrl } = await uploadService.uploadMenuImage(file, payload.hiRes, payload.stdRes)
-    const draft = kind === 'product' ? prodDraft : catDraft
-    for (const prev of [draft.image, draft.imageHiRes, draft.imageOriginal]) {
-      if (prev && pendingUploads.has(prev)) {
-        uploadService.deleteImage(prev)
-        pendingUploads.delete(prev)
-      }
-    }
-    draft.image = stdResUrl
-    draft.imageHiRes = hiResUrl
-    draft.imageOriginal = originalUrl
-    draft.imageCrop = payload.crop
-    draft.imageFocalX = 50
-    draft.imageFocalY = 50
-    pendingUploads.add(stdResUrl)
-    pendingUploads.add(hiResUrl)
-    pendingUploads.add(originalUrl)
+    const fresh = [stdResUrl, hiResUrl, originalUrl]
+    discardIfPending(bundleUrls(slot.read())) // an unsaved earlier attempt
+    slot.write({ image: stdResUrl, hiRes: hiResUrl, original: originalUrl, crop: payload.crop })
+    for (const u of fresh) pendingUploads.add(u)
     closeCropEditor()
+    if (await persistSlot(kind, fresh)) flash(t('imageSaved'))
   } catch (err) {
     flash((err as Error)?.message || 'Չհաջողվեց վերբեռնել')
   }
@@ -974,20 +1223,15 @@ const removeImage = (
 // original URLs + crop + focal point) and deletes all three storage
 // objects, so nothing stale gets resent to the backend on the next save.
 const removeCroppedImage = (kind: CropTargetKind) => {
-  const draft = kind === 'product' ? prodDraft : catDraft
-  if (!draft.image) return
+  const slot = CROP_SLOTS[kind]
+  const urls = bundleUrls(slot.read())
+  if (!urls.length) return
   askDelete(t('removeImageTitle'), t('removeImageMsg'), async () => {
-    const urls = [draft.image, draft.imageHiRes, draft.imageOriginal].filter(Boolean) as string[]
-    draft.image = ''
-    draft.imageHiRes = ''
-    draft.imageOriginal = ''
-    draft.imageCrop = undefined
-    draft.imageFocalX = 50
-    draft.imageFocalY = 50
-    for (const url of urls) {
-      pendingUploads.delete(url)
-      await uploadService.deleteImage(url)
-    }
+    slot.write(EMPTY_BUNDLE)
+    discardIfPending(urls)
+    // Saved record → clear it now (the backend deletes the files). A new one
+    // simply has nothing saved yet.
+    if (await persistSlot(kind, [])) flash(t('imageRemoved'))
   })
 }
 
@@ -1246,6 +1490,17 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
 
       <!-- Main -->
       <main class="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+        <!-- Subscription needs attention — on every page except the dashboard (it has the card) -->
+        <div
+          v-if="!isSuperAdmin && subBanner && active !== 'dashboard'"
+          class="mb-5 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm font-medium"
+          :class="subBanner.expired ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-amber-200 bg-amber-50 text-amber-900'"
+          role="status"
+        >
+          <span aria-hidden="true">{{ subBanner.expired ? '⛔' : '⏳' }}</span>
+          <span>{{ subBanner.text }}</span>
+        </div>
+
         <!-- SUPER_ADMIN · RESTAURANTS -->
         <section v-if="active === 'restaurants'" class="space-y-6">
           <div>
@@ -1307,13 +1562,14 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
 
           <!-- List -->
           <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-            <table class="w-full min-w-[1040px] text-left text-sm">
+            <table class="w-full min-w-[1320px] text-left text-sm">
               <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
                   <th class="px-4 py-3">{{ t('name') }}</th>
                   <th class="px-4 py-3">{{ t('slug') }}</th>
                   <th class="px-4 py-3">{{ t('theme') }}</th>
                   <th class="px-4 py-3">{{ t('plan') }}</th>
+                  <th class="px-4 py-3">{{ t('payment') }}</th>
                   <th class="px-4 py-3">{{ t('addressLabel') }}</th>
                   <th class="px-4 py-3">{{ t('phone') }}</th>
                   <th class="px-4 py-3">{{ t('ownerLogin') }}</th>
@@ -1324,8 +1580,14 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
-                <tr v-for="r in saRestaurants" :key="r.id">
-                  <td class="px-4 py-3 font-medium text-slate-900">{{ r.name }}</td>
+                <tr v-for="r in saRestaurants" :key="r.id" :class="{ 'bg-amber-50/50': !r.isActive }">
+                  <td class="px-4 py-3 font-medium text-slate-900">
+                    <span :class="{ 'text-slate-500': !r.isActive }">{{ r.name }}</span>
+                    <span
+                      v-if="!r.isActive"
+                      class="mt-1 flex w-fit items-center gap-1 whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800"
+                    >⏸ {{ t('inactiveBadge') }}</span>
+                  </td>
                   <td class="px-4 py-3 text-slate-500"><code>{{ r.slug }}</code></td>
                   <td class="px-4 py-3 capitalize text-slate-600">{{ r.themeKey || '—' }}</td>
                   <td class="px-4 py-3">
@@ -1333,6 +1595,26 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                       class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
                       :class="r.planKey === 'business' ? 'bg-amber-100 text-amber-700' : r.planKey === 'pro' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'"
                     >{{ r.planKey === 'pro' ? 'Professional' : r.planKey === 'business' ? 'Business' : 'Starter' }}</span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <button
+                      type="button"
+                      class="group -mx-2 -my-1 inline-flex flex-col items-start rounded-lg px-2 py-1 text-left transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"
+                      :title="t('paymentMark')"
+                      @click="saPayment = r"
+                    >
+                      <template v-if="r.payment">
+                        <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-medium" :class="paymentInfo(r).tone.text">
+                          <span class="h-2 w-2 shrink-0 rounded-full" :class="paymentInfo(r).tone.dot" aria-hidden="true" />
+                          {{ t('paymentUntil') }} {{ displayDay(r.payment.paidUntil) }}
+                        </span>
+                        <span class="whitespace-nowrap pl-3.5 text-xs" :class="paymentInfo(r).tone === PAY_TONE.expired ? 'text-rose-500' : 'text-slate-400'">{{ paymentInfo(r).note }}</span>
+                      </template>
+                      <span
+                        v-else
+                        class="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-dashed border-slate-300 px-2.5 py-0.5 text-xs font-medium text-slate-500 transition group-hover:border-slate-500 group-hover:text-slate-800"
+                      >+ {{ t('paymentMark') }}</span>
+                    </button>
                   </td>
                   <td class="px-4 py-3 max-w-[14rem] truncate text-slate-600" :title="r.address || ''">{{ r.address || '—' }}</td>
                   <td class="px-4 py-3 whitespace-nowrap text-slate-600">{{ r.phone || '—' }}</td>
@@ -1342,14 +1624,27 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                   <td class="px-4 py-3 text-center text-slate-600">{{ r.products }}</td>
                   <td class="px-4 py-3 text-right">
                     <div class="flex items-center justify-end gap-3">
-                      <a :href="`/${r.slug}`" target="_blank" class="text-sm font-medium text-slate-500 hover:text-slate-900 hover:underline">{{ t('view') }} ↗</a>
+                      <a :href="`/${r.slug}`" target="_blank" class="whitespace-nowrap text-sm font-medium text-slate-500 hover:text-slate-900 hover:underline">{{ t('view') }} ↗</a>
+                      <button
+                        v-if="r.isActive"
+                        type="button"
+                        class="whitespace-nowrap text-sm font-medium text-amber-600 hover:text-amber-700"
+                        @click="toggleRestaurantActive(r)"
+                      >{{ t('deactivate') }}</button>
+                      <button
+                        v-else
+                        type="button"
+                        class="whitespace-nowrap rounded-md bg-emerald-600 px-2.5 py-1 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                        :disabled="saToggling === r.id"
+                        @click="toggleRestaurantActive(r)"
+                      >{{ t('activate') }}</button>
                       <button class="text-sm font-medium text-slate-600 hover:text-slate-900" @click="openEditRestaurant(r)">{{ t('edit') }}</button>
                       <button class="text-sm font-medium text-rose-600 hover:text-rose-700" @click="removeRestaurant(r)">{{ t('delete') }}</button>
                     </div>
                   </td>
                 </tr>
                 <tr v-if="!saRestaurants.length">
-                  <td colspan="10" class="px-4 py-8 text-center text-slate-400">{{ t('noRestaurants') }}</td>
+                  <td colspan="12" class="px-4 py-8 text-center text-slate-400">{{ t('noRestaurants') }}</td>
                 </tr>
               </tbody>
             </table>
@@ -1359,29 +1654,6 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
         <!-- DASHBOARD -->
         <section v-if="active === 'dashboard'" class="space-y-6">
           <h1 class="text-xl font-bold text-slate-900">{{ t('dashboard') }}</h1>
-          <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <div class="rounded-xl border border-slate-200 bg-white p-4">
-              <p class="text-xs text-slate-500">{{ t('totalProducts') }}</p>
-              <p class="mt-1 text-2xl font-bold text-slate-900">
-                {{ stats.products }}<span v-if="productLimit != null" class="text-base font-semibold" :class="atProductLimit ? 'text-amber-600' : 'text-slate-400'"> / {{ productLimit }}</span>
-              </p>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-4">
-              <p class="text-xs text-slate-500">{{ t('categoriesCount') }}</p>
-              <p class="mt-1 text-2xl font-bold text-slate-900">
-                {{ stats.categories }}<span v-if="categoryLimit != null" class="text-base font-semibold" :class="atCategoryLimit ? 'text-amber-600' : 'text-slate-400'"> / {{ categoryLimit }}</span>
-              </p>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-4">
-              <p class="text-xs text-slate-500">{{ t('available') }}</p>
-              <p class="mt-1 text-2xl font-bold text-emerald-600">{{ stats.active }}</p>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-4">
-              <p class="text-xs text-slate-500">{{ t('activeTheme') }}</p>
-              <p class="mt-1 text-2xl font-bold capitalize text-slate-900">{{ restaurant.themeId }}</p>
-            </div>
-          </div>
-
           <!-- Current plan + usage -->
           <div class="rounded-xl border border-slate-200 bg-white p-5">
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -1393,6 +1665,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 >
                   <span v-if="isPaidPlan">★</span>{{ planName }}
                 </span>
+                <span v-if="sub" class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="sub.tone.pill">{{ sub.label }}</span>
               </div>
               <button
                 v-if="!isPaidPlan"
@@ -1401,6 +1674,36 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
                 @click="openUpgradeRequest()"
               >{{ t('limitUpgradeCta') }}</button>
             </div>
+
+            <!-- Subscription period -->
+            <div v-if="sub" class="mt-4 border-t border-slate-100 pt-4">
+              <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
+                <p class="text-sm text-slate-500">
+                  {{ t('subPaidUntil') }}
+                  <span class="ml-1 text-xl font-bold tabular-nums" :class="sub.tone.text">{{ displayDay(sub.paidUntil) }}</span>
+                </p>
+                <p v-if="sub.note" class="text-sm font-semibold" :class="sub.tone.text">{{ sub.note }}</p>
+              </div>
+              <div
+                class="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"
+                role="progressbar"
+                :aria-valuenow="sub.progress"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <div class="h-full rounded-full transition-all" :class="sub.tone.bar" :style="{ width: sub.progress + '%' }" />
+              </div>
+              <div class="mt-1.5 flex justify-between text-xs tabular-nums text-slate-400">
+                <span>{{ displayDay(sub.paidAt) }}</span>
+                <span>{{ displayDay(sub.paidUntil) }}</span>
+              </div>
+              <p
+                v-if="subBanner"
+                class="mt-3 rounded-lg px-3 py-2 text-sm font-medium"
+                :class="subBanner.expired ? 'bg-rose-50 text-rose-800' : 'bg-amber-50 text-amber-900'"
+              >{{ subBanner.text }}</p>
+            </div>
+            <p v-else-if="isPaidPlan" class="mt-3 text-sm text-slate-400">{{ t('subNoPayment') }}</p>
 
             <!-- Usage bars only where the plan caps apply (Starter). -->
             <div v-if="productLimit != null || categoryLimit != null" class="mt-4 grid gap-4 sm:grid-cols-2">
@@ -1424,6 +1727,29 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
               </div>
             </div>
           </div>
+          <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div class="rounded-xl border border-slate-200 bg-white p-4">
+              <p class="text-xs text-slate-500">{{ t('totalProducts') }}</p>
+              <p class="mt-1 text-2xl font-bold text-slate-900">
+                {{ stats.products }}<span v-if="productLimit != null" class="text-base font-semibold" :class="atProductLimit ? 'text-amber-600' : 'text-slate-400'"> / {{ productLimit }}</span>
+              </p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-4">
+              <p class="text-xs text-slate-500">{{ t('categoriesCount') }}</p>
+              <p class="mt-1 text-2xl font-bold text-slate-900">
+                {{ stats.categories }}<span v-if="categoryLimit != null" class="text-base font-semibold" :class="atCategoryLimit ? 'text-amber-600' : 'text-slate-400'"> / {{ categoryLimit }}</span>
+              </p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-4">
+              <p class="text-xs text-slate-500">{{ t('available') }}</p>
+              <p class="mt-1 text-2xl font-bold text-emerald-600">{{ stats.active }}</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-4">
+              <p class="text-xs text-slate-500">{{ t('activeTheme') }}</p>
+              <p class="mt-1 text-2xl font-bold capitalize text-slate-900">{{ restaurant.themeId }}</p>
+            </div>
+          </div>
+
           <div class="rounded-xl border border-slate-200 bg-white p-4">
             <p class="text-xs text-slate-500">{{ t('qrMenuLink') }}</p>
             <div class="mt-1 flex items-center gap-3">
@@ -1776,9 +2102,26 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
       </main>
     </div>
 
-    <!-- Toast -->
+    <!-- Toast (sits above the undo bar while that is showing) -->
     <Transition name="t">
-      <div v-if="toast" class="fixed bottom-5 left-1/2 z-[100] -translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg">{{ toast }}</div>
+      <div
+        v-if="toast"
+        class="fixed left-1/2 z-[100] -translate-x-1/2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg"
+        :class="undoState.open ? 'bottom-24' : 'bottom-5'"
+      >{{ toast }}</div>
+    </Transition>
+
+    <!-- Undo after delete -->
+    <Transition name="t">
+      <AdminUndoToast
+        v-if="undoState.open"
+        :key="undoState.key"
+        :label="undoState.label"
+        :duration="UNDO_MS"
+        :busy="undoState.busy"
+        @undo="runUndo"
+        @close="closeUndo"
+      />
     </Transition>
 
     <!-- Category modal -->
@@ -1801,28 +2144,42 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
             </select>
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-          <div>
-            <span class="lbl">{{ t('bannerDesktop') }} <span class="font-normal text-slate-400">· 1600×500</span></span>
-            <div class="mt-1 flex items-center gap-2">
-              <div class="grid h-12 w-20 shrink-0 place-items-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <!-- Banner images: one card per size, preview in its real proportions, actions underneath -->
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="flex flex-col rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="text-xs font-semibold text-slate-700">{{ t('bannerDesktop') }}</span>
+              <span class="text-[11px] tabular-nums text-slate-400">1600×500</span>
+            </div>
+            <label class="group mt-2 grid min-h-[96px] cursor-pointer place-items-center rounded-lg border border-dashed border-slate-300 bg-white p-2 transition hover:border-indigo-400">
+              <span class="block aspect-[16/5] w-full overflow-hidden rounded-md bg-slate-100">
                 <img v-if="catDraft.image" :src="catDraft.image" class="h-full w-full object-cover" alt="" />
-                <span v-else class="text-[10px] text-slate-300">16:5</span>
-              </div>
-              <label class="cursor-pointer text-sm font-medium text-indigo-600 hover:underline">{{ t('upload') }}<input type="file" accept="image/*" class="hidden" @change="onCategoryImagePick" /></label>
-              <button v-if="catDraft.image" type="button" :disabled="cropRefetching" class="text-xs font-medium text-indigo-600 hover:underline disabled:opacity-50" @click="editExistingCrop('category')">{{ t('cropEdit') }}</button>
-              <button v-if="catDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="removeCroppedImage('category')">{{ t('remove') }}</button>
+                <span v-else class="grid h-full place-items-center text-xs font-medium text-slate-400 group-hover:text-indigo-600">＋ {{ t('upload') }}</span>
+              </span>
+              <input type="file" accept="image/*" class="hidden" @change="onCropPick('category', $event)" />
+            </label>
+            <div v-if="catDraft.image" class="mt-2 grid grid-cols-2 gap-1.5">
+              <button type="button" :disabled="cropRefetching" class="col-span-2 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md border px-2 py-1 text-xs font-semibold transition disabled:opacity-50 border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100" @click="editExistingCrop('category')">✂ {{ t('cropEdit') }}</button>
+              <label class="inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md border px-2 py-1 text-xs font-semibold transition disabled:opacity-50 cursor-pointer border-slate-200 bg-white text-slate-700 hover:border-slate-400">↻ {{ t('replaceImage') }}<input type="file" accept="image/*" class="hidden" @change="onCropPick('category', $event)" /></label>
+              <button type="button" class="inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md border px-2 py-1 text-xs font-semibold transition disabled:opacity-50 border-rose-200 bg-white text-rose-600 hover:bg-rose-50" @click="removeCroppedImage('category')">✕ {{ t('remove') }}</button>
             </div>
           </div>
-          <div>
-            <span class="lbl">{{ t('bannerMobile') }} <span class="font-normal text-slate-400">· 800×600</span></span>
-            <div class="mt-1 flex items-center gap-2">
-              <div class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <div class="flex flex-col rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="text-xs font-semibold text-slate-700">{{ t('bannerMobile') }}</span>
+              <span class="text-[11px] tabular-nums text-slate-400">800×600</span>
+            </div>
+            <label class="group mt-2 grid min-h-[96px] cursor-pointer place-items-center rounded-lg border border-dashed border-slate-300 bg-white p-1.5 transition hover:border-indigo-400">
+              <span class="block aspect-[4/3] h-20 overflow-hidden rounded-md bg-slate-100">
                 <img v-if="catDraft.mobileImage" :src="catDraft.mobileImage" class="h-full w-full object-cover" alt="" />
-                <span v-else class="text-[10px] text-slate-300">4:3</span>
-              </div>
-              <label class="cursor-pointer text-sm font-medium text-indigo-600 hover:underline">{{ t('upload') }}<input type="file" accept="image/*" class="hidden" @change="onUploadInto($event, catDraft, 'mobileImage')" /></label>
-              <button v-if="catDraft.mobileImage" type="button" class="text-xs text-rose-500 hover:underline" @click="removeImage(() => catDraft.mobileImage, (u) => (catDraft.mobileImage = u))">{{ t('remove') }}</button>
+                <span v-else class="grid h-full place-items-center text-xs font-medium text-slate-400 group-hover:text-indigo-600">＋ {{ t('upload') }}</span>
+              </span>
+              <input type="file" accept="image/*" class="hidden" @change="onCropPick('categoryMobile', $event)" />
+            </label>
+            <div v-if="catDraft.mobileImage" class="mt-2 grid grid-cols-2 gap-1.5">
+              <button type="button" :disabled="cropRefetching" class="col-span-2 inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md border px-2 py-1 text-xs font-semibold transition disabled:opacity-50 border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100" @click="editExistingCrop('categoryMobile')">✂ {{ t('cropEdit') }}</button>
+              <label class="inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md border px-2 py-1 text-xs font-semibold transition disabled:opacity-50 cursor-pointer border-slate-200 bg-white text-slate-700 hover:border-slate-400">↻ {{ t('replaceImage') }}<input type="file" accept="image/*" class="hidden" @change="onCropPick('categoryMobile', $event)" /></label>
+              <button type="button" class="inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md border px-2 py-1 text-xs font-semibold transition disabled:opacity-50 border-rose-200 bg-white text-rose-600 hover:bg-rose-50" @click="removeCroppedImage('categoryMobile')">✕ {{ t('remove') }}</button>
             </div>
           </div>
         </div>
@@ -1993,7 +2350,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
               <div class="mt-1.5 flex items-center gap-3">
                 <label class="inline-block cursor-pointer text-xs font-semibold text-slate-500 hover:text-slate-800">
                   Upload file
-                  <input type="file" accept="image/*" class="hidden" @change="onProductImagePick" />
+                  <input type="file" accept="image/*" class="hidden" @change="onCropPick('product', $event)" />
                 </label>
                 <button v-if="prodDraft.image" type="button" :disabled="cropRefetching" class="text-xs font-semibold text-indigo-600 hover:underline disabled:opacity-50" @click="editExistingCrop('product')">{{ t('cropEdit') }}</button>
                 <button v-if="prodDraft.image" type="button" class="text-xs text-rose-500 hover:underline" @click="removeCroppedImage('product')">{{ t('remove') }}</button>
@@ -2009,6 +2366,14 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
     </AdminModal>
 
     <!-- Super-admin: edit restaurant modal -->
+    <AdminPaymentModal
+      v-if="saPayment"
+      :restaurant="saPayment"
+      @close="saPayment = null"
+      @saved="onPaymentSaved"
+      @changed="loadSuperAdmin"
+    />
+
     <AdminModal v-if="saEdit.open" :title="t('editRestaurant')" @close="saEdit.open = false">
       <div class="space-y-4">
         <label class="block">
@@ -2082,16 +2447,20 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
     <!-- Delete confirmation modal -->
     <AdminModal v-if="confirmState.open" :title="confirmState.title" @close="confirmState.open = false">
       <div class="flex items-start gap-3">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-xl">🗑</div>
+        <div
+          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl"
+          :class="confirmState.tone === 'danger' ? 'bg-red-50' : 'bg-amber-50'"
+        >{{ confirmState.icon }}</div>
         <p class="pt-1.5 text-sm text-slate-600">{{ confirmState.message }}</p>
       </div>
       <template #footer>
         <button class="btn-ghost" :disabled="confirmState.busy" @click="confirmState.open = false">{{ t('cancel') }}</button>
         <button
-          class="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+          class="rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+          :class="confirmState.tone === 'danger' ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-600 hover:bg-amber-700'"
           :disabled="confirmState.busy"
           @click="runConfirm"
-        >{{ confirmState.busy ? t('deleting') : t('delete') }}</button>
+        >{{ confirmState.busy ? confirmState.busyLabel : confirmState.confirmLabel }}</button>
       </template>
     </AdminModal>
 
@@ -2148,6 +2517,7 @@ const saveRestaurant = () => withBusy(() => rs.saveRestaurant({ ...restaurant.va
       v-if="cropEditor.open && cropEditor.file"
       :file="cropEditor.file"
       :initial-crop="cropEditor.initialCrop"
+      :preset="cropEditor.kind ? CROP_SLOTS[cropEditor.kind].preset : 'product'"
       @save="onCropSave"
       @cancel="closeCropEditor"
     />

@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ConflictException, GoneException, Injectable, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { mapTranslations } from '../common/utils/translations'
 import { parseSort } from '../common/utils/sort'
+import { isRestorable } from '../common/utils/restore-window'
 import { CreateProductDto } from './dto/create-product.dto'
 import { UpdateProductDto } from './dto/update-product.dto'
 import type { ProductImageInputDto } from './dto/product-image-input.dto'
@@ -204,6 +205,25 @@ export class ProductsService {
   async remove(restaurantId: string, id: string) {
     await this.ensureOwn(restaurantId, id)
     await this.prisma.product.update({ where: { id }, data: { deletedAt: new Date() } })
+    return { ok: true }
+  }
+
+  /** Undo a delete (see common/utils/restore-window). Idempotent. */
+  async restore(restaurantId: string, id: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id, restaurantId },
+      select: { deletedAt: true, categoryId: true },
+    })
+    if (!product) throw new NotFoundException('Product not found')
+    if (!product.deletedAt) return { ok: true } // already back (double click)
+    if (!isRestorable(product.deletedAt)) throw new GoneException('The time to undo this delete has passed')
+    const category = await this.prisma.category.findFirst({
+      where: { id: product.categoryId, restaurantId, deletedAt: null },
+      select: { id: true },
+    })
+    if (!category) throw new ConflictException('The category of this product was deleted')
+    await this.planLimits.assertCanCreate(restaurantId, 'product')
+    await this.prisma.product.update({ where: { id }, data: { deletedAt: null } })
     return { ok: true }
   }
 

@@ -7,13 +7,18 @@
 ## Registry (`frontend/themes/registry.ts`)
 
 ```ts
+import DesignAria from '~/components/DesignAria.vue'
+import AtelierMenu from '~/themes/atelier/layouts/AtelierMenu.vue'
+import HeritageMenu from '~/themes/heritage/layouts/HeritageMenu.vue'
+// … MaisonExperience, NoirMenu, OpalineMenu
+
 export const themeRegistry: Record<string, Component> = {
-  aria:     defineAsyncComponent(() => import('~/components/DesignAria.vue')),
-  atelier:  defineAsyncComponent(() => import('~/themes/atelier/layouts/AtelierMenu.vue')),
-  maison:   defineAsyncComponent(() => import('~/themes/maison/layouts/MaisonExperience.vue')),
-  heritage: defineAsyncComponent(() => import('~/components/DesignHeritage.vue')),
-  noir:     defineAsyncComponent(() => import('~/themes/noir/layouts/NoirMenu.vue')),
-  opaline:  defineAsyncComponent(() => import('~/themes/opaline/layouts/OpalineMenu.vue')),
+  aria: DesignAria,
+  atelier: AtelierMenu,
+  maison: MaisonExperience,
+  heritage: HeritageMenu,
+  noir: NoirMenu,
+  opaline: OpalineMenu,
 }
 ```
 
@@ -55,8 +60,42 @@ themes/atelier/
 └── animations.ts             # motion helpers
 ```
 
-`aria` և `heritage`-ը ավելի պարզ են — մեկ ֆայլ (`components/DesignAria.vue`,
-`DesignHeritage.vue`)։
+`aria`-ն ավելի պարզ է — մեկ ֆայլ (`components/DesignAria.vue`)։
+
+### Մակարդակներով թեմաներ (`opaline`, `heritage`)
+
+Մենյուն ոչ թե մեկ երկար scroll է, այլ ուղի՝ **գլխավոր (բաժիններ) → բաժին
+(կատեգորիաներ) → կատեգորիա (ուտեստներ)**։ Մակարդակը պահվում է **նույն**
+`/<slug>` route-ի query-ում՝ `?s=<sectionId>&c=<categoryId>` (նոր route չկա)։
+Այդ պատճառով browser-ի back/forward-ը, refresh-ը և ուղիղ հղումը աշխատում են,
+իսկ անհայտ id-ն ընկնում է մոտակա վավեր մակարդակի վրա։ Նավիգացիան **միայն**
+`s`/`c` key-երն է փոխում — մնացած query-ն (օր.՝ `?theme=`) պահվում է։
+
+Երկուսը նույն կմախքն ունեն, բայց **տեսքով տարբեր են** — Heritage-ը Opaline-ի
+reskin չէ․
+
+| | Opaline | Heritage |
+|---|---|---|
+| Գլխավոր | hero, բաժինները՝ 2-սյուն քարտեր | crest header + **որոնում**, բաժինները՝ լայն «փորագրված» սալեր (I, II, III …) |
+| Բաժին | կատեգորիաները՝ 4:3 քարտերի ցանց | կատեգորիաները՝ **ցուցակ** (կլոր նկար, նկարագրություն, քանակ) |
+| Կատեգորիա | սեփական ProductCard | Heritage-ի banner + `MenuCard` (`MenuSection`) |
+| Որոնում | header-ի կոճակ → ամբողջ էկրանով sheet (`OpalineSearch`) | դաշտ գլխավոր էջում, արդյունքները՝ նույն էջում |
+| Ներքին էջեր | նույն header-ը | compact `HeritageTopBar` |
+| Պատվեր | basket + drawer | «+» քարտին, զամբյուղ ներքևի ձախում, `OrderSheet theme="heritage"` |
+
+Որոնումը երկուսում էլ նույն `useMenuSearch` composable-ն է (backend-ի որոնում, տես
+BACKEND.md)․ արդյունքները **միայն ուտեստների քարտեր են**՝ առանց բաժինների/կատեգորիաների։
+
+Heritage-ը օգտագործում է իր **կիսվող** component-ները՝ `TheHeader`,
+`MenuSection`, `MenuCard`, `ImageLightbox theme="heritage"`,
+`LanguageSwitcher theme="heritage"`, `MenuBadge theme="heritage"`։ Դրանցից
+`TheHeader`/`MenuSection`/`MenuCard`-ը միայն Heritage-ն է օգտագործում —
+փոփոխությունը միայն Heritage-ի վրա կազդի։
+
+**Rollback**․ հին single-scroll տարբերակը (`components/DesignHeritage.vue` +
+`CategoryNav`) մնացել է անփոփոխ, registry-ում չի օգտագործվում։ Հետ գնալու համար՝
+`registry.ts`-ում `heritage: DesignHeritage`։ Երբ նոր տարբերակը հաստատվի,
+այդ երկու ֆայլը կարելի է ջնջել։
 
 ---
 
@@ -117,6 +156,16 @@ import { imgUrl } from '~/utils/image'
 Բացահայտ `import { imgUrl }` գրիր — auto-import-ի վրա մի՛ հենվիր, երբ util-ը
 օգտագործվում է **միայն** template-ում։
 
+### Կատեգորիայի բանների տեքստի գույնը (`bannerTextColor`)
+
+Եթե թեման կատեգորիայի անունը գրում է **նկարի վրա**, պետք է հաշվի առնի ադմինի «Banner-ի տեքստի գույն»-ը.
+
+- `'light'` (default) — բաց տեքստ մուգ շերտի (scrim) վրա
+- `'dark'` — մուգ տեքստ բաց շերտի վրա (բաց նկարների համար)
+- Նկար չկա → միշտ `light` (ֆոնը թեմայի մուգ գույնն է)
+
+Կիրառված է՝ Aria (`DesignAria`), Heritage (`MenuSection`), Maison (`MaisonCategorySection`)։ Opaline-ում անունը նկարի տակ է, Atelier/Noir-ը կատեգորիայի բաններ չունեն․ այնտեղ կիրառելու տեղ չկա։
+
 ## Պիտակներ
 
 Կատալոգը մեկ տեղում է՝ `~/data/badges` (21 պիտակ, 4 խումբ, hy/ru/en)։ Թեմայում՝
@@ -158,7 +207,7 @@ Key-երը պետք է գոյություն ունենան `badges` աղյուս
 
 1. **Root component**․ `themes/<name>/layouts/<Name>.vue` — կարդա store-երից
    (օրինակ՝ `AtelierMenu.vue`, կամ `OpalineMenu.vue` մակարդակներով նավիգացիայի համար)։
-2. **Registry**․ `themes/registry.ts` → `<name>: defineAsyncComponent(() => import(...))`։
+2. **Registry**․ `themes/registry.ts` → ստատիկ `import` + `<name>: <Component>` (ոչ `defineAsyncComponent` — տես վերևում)։
 3. **Ֆոնտեր**․ եթե սեփականն ես բեռնում, `themeFontsHref`-ում ավելացրու `null`-ի ճյուղը։
 4. **Catalog**․ `data/themeCatalog.ts` → `THEMES`-ում `{ id, name, description, bestFor, accent, available: true }`։
 5. **Տիպ**․ `models/types.ts` → `ThemeId` union։

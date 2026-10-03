@@ -24,6 +24,11 @@ export const sectionService = {
     await useApiClient().del(`/admin/sections/${id}`, { cascade: true })
   },
 
+  /** Undo a delete — brings back the section with its categories and products. */
+  async restoreSection(id: string): Promise<void> {
+    await useApiClient().post(`/admin/sections/${id}/restore`, {})
+  },
+
   /** Persist a new order: [{ id, sortOrder }, …]. */
   async reorder(items: { id: string; sortOrder: number }[]): Promise<void> {
     await useApiClient().patch('/admin/sections/reorder', { items })

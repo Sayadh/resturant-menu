@@ -29,4 +29,18 @@ export const menuService = {
       return null
     }
   },
+
+  /**
+   * Dish search, done by the backend across all of the menu's languages.
+   * Returns the matching product ids, best first — the caller shows the cards
+   * it already has for them (see useMenuSearch). Throws on a network/API error
+   * so the caller can fall back.
+   */
+  async searchProducts(restaurantId: string, q: string, lang?: string): Promise<string[]> {
+    const res = await useApiClient().get<{ items: { id: string }[] }>(
+      `/public/restaurants/${restaurantId}/search`,
+      { q, lang },
+    )
+    return res.items.map((i) => i.id)
+  },
 }

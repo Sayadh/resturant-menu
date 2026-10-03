@@ -67,7 +67,7 @@ service-ի մեթոդներ, ոչ երբեք ուղիղ `$fetch`։
 ## Themes (`themes/`)
 
 Ամեն թեմա՝ ինքնուրույն թղթապանակ (`atelier/`, `maison/`) layout + components +
-styles-ով։ `aria` և `heritage`-ը՝ `components/DesignAria.vue` / `DesignHeritage.vue`։
+styles-ով (`heritage/`-ը ներառյալ)։ `aria`-ն՝ `components/DesignAria.vue`։
 Բոլորը կապվում են `themes/registry.ts`-ում (`themeId → component`)։ Մանրամասն՝
 [THEMES.md](./THEMES.md)։
 
@@ -83,10 +83,25 @@ styles-ով։ `aria` և `heritage`-ը՝ `components/DesignAria.vue` / `DesignHer
   Footer, About, ContactModal, Nav, Demo, AdminPreview, Themes, HowItWorks, Reveal)
 - `components/*` (shared) — `TheHeader`, `MenuCard`, `MenuBadge`, `CategoryNav`,
   `OrderSheet`, `LanguageSwitcher`, `ImageLightbox`, `AdminModal`, icon-ներ, և թեմա-
-  design-ներ `DesignAria`/`DesignHeritage`, `ThemeRenderer`
+  design `DesignAria` (+ հին `DesignHeritage`՝ rollback-ի համար, չի օգտագործվում), `ThemeRenderer`
 
 > Nuxt-ի auto-import. `components/landing/LandingHero.vue` → `<LandingHero>`,
 > `components/landing/Reveal.vue` → `<LandingReveal>` (թղթապանակ + ֆայլ անուն)։
+
+## Նկարների կադրում (admin)
+
+Ապրանքի նկարը և կատեգորիայի երկու բանները անցնում են `AdminImageCropEditor`-ով։ Նկարը կադրվում և «թխվում» է հենց այն ձևով, ինչով ցուցադրվում է (`CROP_PRESETS`, `utils/image.ts`).
+
+| Slot (`admin.vue` → `CROP_SLOTS`) | Preset | Ձև | Պահվող չափսեր |
+|---|---|---|---|
+| `product` | `product` | 4:3 | 1200×900 + 800×600 |
+| `category` (desktop) | `banner` | 16:5 | 1600×500 + 960×300 |
+| `categoryMobile` | `mobileBanner` | 4:3 | 1200×900 + 800×600 |
+
+- Ամեն նկար = 3 ֆայլ (ցուցադրվող, retina, original) + `crop` վիճակ։ Original-ը պահվում է, որ «Փոխել կադրումը»-ն նորից կադրի զրոյից։
+- `CropState`-ի offset-ները պահվում են 320px լայնությամբ կադրի միավորներով (`CROP_REF_W`), ուստի նույն կադրումը նույնն է editor-ում և ամեն չափսում (`drawCropped`-ը մեկն է preview-ի և թխման համար)։
+- **Առկա** ապրանքի/կատեգորիայի վրա «Կիրառել»-ը և «Հեռացնել»-ը միանգամից պահպանում են միայն այդ նկարը (partial PATCH)․ հին ֆայլերը backend-ն է ջնջում։ Նորի դեպքում նկարը պահպանվում է ձևի «Պահպանել»-ով։
+- Հրապարակային բանները (`MenuSection`, `DesignAria`) նախընտրում են retina-ն (`imageHiRes`, `mobileImageHiRes`), standard-ը fallback է։
 
 ## Արագության կանոններ
 

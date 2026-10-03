@@ -1,7 +1,7 @@
 import type { Component } from 'vue'
 import DesignAria from '~/components/DesignAria.vue'
-import DesignHeritage from '~/components/DesignHeritage.vue'
 import AtelierMenu from '~/themes/atelier/layouts/AtelierMenu.vue'
+import HeritageMenu from '~/themes/heritage/layouts/HeritageMenu.vue'
 import MaisonExperience from '~/themes/maison/layouts/MaisonExperience.vue'
 import NoirMenu from '~/themes/noir/layouts/NoirMenu.vue'
 import OpalineMenu from '~/themes/opaline/layouts/OpalineMenu.vue'
@@ -19,7 +19,7 @@ export const themeRegistry: Record<string, Component> = {
   aria: DesignAria,
   atelier: AtelierMenu,
   maison: MaisonExperience,
-  heritage: DesignHeritage,
+  heritage: HeritageMenu,
   noir: NoirMenu,
   opaline: OpalineMenu,
 }

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -50,6 +51,14 @@ export class SectionsController {
   @Roles(UserRole.OWNER, UserRole.MANAGER)
   update(@RestaurantId() rid: string, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateSectionDto) {
     return this.sections.update(rid, id, dto)
+  }
+
+  /** Undo a delete within the restore window (10 s in the admin UI). */
+  @Post(':id/restore')
+  @HttpCode(200)
+  @Roles(UserRole.OWNER, UserRole.MANAGER)
+  restore(@RestaurantId() rid: string, @Param('id', ParseUUIDPipe) id: string) {
+    return this.sections.restore(rid, id)
   }
 
   @Delete(':id')

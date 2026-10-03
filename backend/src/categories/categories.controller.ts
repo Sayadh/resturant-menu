@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -56,6 +57,14 @@ export class CategoriesController {
     @Body() dto: UpdateCategoryDto,
   ) {
     return this.categories.update(rid, id, dto)
+  }
+
+  /** Undo a delete within the restore window (10 s in the admin UI). */
+  @Post(':id/restore')
+  @HttpCode(200)
+  @Roles(UserRole.OWNER, UserRole.MANAGER)
+  restore(@RestaurantId() rid: string, @Param('id', ParseUUIDPipe) id: string) {
+    return this.categories.restore(rid, id)
   }
 
   @Delete(':id')

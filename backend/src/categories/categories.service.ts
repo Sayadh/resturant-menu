@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  GoneException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -8,6 +9,7 @@ import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { mapTranslations } from '../common/utils/translations'
 import { parseSort } from '../common/utils/sort'
+import { isRestorable } from '../common/utils/restore-window'
 import { CreateCategoryDto } from './dto/create-category.dto'
 import { UpdateCategoryDto } from './dto/update-category.dto'
 import { CategoryListQueryDto } from './dto/category-list.query.dto'
@@ -100,6 +102,9 @@ export class CategoriesService {
         imageFocalY: dto.imageFocalY,
         imageCrop: dto.imageCrop as never, // ImageCropDto lacks Json's index signature; Prisma accepts the plain object at runtime
         mobileImageUrl: dto.mobileImageUrl,
+        mobileImageHiResUrl: dto.mobileImageHiResUrl,
+        mobileImageOriginalUrl: dto.mobileImageOriginalUrl,
+        mobileImageCrop: dto.mobileImageCrop as never, // see imageCrop
         bannerTextColor: dto.bannerTextColor,
         sortOrder: dto.sortOrder ?? 0,
         isActive: dto.isActive ?? true,
@@ -127,8 +132,12 @@ export class CategoriesService {
         imageOriginalUrl: dto.imageOriginalUrl,
         imageFocalX: dto.imageFocalX,
         imageFocalY: dto.imageFocalY,
-        imageCrop: dto.imageCrop as never, // ImageCropDto lacks Json's index signature; Prisma accepts the plain object at runtime
+        // A cleared photo takes its framing with it (DbNull — a Json column needs it).
+        imageCrop: dto.imageUrl === '' ? Prisma.DbNull : (dto.imageCrop as never), // ImageCropDto lacks Json's index signature
         mobileImageUrl: dto.mobileImageUrl,
+        mobileImageHiResUrl: dto.mobileImageHiResUrl,
+        mobileImageOriginalUrl: dto.mobileImageOriginalUrl,
+        mobileImageCrop: dto.mobileImageUrl === '' ? Prisma.DbNull : (dto.mobileImageCrop as never),
         bannerTextColor: dto.bannerTextColor,
         sortOrder: dto.sortOrder,
         isActive: dto.isActive,
@@ -145,11 +154,15 @@ export class CategoriesService {
       }
     }
     // Best-effort: if an image was replaced/cleared, drop the old storage object.
-    // A photo is three objects now (display, retina, original) — drop them all.
+    // A banner is three objects (display, retina, original) — desktop and
+    // mobile alike — so all six are checked.
     const replaced: [string | undefined, string | null | undefined][] = [
       [dto.imageUrl, cat.imageUrl],
       [dto.imageHiResUrl, cat.imageHiResUrl],
       [dto.imageOriginalUrl, cat.imageOriginalUrl],
+      [dto.mobileImageUrl, cat.mobileImageUrl],
+      [dto.mobileImageHiResUrl, cat.mobileImageHiResUrl],
+      [dto.mobileImageOriginalUrl, cat.mobileImageOriginalUrl],
     ]
     for (const [next, prev] of replaced) {
       if (next !== undefined && prev && prev !== next) {
@@ -158,9 +171,6 @@ export class CategoriesService {
     }
     if (dto.iconUrl !== undefined && cat.iconUrl && cat.iconUrl !== dto.iconUrl) {
       await this.uploads.removeOwnByUrl(restaurantId, cat.iconUrl)
-    }
-    if (dto.mobileImageUrl !== undefined && cat.mobileImageUrl && cat.mobileImageUrl !== dto.mobileImageUrl) {
-      await this.uploads.removeOwnByUrl(restaurantId, cat.mobileImageUrl)
     }
     return this.get(restaurantId, id)
   }
@@ -180,6 +190,37 @@ export class CategoriesService {
     }
     ops.push(this.prisma.category.update({ where: { id }, data: { deletedAt: now } }))
     await this.prisma.$transaction(ops)
+    return { ok: true }
+  }
+
+  /**
+   * Undo a delete: the category and the products that delete took with it
+   * (same deletedAt — products deleted earlier on their own stay deleted).
+   * Idempotent; refused once the window has passed (common/utils/restore-window).
+   */
+  async restore(restaurantId: string, id: string) {
+    const cat = await this.prisma.category.findFirst({
+      where: { id, restaurantId },
+      select: { deletedAt: true, sectionId: true },
+    })
+    if (!cat) throw new NotFoundException('Category not found')
+    if (!cat.deletedAt) return { ok: true } // already back (double click)
+    if (!isRestorable(cat.deletedAt)) throw new GoneException('The time to undo this delete has passed')
+    if (cat.sectionId) {
+      const section = await this.prisma.section.findFirst({
+        where: { id: cat.sectionId, restaurantId, deletedAt: null },
+        select: { id: true },
+      })
+      if (!section) throw new ConflictException('The section of this category was deleted')
+    }
+    const deletedWith = { categoryId: id, deletedAt: cat.deletedAt }
+    const products = await this.prisma.product.count({ where: deletedWith })
+    await this.planLimits.assertCanCreate(restaurantId, 'category')
+    await this.planLimits.assertCanCreate(restaurantId, 'product', products)
+    await this.prisma.$transaction([
+      this.prisma.category.update({ where: { id }, data: { deletedAt: null } }),
+      this.prisma.product.updateMany({ where: deletedWith, data: { deletedAt: null } }),
+    ])
     return { ok: true }
   }
 

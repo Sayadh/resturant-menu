@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import type { Restaurant } from '@prisma/client'
+import { Prisma, type Restaurant } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { PublicCacheService } from '../common/cache/public-cache.service'
+import { MAX_RESULTS, MIN_QUERY, rankProducts, searchTerms } from './menu-search'
 
 @Injectable()
 export class PublicService {
@@ -259,6 +260,7 @@ export class PublicService {
           imageFocalX: true,
           imageFocalY: true,
           mobileImageUrl: true,
+          mobileImageHiResUrl: true,
           bannerTextColor: true,
           sortOrder: true,
           translations: { ...trWhere, select: { languageId: true, name: true, description: true } },
@@ -326,6 +328,7 @@ export class PublicService {
           imageFocalX: c.imageFocalX ?? 50,
           imageFocalY: c.imageFocalY ?? 50,
           mobileImage: c.mobileImageUrl,
+          mobileImageHiRes: c.mobileImageHiResUrl,
           bannerTextColor: c.bannerTextColor,
           sortOrder: c.sortOrder,
           name: t?.name ?? '',
@@ -360,6 +363,68 @@ export class PublicService {
             .map((pb) => badgeKey.get(pb.badgeId))
             .filter((k): k is string => Boolean(k)),
         }
+      }),
+    }
+  }
+
+  /**
+   * Dish search for the guest menu. Matches every term against each dish's
+   * name and description in ALL its languages (a guest reading Armenian can
+   * still type "cola"), case-insensitively, then ranks in ./menu-search.
+   *
+   * Only what the guest could see qualifies: an active dish, in an active
+   * category, in an active section (or none), of an active restaurant.
+   *
+   * Not cached on purpose — every distinct query would become a cache entry and
+   * push real menus out of the 300-entry public cache. One SQL round trip for
+   * the dishes, one for their translations; the controller rate-limits it.
+   */
+  async search(restaurantId: string, rawQuery: string, lang?: string) {
+    const query = rawQuery.trim()
+    const terms = searchTerms(query)
+    if (query.length < MIN_QUERY || !terms.length) return { query, total: 0, items: [] }
+
+    const contains = (value: string) => ({ contains: value, mode: Prisma.QueryMode.insensitive })
+    const rows = await this.prisma.product.findMany({
+      where: {
+        restaurantId,
+        isActive: true,
+        deletedAt: null,
+        restaurant: { isActive: true, deletedAt: null },
+        category: {
+          isActive: true,
+          deletedAt: null,
+          OR: [{ sectionId: null }, { sectionRef: { isActive: true, deletedAt: null } }],
+        },
+        AND: terms.map((term) => ({
+          translations: { some: { OR: [{ name: contains(term) }, { description: contains(term) }] } },
+        })),
+      },
+      select: {
+        id: true,
+        categoryId: true,
+        sortOrder: true,
+        translations: { select: { languageId: true, name: true, description: true } },
+      },
+      // Ranking happens after the query, so take a generous slice to rank.
+      take: 200,
+    })
+
+    const langId = lang ? (await this.languageIds()).get(lang) : undefined
+    const ranked = rankProducts(
+      rows.map((r) => ({ id: r.id, sortOrder: r.sortOrder, texts: r.translations })),
+      query,
+      langId,
+    )
+    const byId = new Map(rows.map((r) => [r.id, r]))
+
+    return {
+      query,
+      total: ranked.length,
+      items: ranked.slice(0, MAX_RESULTS).map(({ id }) => {
+        const r = byId.get(id)!
+        const t = r.translations.find((x) => x.languageId === langId) ?? r.translations[0]
+        return { id, categoryId: r.categoryId, name: t?.name ?? '' }
       }),
     }
   }

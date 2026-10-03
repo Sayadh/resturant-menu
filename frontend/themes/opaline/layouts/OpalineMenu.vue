@@ -14,8 +14,8 @@
 //
 // All menu DATA, language, favourite, cart and order LOGIC come from the
 // shared stores and composables — exactly like Aria, Atelier, Maison,
-// Heritage and Noir. Only the presentation differs. (Opaline has no search
-// field of its own — the journey is short enough that browsing covers it.)
+// Heritage and Noir. Only the presentation differs. Search opens as a sheet
+// from the header (OpalineSearch); the matching itself is done by the backend.
 // ─────────────────────────────────────────────────────────────────────────
 import type { LocationQueryRaw } from 'vue-router'
 import { ui, type MenuCategory, type MenuItem, type MenuLevel } from '~/data/menu'
@@ -38,6 +38,7 @@ import OpalineBasketBar from '../components/OpalineBasketBar.vue'
 import OpalineOrderDrawer from '../components/OpalineOrderDrawer.vue'
 import OpalineEmpty from '../components/OpalineEmpty.vue'
 import OpalineFooter from '../components/OpalineFooter.vue'
+import OpalineSearch from '../components/OpalineSearch.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -117,6 +118,7 @@ const sectionCategoryCount = (lvl: MenuLevel) => categoriesIn(lvl.id).length
 // ── product detail + order overlays ──────────────────────────────────────
 const selected = ref<MenuItem | null>(null)
 const orderOpen = ref(false)
+const searchOpen = ref(false)
 
 onMounted(() => {
   // Defensive: clear any body scroll-lock a previous overlay/theme may have left.
@@ -139,7 +141,7 @@ useHead({
 
 <template>
   <div class="opaline-theme flex min-h-screen flex-col">
-    <OpalineHeader @home="goHome" />
+    <OpalineHeader @home="goHome" @search="searchOpen = true" />
 
     <main class="flex-1">
       <Transition name="op-page" mode="out-in">
@@ -243,6 +245,12 @@ useHead({
     <OpalineFooter />
 
     <!-- Overlays -->
+    <OpalineSearch
+      :open="searchOpen"
+      :blocked="!!selected"
+      @close="searchOpen = false"
+      @open="selected = $event"
+    />
     <OpalineProductDetail :item="selected" @close="selected = null" />
     <OpalineBasketBar v-if="brand.ordering" @open="orderOpen = true" />
     <OpalineOrderDrawer v-if="brand.ordering" :open="orderOpen" @close="orderOpen = false" />

@@ -6,8 +6,11 @@ import { imgUrl } from '~/utils/image'
 // the guest can always return to the top level or change language.
 // ─────────────────────────────────────────────────────────────────────────
 import OpalineLangSwitch from './OpalineLangSwitch.vue'
+import { opalineSearch } from '~/themes/opaline/config'
 
-const emit = defineEmits<{ home: [] }>()
+const emit = defineEmits<{ home: []; search: [] }>()
+
+const { t } = useLanguage()
 
 const brand = useBrand()
 
@@ -46,7 +49,21 @@ const mono = computed(() => {
         </span>
       </button>
 
-      <OpalineLangSwitch />
+      <div class="flex items-center gap-1 sm:gap-2">
+        <!-- Search: a hairline circle, same weight as the house mark -->
+        <button
+          type="button"
+          class="grid h-9 w-9 place-items-center rounded-full border border-[#E2E5E8] bg-[#FFFFFF] text-[#172033] transition-colors duration-300 hover:border-[#CCD1D7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D85F3D] sm:h-10 sm:w-10"
+          :aria-label="t(opalineSearch.open)"
+          @click="emit('search')"
+        >
+          <svg viewBox="0 0 24 24" class="h-[17px] w-[17px]" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="M16 16l4.5 4.5" />
+          </svg>
+        </button>
+        <OpalineLangSwitch />
+      </div>
     </div>
   </header>
 </template>

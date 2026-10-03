@@ -62,6 +62,8 @@ export interface MenuCategory {
   imageHiRes?: string
   /** Mobile banner (falls back to `image`). */
   mobileImage?: string
+  /** Mobile banner 1200×900 — retina phones. */
+  mobileImageHiRes?: string
   /** Banner title colour over the image: 'light' (white) or 'dark'. */
   bannerTextColor?: 'light' | 'dark'
   /** Focal-point X (0–100, default 50). */

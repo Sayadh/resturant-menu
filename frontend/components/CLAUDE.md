@@ -8,7 +8,8 @@
   `LandingAdminPreview`, `LandingThemes`, `LandingHowItWorks`, `Reveal`։
 - **`components/` (root)** — կիսվող՝ `TheHeader`, `MenuCard`, `MenuBadge`,
   `CategoryNav`, `OrderSheet`, `LanguageSwitcher`, `ImageLightbox`, `AdminModal`,
-  icon-ներ (`Icon*`), design-ներ `DesignAria`/`DesignHeritage`, `ThemeRenderer`։
+  icon-ներ (`Icon*`), design `DesignAria` (+ հին `DesignHeritage`՝ rollback-ի համար,
+  registry-ում չի օգտագործվում), `ThemeRenderer`։
 
 ## Auto-import (Nuxt) — անուն = թղթապանակ + ֆայլ
 

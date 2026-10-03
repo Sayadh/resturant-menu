@@ -13,7 +13,9 @@ export type LimitedResource = 'product' | 'category'
 export class PlanLimitsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async assertCanCreate(restaurantId: string, resource: LimitedResource): Promise<void> {
+  /** `adding` > 1 when several rows come back at once (undoing a cascade delete). */
+  async assertCanCreate(restaurantId: string, resource: LimitedResource, adding = 1): Promise<void> {
+    if (adding <= 0) return
     const restaurant = await this.prisma.restaurant.findUnique({
       where: { id: restaurantId },
       select: { plan: { select: { maxProducts: true, maxCategories: true } } },
@@ -31,7 +33,7 @@ export class PlanLimitsService {
       ? await this.prisma.product.count({ where: { restaurantId, deletedAt: null } })
       : await this.prisma.category.count({ where: { restaurantId, deletedAt: null } })
 
-    if (count >= limit) {
+    if (count + adding > limit) {
       throw new ForbiddenException({
         message: 'PLAN_LIMIT_REACHED',
         errors: [{ code: 'PLAN_LIMIT_REACHED', field: resource, message: String(limit) }],

@@ -79,6 +79,6 @@ export const THEMES: Theme[] = [
     bestFor: 'Ժամանակակից և fine dining ռեստորանների համար',
     screenshot: '',
     accent: '#D85F3D',
-    available: false,
+    available: true,
   },
 ]

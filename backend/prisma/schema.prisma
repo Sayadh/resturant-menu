@@ -178,10 +178,29 @@ model Restaurant {
   menuViews    MenuView[]
   productViews ProductView[]
   qrScans      QRCodeScan[]
+  payments     RestaurantPayment[]
 
   @@index([themeId])
   @@index([planId])
   @@map("restaurants")
+}
+
+/// A subscription payment recorded by the super-admin: "paid for `months`
+/// starting on `paidAt`". Bookkeeping only — it switches nothing on or off.
+/// Days are calendar dates (DATE), see src/super-admin/billing.ts.
+model RestaurantPayment {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @db.Uuid
+  paidAt       DateTime @db.Date // first day of the paid period
+  months       Int // 1 | 3 | 6 | 12 (CHECK constraint in the migration)
+  paidUntil    DateTime @db.Date // paidAt + months
+  createdById  String?  @db.Uuid // the super-admin who recorded it
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, paidUntil])
+  @@map("restaurant_payments")
 }
 
 model RestaurantTranslation {
@@ -361,7 +380,10 @@ model Category {
   imageFocalX     Int?      // 0–100, 50 = centre. Drives CSS object-position.
   imageFocalY     Int?
   imageCrop       Json?     // editor state { offsetX, offsetY, zoom } for re-cropping
-  mobileImageUrl  String?
+  mobileImageUrl         String? // 800×600 WebP (4:3) — mobile banner guests are served
+  mobileImageHiResUrl    String? // 1200×900 WebP — retina phones
+  mobileImageOriginalUrl String? // the upload itself, kept so the crop can be redone
+  mobileImageCrop        Json?   // editor state for re-cropping the mobile banner
   bannerTextColor String?   // 'light' | 'dark' — banner title colour over the image
   sortOrder       Int       @default(0)
   isActive     Boolean      @default(true)

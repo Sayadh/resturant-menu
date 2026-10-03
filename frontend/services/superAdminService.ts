@@ -15,6 +15,17 @@ export interface AdminRestaurantRow {
   sections: number
   categories: number
   products: number
+  /** The payment whose period runs longest, or null when none was recorded. */
+  payment: RestaurantPayment | null
+  createdAt: string
+}
+
+/** A subscription payment. Days are 'YYYY-MM-DD' (calendar days). */
+export interface RestaurantPayment {
+  id: string
+  paidAt: string
+  months: 1 | 3 | 6 | 12
+  paidUntil: string
   createdAt: string
 }
 
@@ -63,5 +74,20 @@ export const superAdminService = {
   // DELETE /api/v1/super-admin/restaurants/:id
   remove(id: string): Promise<{ ok: boolean }> {
     return useApiClient().del<{ ok: boolean }>(`/super-admin/restaurants/${id}`)
+  },
+
+  // GET /api/v1/super-admin/restaurants/:id/payments — newest first
+  listPayments(id: string): Promise<RestaurantPayment[]> {
+    return useApiClient().get<RestaurantPayment[]>(`/super-admin/restaurants/${id}/payments`)
+  },
+
+  // POST /api/v1/super-admin/restaurants/:id/payments
+  addPayment(id: string, input: { paidAt: string; months: 1 | 3 | 6 | 12 }): Promise<RestaurantPayment> {
+    return useApiClient().post<RestaurantPayment>(`/super-admin/restaurants/${id}/payments`, input)
+  },
+
+  // DELETE /api/v1/super-admin/restaurants/:id/payments/:paymentId
+  removePayment(id: string, paymentId: string): Promise<{ ok: boolean }> {
+    return useApiClient().del<{ ok: boolean }>(`/super-admin/restaurants/${id}/payments/${paymentId}`)
   },
 }

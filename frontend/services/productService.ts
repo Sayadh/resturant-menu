@@ -3,6 +3,7 @@ import { useApiClient } from './http'
 import {
   mapProduct,
   productDraftToDto,
+  productImagesToDto,
   type ApiProductRow,
   type ApiCategoryRow,
 } from './_api-map'
@@ -38,8 +39,18 @@ export const productService = {
     await useApiClient().patch(`/admin/products/${id}`, productDraftToDto(draft))
   },
 
+  /** Save only the photo (partial PATCH — other fields untouched). */
+  async updateProductImage(id: string, draft: ProductDraft): Promise<void> {
+    await useApiClient().patch(`/admin/products/${id}`, { images: productImagesToDto(draft) })
+  },
+
   async deleteProduct(id: string): Promise<void> {
     await useApiClient().del(`/admin/products/${id}`)
+  },
+
+  /** Undo a delete (allowed briefly after it — backend restore window). */
+  async restoreProduct(id: string): Promise<void> {
+    await useApiClient().post(`/admin/products/${id}/restore`, {})
   },
 
   async setAvailability(id: string, available: boolean): Promise<void> {

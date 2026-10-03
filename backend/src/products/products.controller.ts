@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -68,6 +69,14 @@ export class ProductsController {
     @Body() dto: AvailabilityDto,
   ) {
     return this.products.setAvailability(rid, id, dto.isAvailable)
+  }
+
+  /** Undo a delete within the restore window (10 s in the admin UI). */
+  @Post(':id/restore')
+  @HttpCode(200)
+  @Roles(UserRole.OWNER, UserRole.MANAGER)
+  restore(@RestaurantId() rid: string, @Param('id', ParseUUIDPipe) id: string) {
+    return this.products.restore(rid, id)
   }
 
   @Delete(':id')

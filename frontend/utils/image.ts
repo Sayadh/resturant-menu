@@ -24,7 +24,7 @@ export const imgUrl = (url: string | null | undefined, width: number, quality = 
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Multi-resolution 4:3 image processing (product / category images).
+// Multi-resolution image processing (product 4:3 / category banners 16:5 + 4:3).
 //
 // When an admin uploads a photo, the browser generates TWO versions:
 //   • 1200×900  (hi-res, for retina / detail modals)
@@ -53,9 +53,34 @@ export function loadImageFromSrc(src: string): Promise<HTMLImageElement> {
   })
 }
 
+/**
+ * Frame presets for the crop editor — each photo is framed AND baked in the
+ * shape it is shown in, otherwise the display box re-crops it and the
+ * admin's framing is lost:
+ *   • product      — 4:3 dish card
+ *   • banner       — category desktop banner, wide 16:5 (admin label 1600×500)
+ *   • mobileBanner — category mobile banner, 4:3 (admin label 800×600)
+ * `fill`: a banner starts filled edge to edge; a dish photo starts whole on a
+ * soft background (zoom 1), as it always has.
+ */
+export const CROP_PRESETS = {
+  product: { ratio: 4 / 3, hiRes: [1200, 900], stdRes: [800, 600], fill: false },
+  banner: { ratio: 16 / 5, hiRes: [1600, 500], stdRes: [960, 300], fill: true },
+  mobileBanner: { ratio: 4 / 3, hiRes: [1200, 900], stdRes: [800, 600], fill: true },
+} as const
+export type CropPreset = keyof typeof CROP_PRESETS
+
+/**
+ * Offsets are stored in pixels of a frame CROP_REF_W wide (the original
+ * 320px editor canvas), whatever size the frame is actually drawn or baked
+ * at — so a stored crop means the same framing in the editor and in every
+ * delivered size.
+ */
+export const CROP_REF_W = 320
+
 /** Crop state produced by the crop editor. */
 export interface CropState {
-  /** Offset of the image center relative to the viewport center, in image-pixels. */
+  /** Offset of the image center relative to the frame center, in CROP_REF_W-frame pixels. */
   offsetX: number
   offsetY: number
   /** Zoom factor (1 = fit, >1 = crop in, <1 = zoom out with bg fill). */
@@ -63,7 +88,39 @@ export interface CropState {
 }
 
 /**
- * Render a cropped 4:3 WebP blob from an image + crop state.
+ * Draw `img` into a `width × height` frame with the given crop. Shared by the
+ * editor's live canvas and the baked blobs, so the preview IS the result.
+ * At zoom 1 the whole image fits ("contain"); the rest is `bgColor`.
+ */
+export function drawCropped(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  crop: CropState,
+  width: number,
+  height: number,
+  bgColor: string,
+): void {
+  ctx.fillStyle = bgColor
+  ctx.fillRect(0, 0, width, height)
+
+  const imgAspect = img.naturalWidth / img.naturalHeight
+  let drawW: number, drawH: number
+  if (imgAspect > width / height) {
+    drawW = width * crop.zoom
+    drawH = drawW / imgAspect
+  } else {
+    drawH = height * crop.zoom
+    drawW = drawH * imgAspect
+  }
+  // Offsets are in CROP_REF_W-frame pixels → scale to this frame.
+  const k = (width / CROP_REF_W) * crop.zoom
+  const drawX = (width - drawW) / 2 + crop.offsetX * k
+  const drawY = (height - drawH) / 2 + crop.offsetY * k
+  ctx.drawImage(img, drawX, drawY, drawW, drawH)
+}
+
+/**
+ * Render a cropped WebP blob from an image + crop state.
  * The image is drawn at the given zoom / offset into a canvas of `width × height`.
  * If the image doesn't fill the canvas (zoom < 1), the remaining area is filled
  * with `bgColor` (a soft pastel sampled from the image edges).
@@ -81,29 +138,7 @@ export async function renderCroppedBlob(
   canvas.height = height
   const ctx = canvas.getContext('2d')!
 
-  // Fill background (visible when zoomed out).
-  ctx.fillStyle = bgColor
-  ctx.fillRect(0, 0, width, height)
-
-  // Calculate draw dimensions: the image should fill the canvas at zoom=1
-  // using "contain" logic (fit the full image), then zoom scales from there.
-  const imgAspect = img.naturalWidth / img.naturalHeight
-  const canvasAspect = width / height
-  let drawW: number, drawH: number
-  if (imgAspect > canvasAspect) {
-    // Image is wider → fit by width (height might not fill)
-    drawW = width * crop.zoom
-    drawH = drawW / imgAspect
-  } else {
-    // Image is taller → fit by height (width might not fill)
-    drawH = height * crop.zoom
-    drawW = drawH * imgAspect
-  }
-
-  const drawX = (width - drawW) / 2 + crop.offsetX * crop.zoom
-  const drawY = (height - drawH) / 2 + crop.offsetY * crop.zoom
-
-  ctx.drawImage(img, drawX, drawY, drawW, drawH)
+  drawCropped(ctx, img, crop, width, height, bgColor)
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
@@ -115,39 +150,27 @@ export async function renderCroppedBlob(
 }
 
 /**
- * Process a raw upload into two 4:3 WebP blobs + a preview data URL.
- * Does NOT require a crop state — uses default center crop.
+ * Process a raw upload into the two delivered WebP sizes of `preset`
+ * (see CROP_PRESETS) + a small preview.
  */
 export async function processMenuImage(
   file: File,
   crop: CropState = { offsetX: 0, offsetY: 0, zoom: 1 },
   bgColor = '#F5F5F2',
+  preset: CropPreset = 'product',
 ): Promise<{ hiRes: Blob; stdRes: Blob; preview: string }> {
   const img = await loadImage(file)
+  const { hiRes: [hw, hh], stdRes: [sw, sh], ratio } = CROP_PRESETS[preset]
 
   const [hiRes, stdRes] = await Promise.all([
-    renderCroppedBlob(img, crop, 1200, 900, 0.88, bgColor),
-    renderCroppedBlob(img, crop, 800, 600, 0.82, bgColor),
+    renderCroppedBlob(img, crop, hw, hh, 0.88, bgColor),
+    renderCroppedBlob(img, crop, sw, sh, 0.82, bgColor),
   ])
 
-  // Generate a small preview URL for the admin UI.
   const previewCanvas = document.createElement('canvas')
   previewCanvas.width = 400
-  previewCanvas.height = 300
-  const pCtx = previewCanvas.getContext('2d')!
-  pCtx.fillStyle = bgColor
-  pCtx.fillRect(0, 0, 400, 300)
-  const imgAspect = img.naturalWidth / img.naturalHeight
-  const canvasAspect = 400 / 300
-  let dw: number, dh: number
-  if (imgAspect > canvasAspect) {
-    dw = 400 * crop.zoom
-    dh = dw / imgAspect
-  } else {
-    dh = 300 * crop.zoom
-    dw = dh * imgAspect
-  }
-  pCtx.drawImage(img, (400 - dw) / 2 + crop.offsetX * crop.zoom, (300 - dh) / 2 + crop.offsetY * crop.zoom, dw, dh)
+  previewCanvas.height = Math.round(400 / ratio)
+  drawCropped(previewCanvas.getContext('2d')!, img, crop, previewCanvas.width, previewCanvas.height, bgColor)
   const preview = previewCanvas.toDataURL('image/webp', 0.6)
 
   return { hiRes, stdRes, preview }

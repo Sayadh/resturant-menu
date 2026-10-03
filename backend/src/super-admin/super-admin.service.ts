@@ -1,16 +1,29 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, ConflictException, NotFoundException } from '@nestjs/common'
 import { UserRole } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import { PrismaService } from '../prisma/prisma.service'
 import { generateInitialPassword } from '../common/utils/password'
 import { CreateRestaurantDto } from './dto/create-restaurant.dto'
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto'
+import { CreatePaymentDto } from './dto/create-payment.dto'
+import { addMonths, formatDay, parseDay } from './billing'
 
 const SECTION_DEFS: { icon: string; name: Record<string, string> }[] = [
   { icon: '🍽', name: { hy: 'Ուտեստներ', en: 'Food', ru: 'Блюда' } },
   { icon: '🥤', name: { hy: 'Ըմպելիքներ', en: 'Drinks', ru: 'Напитки' } },
   { icon: '🍷', name: { hy: 'Ալկոհոլ', en: 'Alcohol', ru: 'Алкоголь' } },
 ]
+
+const PAYMENT_SELECT = { id: true, paidAt: true, months: true, paidUntil: true, createdAt: true } as const
+
+/** DATE columns come back as UTC-midnight Dates — send them as plain days. */
+const toPayment = (p: { id: string; paidAt: Date; months: number; paidUntil: Date; createdAt: Date }) => ({
+  id: p.id,
+  paidAt: formatDay(p.paidAt),
+  months: p.months,
+  paidUntil: formatDay(p.paidUntil),
+  createdAt: p.createdAt,
+})
 
 @Injectable()
 export class SuperAdminService {
@@ -26,6 +39,8 @@ export class SuperAdminService {
         plan: { select: { key: true } },
         users: { where: { role: UserRole.OWNER }, select: { email: true }, orderBy: { createdAt: 'asc' }, take: 1 },
         _count: { select: { categories: true, products: true, sections: true } },
+        // The period that runs longest is the one the table shows.
+        payments: { orderBy: { paidUntil: 'desc' }, take: 1, select: PAYMENT_SELECT },
       },
     })
     return rows.map((r) => ({
@@ -41,6 +56,7 @@ export class SuperAdminService {
       sections: r._count.sections,
       categories: r._count.categories,
       products: r._count.products,
+      payment: r.payments[0] ? toPayment(r.payments[0]) : null,
       createdAt: r.createdAt,
     }))
   }
@@ -178,6 +194,52 @@ export class SuperAdminService {
         data: { email: newEmail, passwordHash, role: UserRole.OWNER, restaurantId },
       })
     }
+  }
+
+  // ── subscription payments ────────────────────────────────────────────
+
+  private async ensureRestaurant(id: string) {
+    const r = await this.prisma.restaurant.findFirst({ where: { id, deletedAt: null }, select: { id: true } })
+    if (!r) throw new NotFoundException('Restaurant not found')
+  }
+
+  /** Every payment of a restaurant, newest period first. */
+  async listPayments(restaurantId: string) {
+    await this.ensureRestaurant(restaurantId)
+    const rows = await this.prisma.restaurantPayment.findMany({
+      where: { restaurantId },
+      orderBy: [{ paidAt: 'desc' }, { createdAt: 'desc' }],
+      select: PAYMENT_SELECT,
+    })
+    return rows.map(toPayment)
+  }
+
+  /** Record "paid for N months starting on that day" (past, today or future). */
+  async addPayment(restaurantId: string, dto: CreatePaymentDto, createdById?: string) {
+    const paidAt = parseDay(dto.paidAt)
+    if (!paidAt) throw new BadRequestException('paidAt is not a real calendar day')
+    const year = paidAt.getUTCFullYear()
+    if (year < 2020 || year > 2100) throw new BadRequestException('paidAt is out of range')
+
+    await this.ensureRestaurant(restaurantId)
+    const row = await this.prisma.restaurantPayment.create({
+      data: {
+        restaurantId,
+        paidAt,
+        months: dto.months,
+        paidUntil: addMonths(paidAt, dto.months),
+        createdById: createdById ?? null,
+      },
+      select: PAYMENT_SELECT,
+    })
+    return toPayment(row)
+  }
+
+  /** Remove a payment recorded by mistake (scoped to its restaurant). */
+  async deletePayment(restaurantId: string, paymentId: string) {
+    const { count } = await this.prisma.restaurantPayment.deleteMany({ where: { id: paymentId, restaurantId } })
+    if (!count) throw new NotFoundException('Payment not found')
+    return { ok: true }
   }
 
   /** Permanently delete a restaurant and all its content (cascade). */
